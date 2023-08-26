@@ -1,0 +1,39 @@
+name: "nem"
+
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis:/data
+    networks:
+      - supabase_network_nem
+
+  sfu:
+    image: pionwebrtc/ion-sfu:latest-jsonrpc
+    restart: always
+    environment:
+      - jaddr=0.0.0.0:7000
+    volumes:
+      - "./ion-sfu/sfu.toml:/configs/sfu.toml"
+    ports:
+      - 7000:7000
+    networks:
+      - supabase_network_nem
+
+volumes:
+  redis:
+    driver: local
+
+networks:
+  supabase_network_nem:
+    driver: bridge
+    external: true

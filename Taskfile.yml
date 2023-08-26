@@ -1,0 +1,128 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv:
+  - ".env"
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    desc: "Lists all tasks"
+    silent: true
+
+  dev:
+    cmd: watchexec -rc -e go,mod,env --project-origin . -- go run .
+    desc: Watch go and run
+
+  devtls:
+    cmd: watchexec -rc -e go,mod,env --project-origin . -- go run . -tls
+    desc: Watch go and run
+
+  build:
+    cmd: GCO_ENABLED=0 go build -ldflags="-s -w" -o bin/app .
+    desc: Build the go app
+
+  run:
+    cmd: ./bin/app
+    desc: Run the go app
+
+  br:
+    cmds:
+      - task: build
+      - task: run
+    desc: Build and run the go app
+
+  clean:
+    cmds:
+      - rm -rf bin
+
+  lint:
+    cmd: golangci-lint run
+    desc: Lint the go app
+
+  gen:
+    cmds:
+      - webrpc-gen -schema="main.ridl" -target=golang@v0.12.5 -pkg=rpc -server -out="./api/rpc/rpc.gen.go"
+      - webrpc-gen -schema="main.ridl" -target=typescript -client -out="./web/src/lib/api/api.gen.ts"
+    desc: Generate webrpc files
+
+  sqlc:
+    cmds:
+      - platforms: [windows]
+        cmd: docker run --rm -v ${pwd}:/src -w /src sqlc/sqlc:latest generate
+      - platforms: [linux]
+        cmd: sqlc generate
+    desc: Generate sqlc
+
+  fmt:
+    cmd: gofumpt -l -w .
+    desc: Format the go app
+
+  web:
+    dir: "./web"
+    cmds:
+      - pnpm dev
+
+  desktop:
+    dir: "./web"
+    cmds:
+      - pnpm tauri dev -r cargo-zigbuild # Use cargo-zigbuild for Zig linker
+
+  devWeb:
+    cmd: task -p dev web # parallel tasks
+
+  buildWeb:
+    cmd: go generate ./web
+
+  devDesktop:
+    cmd: task -p go desktop # parallel tasks
+
+  up:
+    cmds:
+      - supabase start
+      - docker compose up -d
+    desc: Start containers
+
+  down:
+    cmds:
+      - supabase stop
+      - docker compose down
+    desc: Stop containers
+
+  migu:
+    cmds:
+      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations up
+    desc: Migrate up
+    silent: true
+
+  migd:
+    cmds:
+      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations down
+    desc: Migrate down
+    silent: true
+
+  migr:
+    cmds:
+      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations drop
+      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations up
+      - task: seed
+    desc: Migrate down then up
+    silent: true
+
+  mignew:
+    cmds:
+      - migrate create -ext sql -dir db/migrations/ -seq {{.name}}
+    desc: Create a migration
+
+  seed:
+    cmd: go run cmd/seed/seed.go
+
+  resetdb:
+    cmds:
+      - supabase db reset
+    desc: Reset supabase db
+
+  certs:
+    cmd: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/localhost.key -out certs/localhost.crt

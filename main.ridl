@@ -1,0 +1,133 @@
+webrpc = v1
+
+name = nem
+version = v0.1.0
+
+
+#################### ADMIN ONLY ####################
+
+struct AdminCreateClassRequest
+    - userIDs: []string
+    - name: string
+    - learnId: int32
+    - start_at: timestamp
+    - end_at: timestamp
+
+
+service AdminServiceAPI
+    - AdminListUsers() => (users: []User)
+    - AdminListClasses() => (classes: []Class)
+    - AdminSetRole(uID: string, role: string)
+    - AdminCreateClass(req: AdminCreateClassRequest) => (class: Class)
+
+#################### ADMIN ONLY ####################
+
+
+
+#################### STRUCTS ####################
+
+struct User
+    - id: string
+    - firstName: string
+    - lastName: string
+    - role: string
+    - preferedLanguage: string
+    - avatarFilePath: string
+    - avatarUrl: string
+    - createdAt: timestamp
+
+struct CreateUserRequest
+    - firstName: string
+    - lastName: string
+    - role: string
+    - preferedLanguage: string
+
+struct CreateUserResponse
+    - user: User
+
+struct Learn
+    - id: int32
+    - language: string
+    - topic: string
+
+struct Teach
+    - id: int32
+    - language: string
+    - topic: string
+
+struct Class
+    - id: string
+    - name: string
+    - language: string
+    - topic: string
+    - startAt: timestamp
+    - endAt: timestamp
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
+struct ClassDetails
+    - class: Class
+    - users: []User
+
+
+struct Message
+    - text: string
+    - classId: string
+
+struct MessageResponse
+    - id: string
+    - text: string
+    - createdAt: timestamp
+    - updatedAt: timestamp
+    - classId: string
+    - user: User
+
+#################### STRUCTS ####################
+
+
+#################### SERVICES ####################
+
+service UserServiceAPI
+    - Get() => (user: User)
+    - Create(req: CreateUserRequest) => (user: User)
+    - ChooseRole(role: string)
+    - UpdatePreferedLanguage(lang: string)
+    - UpdateAvatar(path: string, url: string)
+    - DeleteAvatar()
+    - Delete()
+
+service StudentServiceAPI
+    - ListLearns() => (learns: []Learn)
+    - Learn(language: string, topic: string) => (learn: Learn)
+    - ListClasses() => (classes: []Class)
+    - JoinClass(classId: string)
+    - LeaveClass(classId: string)
+
+service TeacherServiceAPI
+    - ListTeaches() => (teaches: []Teach)
+    - Teach(language: string, topic: string) => (teach: Teach)
+    - ListClasses() => (classes: []Class)
+    - StartClass(classId: string)
+    - EndClass(classId: string)
+
+service ClassServiceAPI
+    - ListLanguages() => (languages: []string)
+    - ListTopics() => (topics: []string)
+    - ListAvailableLearns() => (learns: []Learn)
+    - ShowClassDetails(classId: string) => (class: ClassDetails)
+    - GetJoinToken(roomId: string) => (token: string)
+
+service MessageServiceAPI
+    - SendMessage(message: Message)
+
+
+#################### SERVICES ####################
+
+
+#################### ERRORS ####################
+
+error 401 Unauthorized "Unauthorized access" HTTP 401
+error 403 PermissionDenied "Permission denied" HTTP 403
+error 1 UserAlreadyRegistered "User already registered" HTTP 400
+
+#################### ERRORS ####################
