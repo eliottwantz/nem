@@ -12,7 +12,6 @@ var Cfg Config
 type Config struct {
 	Host             string `env:"HOST,default=0.0.0.0"`
 	Port             string `env:"PORT,default=8080"`
-	WebURL           string `env:"WEB_URL,required=true"`
 	DatabaseURL      string `env:"DATABASE_URL,required=true"`
 	RedisURL         string `env:"REDIS_URL,required=true"`
 	TokenSecretKey   string `env:"TOKEN_SECRET_KEY,required=true"`
