@@ -1,8 +1,10 @@
-CREATE TYPE "public"."role" AS ENUM ('student', 'teacher', 'admin');
+CREATE TYPE "role" AS ENUM ('student', 'teacher', 'admin');
 
 CREATE TABLE
-    IF NOT EXISTS "public"."user" (
-        "id" UUID PRIMARY KEY REFERENCES "auth"."users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    "user" (
+        id TEXT NOT NULL PRIMARY KEY,
+        "email" VARCHAR(255) NOT NULL UNIQUE,
+        "email_verified" BOOLEAN NOT NULL,
         "first_name" TEXT NOT NULL,
         "last_name" TEXT NOT NULL,
         "role" "role" NOT NULL,
@@ -13,32 +15,50 @@ CREATE TABLE
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
-CREATE INDEX "role_idx" ON "public"."user" USING BTREE ("role");
+CREATE INDEX "role_idx" ON "user" USING BTREE ("role");
 
 CREATE TABLE
-    IF NOT EXISTS "public"."learn" (
+    "user_key" (
+        id TEXT NOT NULL PRIMARY KEY,
+        "user_id" TEXT NOT NULL REFERENCES "user"(id),
+        "hashed_password" TEXT
+    );
+
+CREATE TABLE
+    "email_verification_token" (
+        id VARCHAR(63) PRIMARY KEY,
+        "user_id" TEXT NOT NULL,
+        "expires" BIGINT NOT NULL
+    );
+
+CREATE TABLE
+    "password_reset_token" (
+        id VARCHAR(63) PRIMARY KEY,
+        "user_id" TEXT NOT NULL,
+        "expires" BIGINT NOT NULL
+    );
+
+CREATE TABLE
+    IF NOT EXISTS "learn" (
         "id" SERIAL PRIMARY KEY,
         "language" TEXT NOT NULL,
         "topic" TEXT NOT NULL
     );
 
-CREATE UNIQUE INDEX "lang_topic_idx" ON "public"."learn" USING BTREE ("language", "topic");
+CREATE UNIQUE INDEX "lang_topic_idx" ON "learn" USING BTREE ("language", "topic");
 
 CREATE TABLE
-    IF NOT EXISTS "public"."user_learn" (
-        "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    IF NOT EXISTS "user_learn" (
+        "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
-ALTER TABLE
-    "public"."user_learn"
-ADD
-    PRIMARY KEY ("user_id", "learn_id");
+ALTER TABLE "user_learn" ADD PRIMARY KEY ("user_id", "learn_id");
 
 CREATE TABLE
-    IF NOT EXISTS "public"."class" (
+    IF NOT EXISTS "class" (
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" TEXT NOT NULL,
         "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
@@ -49,23 +69,20 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    IF NOT EXISTS "public"."user_class" (
-        "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    IF NOT EXISTS "user_class" (
+        "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
-ALTER TABLE
-    "public"."user_class"
-ADD
-    PRIMARY KEY ("user_id", "class_id");
+ALTER TABLE "user_class" ADD PRIMARY KEY ("user_id", "class_id");
 
 CREATE TABLE
-    IF NOT EXISTS "public"."message" (
+    IF NOT EXISTS "message" (
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "text" TEXT NOT NULL,
-        "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()

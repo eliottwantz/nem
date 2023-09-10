@@ -81,13 +81,13 @@ tasks:
 
   up:
     cmds:
-      - supabase start
+      # - supabase start
       - docker compose up -d
     desc: Start containers
 
   down:
     cmds:
-      - supabase stop
+      # - supabase stop
       - docker compose down
     desc: Stop containers
 
@@ -121,8 +121,9 @@ tasks:
 
   resetdb:
     cmds:
-      - supabase db reset
-    desc: Reset supabase db
+      - docker compose down -v
+      - task: up
+    desc: Reset db
 
   certs:
     cmd: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/localhost.key -out certs/localhost.crt

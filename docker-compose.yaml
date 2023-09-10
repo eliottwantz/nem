@@ -1,6 +1,23 @@
 name: "nem"
 
 services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - nem-network
+    restart: unless-stopped
+
   redis:
     image: redis
     ports:
@@ -15,25 +32,12 @@ services:
     volumes:
       - redis:/data
     networks:
-      - supabase_network_nem
-
-  sfu:
-    image: pionwebrtc/ion-sfu:latest-jsonrpc
-    restart: always
-    environment:
-      - jaddr=0.0.0.0:7000
-    volumes:
-      - "./ion-sfu/sfu.toml:/configs/sfu.toml"
-    ports:
-      - 7000:7000
-    networks:
-      - supabase_network_nem
+      - nem-network
 
 volumes:
+  postgres:
   redis:
-    driver: local
 
 networks:
-  supabase_network_nem:
+  nem-network:
     driver: bridge
-    external: true
