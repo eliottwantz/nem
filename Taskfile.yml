@@ -16,10 +16,6 @@ tasks:
     cmd: watchexec -rc -e go,mod,env --project-origin . -- go run .
     desc: Watch go and run
 
-  devtls:
-    cmd: watchexec -rc -e go,mod,env --project-origin . -- go run . -tls
-    desc: Watch go and run
-
   build:
     cmd: GCO_ENABLED=0 go build -ldflags="-s -w" -o bin/app .
     desc: Build the go app

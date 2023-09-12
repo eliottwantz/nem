@@ -21,13 +21,13 @@ func ResReq(ctx context.Context) (http.ResponseWriter, *http.Request) {
 
 func FromDbUser(dbUser *db.User) *User {
 	return &User{
-		Id:               dbUser.ID.String(),
+		Id:               dbUser.ID,
 		FirstName:        dbUser.FirstName,
 		LastName:         dbUser.LastName,
 		Role:             string(dbUser.Role),
 		PreferedLanguage: dbUser.PreferedLanguage,
-		AvatarFilePath:   dbUser.AvatarFilePath.String,
-		AvatarUrl:        dbUser.AvatarUrl.String,
+		AvatarFilePath:   dbUser.AvatarFilePath,
+		AvatarUrl:        dbUser.AvatarUrl,
 		CreatedAt:        dbUser.CreatedAt,
 	}
 }

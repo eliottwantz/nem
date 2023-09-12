@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"fmt"
 	"runtime"
 
@@ -18,9 +17,6 @@ var (
 	Pg    *pgdb
 	Redis *redis.Client
 )
-
-//go:embed migrations/*.sql
-var fs embed.FS
 
 // InitDataSources establishes connections to fields in DataSources
 func InitDataSources(ctx context.Context) error {
@@ -39,13 +35,6 @@ func InitDataSources(ctx context.Context) error {
 	sqldb.SetMaxIdleConns(maxOpenConns)
 
 	Pg = NewPG(sqldb)
-
-	if utils.Cfg.Migrate {
-		err := Migrate()
-		if err != nil {
-			return err
-		}
-	}
 
 	Redis, err = NewRedis(ctx)
 	if err != nil {

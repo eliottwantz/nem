@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,7 +21,7 @@ DO NOTHING
 `
 
 type AddUserToClassParams struct {
-	UserID  uuid.UUID
+	UserID  string
 	ClassID uuid.UUID
 }
 
@@ -202,7 +201,7 @@ type ListClassesOfUserRow struct {
 	Topic     string
 }
 
-func (q *Queries) ListClassesOfUser(ctx context.Context, userID uuid.UUID) ([]*ListClassesOfUserRow, error) {
+func (q *Queries) ListClassesOfUser(ctx context.Context, userID string) ([]*ListClassesOfUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listClassesOfUser, userID)
 	if err != nil {
 		return nil, err
@@ -252,13 +251,13 @@ WHERE uc.class_id = $1
 `
 
 type ListUsersInClassRow struct {
-	ID               uuid.UUID
+	ID               string
 	FirstName        string
 	LastName         string
 	Role             Role
 	PreferedLanguage string
-	AvatarFilePath   sql.NullString
-	AvatarUrl        sql.NullString
+	AvatarFilePath   string
+	AvatarUrl        string
 	CreatedAt        time.Time
 }
 
@@ -300,7 +299,7 @@ DELETE FROM "user_class" WHERE user_id = $1 AND class_id = $2
 `
 
 type RemoveUserFromClassParams struct {
-	UserID  uuid.UUID
+	UserID  string
 	ClassID uuid.UUID
 }
 

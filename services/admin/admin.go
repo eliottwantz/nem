@@ -9,8 +9,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-
-	"github.com/google/uuid"
 )
 
 type Service struct{}
@@ -32,13 +30,13 @@ func (s *Service) AdminListUsers(ctx context.Context) ([]*rpc.User, error) {
 	rpcUsers := make([]*rpc.User, 0, len(users))
 	for _, user := range users {
 		rpcUsers = append(rpcUsers, &rpc.User{
-			Id:               user.ID.String(),
+			Id:               user.ID,
 			FirstName:        user.FirstName,
 			LastName:         user.LastName,
 			Role:             string(user.Role),
 			PreferedLanguage: user.PreferedLanguage,
-			AvatarFilePath:   user.AvatarFilePath.String,
-			AvatarUrl:        user.AvatarUrl.String,
+			AvatarFilePath:   user.AvatarFilePath,
+			AvatarUrl:        user.AvatarUrl,
 			CreatedAt:        user.CreatedAt,
 		})
 	}
@@ -47,9 +45,8 @@ func (s *Service) AdminListUsers(ctx context.Context) ([]*rpc.User, error) {
 }
 
 func (s *Service) AdminSetRole(ctx context.Context, userId string, role string) error {
-	uID, err := uuid.Parse(userId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if userId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("user id is empty"))
 	}
 
 	if !db.Role(role).Valid() {
@@ -57,8 +54,8 @@ func (s *Service) AdminSetRole(ctx context.Context, userId string, role string) 
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrInvalidRole)
 	}
 
-	err = db.Pg.SetUserRole(ctx, db.SetUserRoleParams{
-		ID:   uID,
+	err := db.Pg.SetUserRole(ctx, db.SetUserRoleParams{
+		ID:   userId,
 		Role: db.Role(role),
 	})
 	if err != nil {
@@ -116,7 +113,7 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 
 	for _, uID := range req.UserIDs {
 		err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
-			UserID:  uuid.MustParse(uID),
+			UserID:  uID,
 			ClassID: class.ID,
 		})
 		if err != nil {

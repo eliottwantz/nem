@@ -84,6 +84,12 @@ type Class struct {
 	UpdatedAt time.Time
 }
 
+type EmailVerificationToken struct {
+	ID      string
+	UserID  string
+	Expires int64
+}
+
 type Learn struct {
 	ID       int32
 	Language string
@@ -93,33 +99,47 @@ type Learn struct {
 type Message struct {
 	ID        uuid.UUID
 	Text      string
-	UserID    uuid.UUID
+	UserID    string
 	ClassID   uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
+type PasswordResetToken struct {
+	ID      string
+	UserID  string
+	Expires int64
+}
+
 type User struct {
-	ID               uuid.UUID
+	ID               string
+	Email            string
+	EmailVerified    bool
 	FirstName        string
 	LastName         string
 	Role             Role
 	PreferedLanguage string
-	AvatarFilePath   sql.NullString
-	AvatarUrl        sql.NullString
+	AvatarFilePath   string
+	AvatarUrl        string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
 
 type UserClass struct {
-	UserID    uuid.UUID
+	UserID    string
 	ClassID   uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
+type UserKey struct {
+	ID             string
+	UserID         string
+	HashedPassword sql.NullString
+}
+
 type UserLearn struct {
-	UserID    uuid.UUID
+	UserID    string
 	LearnID   int32
 	CreatedAt time.Time
 	UpdatedAt time.Time

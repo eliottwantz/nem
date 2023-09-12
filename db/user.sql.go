@@ -7,9 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-
-	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -22,11 +19,11 @@ INSERT INTO
         role,
         prefered_language
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
+VALUES ($1, $2, $3, $4, $5) RETURNING id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID               uuid.UUID
+	ID               string
 	FirstName        string
 	LastName         string
 	Role             Role
@@ -44,6 +41,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Email,
+		&i.EmailVerified,
 		&i.FirstName,
 		&i.LastName,
 		&i.Role,
@@ -65,7 +64,7 @@ SET
 WHERE id = $1
 `
 
-func (q *Queries) DeleteAvatar(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteAvatar(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteAvatar, id)
 	return err
 }
@@ -75,21 +74,23 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM "user" WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
 const findUserByID = `-- name: FindUserByID :one
 
-SELECT id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE id = $1
+SELECT id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE id = $1
 `
 
-func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (*User, error) {
+func (q *Queries) FindUserByID(ctx context.Context, id string) (*User, error) {
 	row := q.db.QueryRowContext(ctx, findUserByID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Email,
+		&i.EmailVerified,
 		&i.FirstName,
 		&i.LastName,
 		&i.Role,
@@ -104,7 +105,7 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 
 const listStudents = `-- name: ListStudents :many
 
-SELECT id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE role = 'student'
+SELECT id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE role = 'student'
 `
 
 func (q *Queries) ListStudents(ctx context.Context) ([]*User, error) {
@@ -118,6 +119,8 @@ func (q *Queries) ListStudents(ctx context.Context) ([]*User, error) {
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -142,7 +145,7 @@ func (q *Queries) ListStudents(ctx context.Context) ([]*User, error) {
 
 const listTeachers = `-- name: ListTeachers :many
 
-SELECT id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE role = 'teacher'
+SELECT id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE role = 'teacher'
 `
 
 func (q *Queries) ListTeachers(ctx context.Context) ([]*User, error) {
@@ -156,6 +159,8 @@ func (q *Queries) ListTeachers(ctx context.Context) ([]*User, error) {
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -180,7 +185,7 @@ func (q *Queries) ListTeachers(ctx context.Context) ([]*User, error) {
 
 const listUsers = `-- name: ListUsers :many
 
-SELECT id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user"
+SELECT id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user"
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]*User, error) {
@@ -194,6 +199,8 @@ func (q *Queries) ListUsers(ctx context.Context) ([]*User, error) {
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -223,7 +230,7 @@ UPDATE "user" SET role = $1 WHERE id = $2
 
 type SetUserRoleParams struct {
 	Role Role
-	ID   uuid.UUID
+	ID   string
 }
 
 func (q *Queries) SetUserRole(ctx context.Context, arg SetUserRoleParams) error {
@@ -241,9 +248,9 @@ WHERE id = $3
 `
 
 type UpdateAvatarParams struct {
-	AvatarFilePath sql.NullString
-	AvatarUrl      sql.NullString
-	ID             uuid.UUID
+	AvatarFilePath string
+	AvatarUrl      string
+	ID             string
 }
 
 func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error {
@@ -257,13 +264,13 @@ UPDATE "user"
 SET
     first_name = $1,
     last_name = $2
-WHERE id = $3 RETURNING id, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
+WHERE id = $3 RETURNING id, email, email_verified, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
 `
 
 type UpdateUserNamesParams struct {
 	FirstName string
 	LastName  string
-	ID        uuid.UUID
+	ID        string
 }
 
 func (q *Queries) UpdateUserNames(ctx context.Context, arg UpdateUserNamesParams) (*User, error) {
@@ -271,6 +278,8 @@ func (q *Queries) UpdateUserNames(ctx context.Context, arg UpdateUserNamesParams
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Email,
+		&i.EmailVerified,
 		&i.FirstName,
 		&i.LastName,
 		&i.Role,
@@ -290,7 +299,7 @@ UPDATE "user" SET prefered_language = $1 WHERE id = $2
 
 type UpdateUserPreferedLanguageParams struct {
 	PreferedLanguage string
-	ID               uuid.UUID
+	ID               string
 }
 
 func (q *Queries) UpdateUserPreferedLanguage(ctx context.Context, arg UpdateUserPreferedLanguageParams) error {

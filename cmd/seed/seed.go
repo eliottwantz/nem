@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"nem/db"
+	"nem/utils"
 
 	_ "embed"
 )
@@ -12,7 +13,11 @@ import (
 var seedSql string
 
 func main() {
-	err := db.Seed(seedSql)
+	err := utils.LoadEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.Seed(seedSql)
 	if err != nil {
 		log.Fatal(err)
 	}

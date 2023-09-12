@@ -14,11 +14,7 @@ type Config struct {
 	Port             string `env:"PORT,default=8080"`
 	DatabaseURL      string `env:"DATABASE_URL,required=true"`
 	RedisURL         string `env:"REDIS_URL,required=true"`
-	TokenSecretKey   string `env:"TOKEN_SECRET_KEY,required=true"`
-	SupabaseURL      string `env:"SUPABASE_URL,required=true"`
-	SupabaseKey      string `env:"SUPABASE_KEY,required=true"`
 	Production       bool   `env:"PRODUCTION,default=false"`
-	Migrate          bool   `env:"MIGRATE,default=false"`
 	LiveKitApiKey    string `env:"LIVEKIT_API_KEY,required=true"`
 	LiveKitApiSecret string `env:"LIVEKIT_API_SECRET,required=true"`
 }

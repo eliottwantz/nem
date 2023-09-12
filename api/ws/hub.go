@@ -68,7 +68,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newClient(httpmw.ContextUID(r.Context()), conn, h)
+	c := newClient(httpmw.ContextUser(r.Context()).ID, conn, h)
 
 	go c.writePump()
 	go c.readPump()
@@ -82,11 +82,11 @@ func (h *Hub) Run() {
 
 		case c := <-h.register:
 			h.clients[c] = struct{}{}
-			h.logger.Info("ws client connected", userIDKey, c.id.String())
+			h.logger.Info("ws client connected", userIDKey, c.id)
 
 		case c := <-h.unregister:
 			delete(h.clients, c)
-			h.logger.Info("ws client disconnected", userIDKey, c.id.String())
+			h.logger.Info("ws client disconnected", userIDKey, c.id)
 		}
 	}
 }
@@ -111,7 +111,7 @@ func (h *Hub) findRoomById(id uuid.UUID) (*Room, error) {
 	return nil, errors.New("ws room not found")
 }
 
-func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
+func (h *Hub) findClientById(id string) (*Client, error) {
 	for c := range h.clients {
 		if c.id == id {
 			return c, nil

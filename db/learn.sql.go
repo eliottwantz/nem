@@ -7,10 +7,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const addUserToLearn = `-- name: AddUserToLearn :exec
@@ -22,7 +19,7 @@ DO NOTHING RETURNING user_id, learn_id, created_at, updated_at
 `
 
 type AddUserToLearnParams struct {
-	UserID  uuid.UUID
+	UserID  string
 	LearnID int32
 }
 
@@ -161,7 +158,7 @@ WHERE uc.user_id = $1
 ORDER BY uc.created_at ASC
 `
 
-func (q *Queries) ListLearnsOfUser(ctx context.Context, userID uuid.UUID) ([]*Learn, error) {
+func (q *Queries) ListLearnsOfUser(ctx context.Context, userID string) ([]*Learn, error) {
 	rows, err := q.db.QueryContext(ctx, listLearnsOfUser, userID)
 	if err != nil {
 		return nil, err
@@ -257,13 +254,13 @@ WHERE uc.learn_id = $1
 `
 
 type ListUsersInLearnRow struct {
-	ID               uuid.UUID
+	ID               string
 	FirstName        string
 	LastName         string
 	Role             Role
 	PreferedLanguage string
-	AvatarFilePath   sql.NullString
-	AvatarUrl        sql.NullString
+	AvatarFilePath   string
+	AvatarUrl        string
 	CreatedAt        time.Time
 }
 
@@ -305,7 +302,7 @@ DELETE FROM "user_learn" WHERE user_id = $1 AND learn_id = $2
 `
 
 type RemoveUserFromLearnParams struct {
-	UserID  uuid.UUID
+	UserID  string
 	LearnID int32
 }
 

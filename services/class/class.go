@@ -103,13 +103,13 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 	rpcUsers := make([]*rpc.User, 0, len(dbUsers))
 	for _, u := range dbUsers {
 		rpcUsers = append(rpcUsers, &rpc.User{
-			Id:               u.ID.String(),
+			Id:               u.ID,
 			FirstName:        u.FirstName,
 			LastName:         u.LastName,
 			Role:             string(u.Role),
 			PreferedLanguage: u.PreferedLanguage,
-			AvatarFilePath:   u.AvatarFilePath.String,
-			AvatarUrl:        u.AvatarUrl.String,
+			AvatarFilePath:   u.AvatarFilePath,
+			AvatarUrl:        u.AvatarUrl,
 			CreatedAt:        u.CreatedAt,
 		})
 	}
@@ -136,7 +136,7 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 		Room:     roomId,
 	}
 	at.AddGrant(grant).
-		SetIdentity(httpmw.ContextUID(ctx).String()).
+		SetIdentity(httpmw.ContextUser(ctx).ID).
 		SetValidFor(time.Hour)
 
 	return at.ToJWT()

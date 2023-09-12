@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -25,14 +24,14 @@ const (
 var newline = []byte{'\n'}
 
 type Client struct {
-	id    uuid.UUID
+	id    string
 	conn  *websocket.Conn
 	hub   *Hub
 	send  chan []byte
 	rooms map[*Room]struct{}
 }
 
-func newClient(id uuid.UUID, conn *websocket.Conn, hub *Hub) *Client {
+func newClient(id string, conn *websocket.Conn, hub *Hub) *Client {
 	return &Client{
 		id:    id,
 		conn:  conn,

@@ -9,8 +9,8 @@ CREATE TABLE
         "last_name" TEXT NOT NULL,
         "role" "role" NOT NULL,
         "prefered_language" TEXT NOT NULL DEFAULT 'en',
-        "avatar_file_path" TEXT,
-        "avatar_url" TEXT,
+        "avatar_file_path" TEXT NOT NULL DEFAULT '',
+        "avatar_url" TEXT NOT NULL DEFAULT '',
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
@@ -19,7 +19,7 @@ CREATE INDEX "role_idx" ON "user" USING BTREE ("role");
 
 CREATE TABLE
     "user_key" (
-        id TEXT NOT NULL PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         "user_id" TEXT NOT NULL REFERENCES "user"(id),
         "hashed_password" TEXT
     );

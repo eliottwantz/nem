@@ -20,7 +20,7 @@ VALUES ($1, $2, $3) RETURNING id, text, user_id, class_id, created_at, updated_a
 `
 
 type CreateMessageParams struct {
-	UserID  uuid.UUID
+	UserID  string
 	ClassID uuid.UUID
 	Text    string
 }

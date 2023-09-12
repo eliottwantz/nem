@@ -30,7 +30,7 @@ func NewRoom(id uuid.UUID, rds *redis.Client) *Room {
 		unregister: make(chan *Client),
 		broadcast:  make(chan *EmittedMessage),
 		redis:      rds,
-		logger:     log.With("ws room", id.String()),
+		logger:     log.With("ws room", id),
 	}
 }
 

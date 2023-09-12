@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"os"
+
 	"nem/api"
 	"nem/api/ws"
 	"nem/db"
@@ -14,10 +16,8 @@ import (
 	"nem/services/teacher"
 	"nem/services/user"
 	"nem/utils"
-	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 func main() {
@@ -66,7 +66,6 @@ func setup() error {
 	teacherService := teacher.NewService(wsService)
 	studentService := student.NewService(wsService)
 	messageService := message.NewService(wsService)
-	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.TokenSecretKey), nil)
 
 	api := api.New(&api.Services{
 		AdminService:   adminService,
@@ -77,7 +76,6 @@ func setup() error {
 		MessageService: messageService,
 		WsHub:          wsHub,
 		WsService:      wsService,
-		JWTAuth:        jwtAuth,
 	})
 
 	return api.Start(ctx)

@@ -27,7 +27,7 @@ func NewService(wsService *ws.Service) *Service {
 }
 
 func (s *Service) ListTeaches(ctx context.Context) ([]*rpc.Teach, error) {
-	res, err := db.Pg.ListLearnsOfUser(ctx, httpmw.ContextUID(ctx))
+	res, err := db.Pg.ListLearnsOfUser(ctx, httpmw.ContextUser(ctx).ID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -80,7 +80,7 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 
 	// Add user to learn
 	err = tx.AddUserToLearn(ctx, db.AddUserToLearnParams{
-		UserID:  httpmw.ContextUID(ctx),
+		UserID:  httpmw.ContextUser(ctx).ID,
 		LearnID: learn.ID,
 	})
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 }
 
 func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
-	res, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextUID(ctx))
+	res, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextUser(ctx).ID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -134,7 +134,7 @@ func (s *Service) StartClass(ctx context.Context, classId string) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
 
-	return s.wsService.StartClass(class.ID, httpmw.ContextUID(ctx))
+	return s.wsService.StartClass(class.ID, httpmw.ContextUser(ctx).ID)
 }
 
 func (s *Service) EndClass(ctx context.Context, classId string) error {

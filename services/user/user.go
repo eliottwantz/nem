@@ -23,7 +23,7 @@ func NewService() *Service {
 }
 
 func (s *Service) Get(ctx context.Context) (*rpc.User, error) {
-	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextUID(ctx))
+	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextUser(ctx).ID)
 	if err != nil {
 		s.logger.Warn("could not get user", "err", err)
 		if err == sql.ErrNoRows {
@@ -41,10 +41,10 @@ func (s *Service) Create(ctx context.Context, req *rpc.CreateUserRequest) (*rpc.
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("invalid role"))
 	}
 
-	uID := httpmw.ContextUID(ctx)
-	s.logger.Info("access token", "uID", uID.String())
+	uID := httpmw.ContextUser(ctx).ID
+	s.logger.Info("access token", "uID", uID)
 	u, err := db.Pg.CreateUser(ctx, db.CreateUserParams{
-		ID:               httpmw.ContextUID(ctx),
+		ID:               httpmw.ContextUser(ctx).ID,
 		FirstName:        req.FirstName,
 		LastName:         req.LastName,
 		Role:             db.Role(req.Role),
@@ -62,7 +62,7 @@ func (s *Service) Create(ctx context.Context, req *rpc.CreateUserRequest) (*rpc.
 }
 
 func (s *Service) ChooseRole(ctx context.Context, role string) error {
-	uID := httpmw.ContextUID(ctx)
+	uID := httpmw.ContextUser(ctx).ID
 
 	if !db.Role(role).Valid() {
 		s.logger.Warn("invalid role", "role", role, "uID", uID)
@@ -81,7 +81,7 @@ func (s *Service) ChooseRole(ctx context.Context, role string) error {
 }
 
 func (s *Service) UpdatePreferedLanguage(ctx context.Context, lang string) error {
-	uID := httpmw.ContextUID(ctx)
+	uID := httpmw.ContextUser(ctx).ID
 
 	err := db.Pg.UpdateUserPreferedLanguage(ctx, db.UpdateUserPreferedLanguageParams{
 		PreferedLanguage: lang,
@@ -103,9 +103,9 @@ func (s *Service) UpdateAvatar(ctx context.Context, path, url string) error {
 	}
 
 	err := db.Pg.UpdateAvatar(ctx, db.UpdateAvatarParams{
-		AvatarFilePath: sql.NullString{String: path, Valid: true},
-		AvatarUrl:      sql.NullString{String: url, Valid: true},
-		ID:             httpmw.ContextUID(ctx),
+		AvatarFilePath: path,
+		AvatarUrl:      url,
+		ID:             httpmw.ContextUser(ctx).ID,
 	})
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -115,7 +115,7 @@ func (s *Service) UpdateAvatar(ctx context.Context, path, url string) error {
 }
 
 func (s *Service) DeleteAvatar(ctx context.Context) error {
-	err := db.Pg.DeleteAvatar(ctx, httpmw.ContextUID(ctx))
+	err := db.Pg.DeleteAvatar(ctx, httpmw.ContextUser(ctx).ID)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -124,7 +124,7 @@ func (s *Service) DeleteAvatar(ctx context.Context) error {
 }
 
 func (s *Service) Delete(ctx context.Context) error {
-	err := db.Pg.DeleteUser(ctx, httpmw.ContextUID(ctx))
+	err := db.Pg.DeleteUser(ctx, httpmw.ContextUser(ctx).ID)
 	if err != nil {
 		s.logger.Error("unable to delete user", "err", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrDelete)

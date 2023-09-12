@@ -21,7 +21,7 @@ func NewService(hub *Hub) *Service {
 	}
 }
 
-func (s *Service) JoinClass(roomId uuid.UUID, userId uuid.UUID) error {
+func (s *Service) JoinClass(roomId uuid.UUID, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -31,7 +31,7 @@ func (s *Service) JoinClass(roomId uuid.UUID, userId uuid.UUID) error {
 	r, err := s.hub.findRoomById(roomId)
 	if err != nil {
 		s.logger.Warn("ws room not found", "err", err)
-		return errors.New("The teacher has not started the class yet. Please wait for the teacher to start the class.")
+		return errors.New("the teacher has not started the class yet. please wait for the teacher to start the class")
 	}
 
 	r.register <- c
@@ -39,7 +39,7 @@ func (s *Service) JoinClass(roomId uuid.UUID, userId uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) LeaveClass(roomId uuid.UUID, userId uuid.UUID) error {
+func (s *Service) LeaveClass(roomId uuid.UUID, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -57,7 +57,7 @@ func (s *Service) LeaveClass(roomId uuid.UUID, userId uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) StartClass(roomId uuid.UUID, userId uuid.UUID) error {
+func (s *Service) StartClass(roomId uuid.UUID, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
