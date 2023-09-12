@@ -136,7 +136,7 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 		Room:     roomId,
 	}
 	at.AddGrant(grant).
-		SetIdentity(httpmw.ContextUser(ctx).ID).
+		SetIdentity(httpmw.ContextSessionUserID(ctx)).
 		SetValidFor(time.Hour)
 
 	return at.ToJWT()

@@ -36,7 +36,7 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		var u db.User
+		var u db.SessionUser
 		err = json.Unmarshal([]byte(sessionStr), &u)
 		if err != nil {
 			log.Error("could not unmarshal session", "err", err)
@@ -48,7 +48,7 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-func ContextUser(c context.Context) *db.User {
+func ContextSessionUser(c context.Context) *db.SessionUser {
 	sessionID := ContextSessionID(c)
 	sessionStr, err := db.Redis.Get(c, "session:"+sessionID).Result()
 	if err != nil {
@@ -56,13 +56,21 @@ func ContextUser(c context.Context) *db.User {
 		return nil
 	}
 
-	var u db.User
+	var u db.SessionUser
 	err = json.Unmarshal([]byte(sessionStr), &u)
 	if err != nil {
 		log.Error("could not unmarshal session", "err", err)
 		return nil
 	}
 	return &u
+}
+
+func ContextSessionUserID(c context.Context) string {
+	session := ContextSessionUser(c)
+	if session == nil {
+		return ""
+	}
+	return session.UserID
 }
 
 func ContextSessionID(c context.Context) string {
@@ -74,7 +82,7 @@ func ContextSessionID(c context.Context) string {
 func OnlyRoles(roles ...db.Role) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			u := ContextUser(r.Context())
+			u := ContextSessionUser(r.Context())
 			if !hasRole(u.Role, roles) {
 				rpc.RespondWithError(w, rpc.ErrPermissionDenied)
 				return

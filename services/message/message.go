@@ -33,7 +33,7 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextUser(ctx).ID)
+	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextSessionUserID(ctx))
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}

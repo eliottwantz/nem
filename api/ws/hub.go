@@ -68,7 +68,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newClient(httpmw.ContextUser(r.Context()).ID, conn, h)
+	c := newClient(httpmw.ContextSessionUserID(r.Context()), conn, h)
 
 	go c.writePump()
 	go c.readPump()
