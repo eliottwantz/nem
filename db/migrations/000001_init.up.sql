@@ -86,4 +86,20 @@ CREATE TABLE
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
-    )
+    );
+
+CREATE Table
+    IF NOT EXISTS "teacher_availabilities" (
+        "id" SERIAL NOT NULL,
+        "teacher_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "startAt" TIMESTAMPTZ NOT NULL,
+        "endAt" TIMESTAMPTZ NOT NULL
+    );
+
+ALTER TABLE
+    "teacher_availabilities"
+ADD
+    PRIMARY KEY ("id", "teacher_id");
+
+CREATE INDEX
+    "teacher_idx" ON "teacher_availabilities" USING BTREE ("teacher_id");

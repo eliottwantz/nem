@@ -82,6 +82,12 @@ struct MessageResponse
     - classId: string
     - user: User
 
+struct TeacherAvalibility
+    - id: int32
+    - teacherId: string
+    - startAt: timestamp
+    - endAt: timestamp
+
 #################### STRUCTS ####################
 
 
@@ -107,6 +113,8 @@ service TeacherServiceAPI
     - ListTeaches() => (teaches: []Teach)
     - Teach(language: string, topic: string) => (teach: Teach)
     - ListClasses() => (classes: []Class)
+    - ListAvailabilities() => (availabilities: []TeacherAvalibility)
+    - AddAvailability(startAt: timestamp, endAt: timestamp) => (availability: TeacherAvalibility)
     - StartClass(classId: string)
     - EndClass(classId: string)
 

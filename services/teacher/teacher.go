@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -32,7 +33,7 @@ func (s *Service) ListTeaches(ctx context.Context) ([]*rpc.Teach, error) {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	var ret []*rpc.Teach = make([]*rpc.Teach, 0, len(res))
+	ret := make([]*rpc.Teach, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Teach{
 			Id:       c.ID,
@@ -105,7 +106,7 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	var ret []*rpc.Class = make([]*rpc.Class, 0, len(res))
+	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
 			Id:        c.ID.String(),
@@ -151,4 +152,42 @@ func (s *Service) EndClass(ctx context.Context, classId string) error {
 	}
 
 	return s.wsService.EndClass(class.ID)
+}
+
+func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TeacherAvalibility, error) {
+	res, err := db.Pg.ListTeacherAvailabilities(ctx, httpmw.ContextSessionUserID(ctx))
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.TeacherAvalibility, 0, len(res))
+	for _, c := range res {
+		ret = append(ret, &rpc.TeacherAvalibility{
+			Id:        c.ID,
+			TeacherId: c.TeacherID,
+			StartAt:   c.StartAt,
+			EndAt:     c.EndAt,
+		})
+	}
+
+	return ret, nil
+}
+
+func (s *Service) AddAvailability(ctx context.Context, startAt time.Time, endAt time.Time) (*rpc.TeacherAvalibility, error) {
+	res, err := db.Pg.AddTeacherAvailability(ctx, db.AddTeacherAvailabilityParams{
+		TeacherID: httpmw.ContextSessionUserID(ctx),
+		StartAt:   startAt,
+		EndAt:     endAt,
+	})
+	if err != nil {
+		log.Warn("could not add availability", "err", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return &rpc.TeacherAvalibility{
+		Id:        res.ID,
+		TeacherId: res.TeacherID,
+		StartAt:   res.StartAt,
+		EndAt:     res.EndAt,
+	}, nil
 }
