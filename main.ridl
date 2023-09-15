@@ -115,6 +115,8 @@ service TeacherServiceAPI
     - ListClasses() => (classes: []Class)
     - ListAvailabilities() => (availabilities: []TeacherAvalibility)
     - AddAvailability(startAt: timestamp, endAt: timestamp) => (availability: TeacherAvalibility)
+    - UpdateAvailability(id: int32, startAt: timestamp, endAt: timestamp) => (availability: TeacherAvalibility)
+    - DeleteAvailability(id: int32)
     - StartClass(classId: string)
     - EndClass(classId: string)
 

@@ -20,11 +20,11 @@ WHERE
     "id" = $1
     AND "teacher_id" = $2;
 
--- name: UpdateTeacherAvailability :exec
+-- name: UpdateTeacherAvailability :one
 
 UPDATE
     "teacher_availabilities"
 SET "startAt" = $1, "endAt" = $2
 WHERE
     "id" = $3
-    AND "teacher_id" = $4;
+    AND "teacher_id" = $4 RETURNING *;

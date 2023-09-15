@@ -91,14 +91,14 @@ func (q *Queries) ListTeacherAvailabilities(ctx context.Context, teacherID strin
 	return items, nil
 }
 
-const updateTeacherAvailability = `-- name: UpdateTeacherAvailability :exec
+const updateTeacherAvailability = `-- name: UpdateTeacherAvailability :one
 
 UPDATE
     "teacher_availabilities"
 SET "startAt" = $1, "endAt" = $2
 WHERE
     "id" = $3
-    AND "teacher_id" = $4
+    AND "teacher_id" = $4 RETURNING id, teacher_id, "startAt", "endAt"
 `
 
 type UpdateTeacherAvailabilityParams struct {
@@ -108,12 +108,19 @@ type UpdateTeacherAvailabilityParams struct {
 	TeacherID string
 }
 
-func (q *Queries) UpdateTeacherAvailability(ctx context.Context, arg UpdateTeacherAvailabilityParams) error {
-	_, err := q.db.ExecContext(ctx, updateTeacherAvailability,
+func (q *Queries) UpdateTeacherAvailability(ctx context.Context, arg UpdateTeacherAvailabilityParams) (*TeacherAvailability, error) {
+	row := q.db.QueryRowContext(ctx, updateTeacherAvailability,
 		arg.StartAt,
 		arg.EndAt,
 		arg.ID,
 		arg.TeacherID,
 	)
-	return err
+	var i TeacherAvailability
+	err := row.Scan(
+		&i.ID,
+		&i.TeacherID,
+		&i.StartAt,
+		&i.EndAt,
+	)
+	return &i, err
 }

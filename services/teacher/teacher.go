@@ -191,3 +191,36 @@ func (s *Service) AddAvailability(ctx context.Context, startAt time.Time, endAt 
 		EndAt:     res.EndAt,
 	}, nil
 }
+
+func (s *Service) UpdateAvailability(ctx context.Context, id int32, startAt time.Time, endAt time.Time) (*rpc.TeacherAvalibility, error) {
+	res, err := db.Pg.UpdateTeacherAvailability(ctx, db.UpdateTeacherAvailabilityParams{
+		StartAt:   startAt,
+		EndAt:     endAt,
+		ID:        id,
+		TeacherID: httpmw.ContextSessionUserID(ctx),
+	})
+	if err != nil {
+		log.Warn("could not update availability", "err", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return &rpc.TeacherAvalibility{
+		Id:        res.ID,
+		TeacherId: res.TeacherID,
+		StartAt:   res.StartAt,
+		EndAt:     res.EndAt,
+	}, nil
+}
+
+func (s *Service) DeleteAvailability(ctx context.Context, id int32) error {
+	err := db.Pg.DeleteTeacherAvailability(ctx, db.DeleteTeacherAvailabilityParams{
+		ID:        id,
+		TeacherID: httpmw.ContextSessionUserID(ctx),
+	})
+	if err != nil {
+		log.Warn("could not delete availability", "err", err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return nil
+}
