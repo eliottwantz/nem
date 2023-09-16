@@ -89,20 +89,20 @@ tasks:
 
   migu:
     cmds:
-      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations up
+      - migrate -database $DATABASE_URL -path db/migrations up
     desc: Migrate up
     silent: true
 
   migd:
     cmds:
-      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations down
+      - migrate -database $DATABASE_URL -path db/migrations down
     desc: Migrate down
     silent: true
 
   migr:
     cmds:
-      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations drop
-      - migrate -database $DATABASE_URL?sslmode=disable -path db/migrations up
+      - migrate -database $DATABASE_URL -path db/migrations drop
+      - migrate -database $DATABASE_URL -path db/migrations up
       - task: seed
     desc: Migrate down then up
     silent: true

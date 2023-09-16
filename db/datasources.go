@@ -21,7 +21,7 @@ var (
 // InitDataSources establishes connections to fields in DataSources
 func InitDataSources(ctx context.Context) error {
 	log.Info("Connecting to Postgres")
-	sqldb, err := sql.Open("postgres", uri())
+	sqldb, err := sql.Open("postgres", utils.Cfg.DatabaseURL)
 	if err != nil {
 		return fmt.Errorf("error connecting to the database: %w", err)
 	}
@@ -56,13 +56,4 @@ func CloseDataSources() error {
 	}
 
 	return nil
-}
-
-func uri() string {
-	uri := utils.Cfg.DatabaseURL
-	if utils.IsDev() {
-		uri = fmt.Sprintf("%s?sslmode=disable", uri)
-	}
-
-	return uri
 }
