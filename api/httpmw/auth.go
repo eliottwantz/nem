@@ -3,6 +3,7 @@ package httpmw
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"nem/api/rpc"
@@ -23,6 +24,9 @@ type (
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		fmt.Println("COOKIES:")
+		fmt.Println(r.Cookies())
+		fmt.Println()
 		sessionID, err := utils.ReadCookie(r, sessionCookieName)
 		if err != nil {
 			log.Warn("not session id cookie for request", "err", err)
