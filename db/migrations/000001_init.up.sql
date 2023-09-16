@@ -20,7 +20,7 @@ CREATE INDEX "role_idx" ON "user" USING BTREE ("role");
 CREATE TABLE
     "user_key" (
         id TEXT PRIMARY KEY,
-        "user_id" TEXT NOT NULL REFERENCES "user"(id),
+        "user_id" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "hashed_password" TEXT
     );
 
