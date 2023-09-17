@@ -8,28 +8,28 @@ import (
 
 	"nem/api/rpc"
 	"nem/db"
-	"nem/utils"
 
 	"github.com/charmbracelet/log"
 )
 
 const (
-	sessionCookieName = "auth_session"
+	sessionName = "auth_session"
 )
 
 type (
 	ctxSessionIdKey struct{}
+	ctxSessionKey   struct{}
 )
 
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		fmt.Println("COOKIES:")
-		fmt.Println(r.Cookies())
+		sessionID := getSessionID(r)
 		fmt.Println()
-		sessionID, err := utils.ReadCookie(r, sessionCookieName)
-		if err != nil {
-			log.Warn("not session id cookie for request", "err", err)
+		fmt.Println("SESSION_ID:", sessionID)
+		fmt.Println()
+		if sessionID == "" {
+			log.Warn("not session id for request")
 			rpc.RespondWithError(w, rpc.ErrUnauthorized)
 			return
 		}
@@ -48,25 +48,28 @@ func Auth(next http.Handler) http.Handler {
 		}
 
 		ctx = context.WithValue(ctx, ctxSessionIdKey{}, sessionID)
+		ctx = context.WithValue(ctx, ctxSessionKey{}, &u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func ContextSessionUser(c context.Context) *db.SessionUser {
-	sessionID := ContextSessionID(c)
-	sessionStr, err := db.Redis.Get(c, "session:"+sessionID).Result()
-	if err != nil {
-		log.Error("could not get session from redis", "err", err)
-		return nil
+func getSessionID(r *http.Request) string {
+	sessionID := r.Header.Get(sessionName)
+	if sessionID != "" {
+		return sessionID
 	}
 
-	var u db.SessionUser
-	err = json.Unmarshal([]byte(sessionStr), &u)
-	if err != nil {
-		log.Error("could not unmarshal session", "err", err)
-		return nil
+	sessionID = r.URL.Query().Get(sessionName)
+	if sessionID != "" {
+		return sessionID
 	}
-	return &u
+
+	return ""
+}
+
+func ContextSessionUser(c context.Context) *db.SessionUser {
+	u := c.Value(ctxSessionKey{}).(*db.SessionUser)
+	return u
 }
 
 func ContextSessionUserID(c context.Context) string {
