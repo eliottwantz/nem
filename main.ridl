@@ -124,6 +124,8 @@ service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
     - ListAvailableLearns() => (learns: []Learn)
+    - ListTeachersForLearn(lang: string, topic: string) => (teachers: []User)
+    - ListTeacherAvailabilities(teacherId: string) => (availabilities: []TeacherAvalibility)
     - ShowClassDetails(classId: string) => (class: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)
 

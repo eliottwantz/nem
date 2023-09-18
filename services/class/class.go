@@ -2,6 +2,7 @@ package class
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"nem/api/httpmw"
@@ -140,4 +141,50 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 		SetValidFor(time.Hour)
 
 	return at.ToJWT()
+}
+
+func (s *Service) ListTeachersForLearn(ctx context.Context, lang string, topic string) ([]*rpc.User, error) {
+	if lang == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("lang is empty"))
+	}
+	if topic == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("topic is empty"))
+	}
+	teachers, err := db.Pg.ListTeachersForLearn(ctx, db.ListTeachersForLearnParams{
+		Language: lang,
+		Topic:    topic,
+	})
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.User, 0, len(teachers))
+	for _, t := range teachers {
+		ret = append(ret, rpc.FromDbUser(t))
+	}
+
+	return ret, nil
+}
+
+func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId string) ([]*rpc.TeacherAvalibility, error) {
+	if teacherId == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
+	}
+
+	availabilities, err := db.Pg.ListTeacherAvailabilities(ctx, teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.TeacherAvalibility, 0, len(availabilities))
+	for _, t := range availabilities {
+		ret = append(ret, &rpc.TeacherAvalibility{
+			Id:        t.ID,
+			TeacherId: t.TeacherID,
+			StartAt:   t.StartAt,
+			EndAt:     t.EndAt,
+		})
+	}
+
+	return ret, nil
 }

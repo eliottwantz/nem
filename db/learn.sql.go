@@ -237,6 +237,58 @@ func (q *Queries) ListLearnsWhereTopicIs(ctx context.Context, topic string) ([]*
 	return items, nil
 }
 
+const listTeachersForLearn = `-- name: ListTeachersForLearn :many
+
+SELECT DISTINCT u.id, u.email, u.email_verified, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+FROM "learn" l
+    JOIN "user_learn" uc ON l.id = uc.learn_id
+    JOIN "user" u ON u.id = uc.user_id
+WHERE
+    u.role = 'teacher'
+    AND l.language = $1
+    AND l.topic = $2
+`
+
+type ListTeachersForLearnParams struct {
+	Language string
+	Topic    string
+}
+
+func (q *Queries) ListTeachersForLearn(ctx context.Context, arg ListTeachersForLearnParams) ([]*User, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachersForLearn, arg.Language, arg.Topic)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
+			&i.FirstName,
+			&i.LastName,
+			&i.Role,
+			&i.PreferedLanguage,
+			&i.AvatarFilePath,
+			&i.AvatarUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsersInLearn = `-- name: ListUsersInLearn :many
 
 SELECT
