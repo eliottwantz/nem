@@ -9,6 +9,7 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 )
 
 type Service struct{}
@@ -82,7 +83,6 @@ func (s *Service) AdminListClasses(ctx context.Context) ([]*rpc.Class, error) {
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
 			CreatedAt: c.CreatedAt,
-			UpdatedAt: c.UpdatedAt,
 		})
 	}
 
@@ -101,12 +101,21 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 	}
 	defer tx.Rollback()
 
+	timeSlotID, err := uuid.Parse(req.TimeSlotId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	}
+
 	class, err := tx.CreateClass(ctx, db.CreateClassParams{
-		Name:    req.Name,
-		LearnID: req.LearnId,
-		StartAt: req.Start_at,
-		EndAt:   req.End_at,
+		Name:       req.Name,
+		LearnID:    req.LearnId,
+		TimeSlotID: timeSlotID,
 	})
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	timeSlot, err := tx.FindTimeSlot(ctx, timeSlotID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -136,9 +145,8 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 		Name:      class.Name,
 		Language:  learn.Language,
 		Topic:     learn.Topic,
-		StartAt:   class.StartAt,
-		EndAt:     class.EndAt,
+		StartAt:   timeSlot.StartAt,
+		EndAt:     timeSlot.EndAt,
 		CreatedAt: class.CreatedAt,
-		UpdatedAt: class.UpdatedAt,
 	}, nil
 }

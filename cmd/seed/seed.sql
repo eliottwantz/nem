@@ -73,20 +73,43 @@ insert into
     "user_learn" (user_id, learn_id)
 values ('teedlly9t1dkqhp', 1), ('teedlly9t1dkqhp', 2), ('aaedlly9t1dkqhp', 1);
 
+insert into "time_slots"
+VALUES (
+        '688aafd2-de8e-4593-884f-45a8472138e2':: uuid,
+        '2023-09-23 16:00:00.000+00',
+        '2023-09-23 17:00:00.000+00',
+        'teedlly9t1dkqhp'
+    ), (
+        '839a7303-cb81-4bfa-8fa5-9e849c92a78b':: uuid,
+        '2023-09-23 17:00:00.000+00',
+        '2023-09-23 18:00:00.000+00',
+        'teedlly9t1dkqhp'
+    ), (
+        '511969f2-eaa9-40e5-b65d-4c42e9b38fed':: uuid,
+        '2023-09-23 18:00:00.000+00',
+        '2023-09-23 19:00:00.000+00',
+        'teedlly9t1dkqhp'
+    ), (
+        'f7b4b300-347f-415d-8f10-aa9d876a069b':: uuid,
+        '2023-09-23 19:00:00.000+00',
+        '2023-09-23 20:00:00.000+00',
+        'teedlly9t1dkqhp'
+    );
+
 insert into
     "class" (
         id,
         name,
         learn_id,
-        start_at,
-        end_at
+        is_private,
+        time_slot_id
     )
 values (
         '7823d99c-40e7-435b-9049-134ff0a61a9b':: uuid,
         'Class 1',
         1,
-        '2024-08-23 19:00:00.000+00',
-        '2024-08-23 20:00:00.000+00'
+        false,
+        'f7b4b300-347f-415d-8f10-aa9d876a069b':: uuid
     );
 
 insert into

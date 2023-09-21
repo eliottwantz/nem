@@ -57,23 +57,37 @@ CREATE TABLE
 
 ALTER TABLE "user_learn" ADD PRIMARY KEY ("user_id", "learn_id");
 
+CREATE Table
+    if NOT exists "time_slots" (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "start_at" TIMESTAMPTZ NOT NULL,
+        "end_at" TIMESTAMPTZ NOT NULL,
+        "teacher_id" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE
+    );
+
+CREATE INDEX
+    "idx_timeslots_teacherid " ON "time_slots"("teacher_id");
+
+CREATE INDEX
+    "idx_timeslots_startat_endat" ON "time_slots" ("start_at", "end_at");
+
 CREATE TABLE
     IF NOT EXISTS "class" (
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" TEXT NOT NULL,
+        "is_private" BOOLEAN NOT NULL,
         "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "start_at" TIMESTAMPTZ NOT NULL,
-        "end_at" TIMESTAMPTZ NOT NULL,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+        "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
+
+CREATE INDEX "idx_class_timeslotid" ON "class" ("time_slot_id");
 
 CREATE TABLE
     IF NOT EXISTS "user_class" (
         "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
 ALTER TABLE "user_class" ADD PRIMARY KEY ("user_id", "class_id");
@@ -87,19 +101,3 @@ CREATE TABLE
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
-
-CREATE Table
-    IF NOT EXISTS "teacher_availabilities" (
-        "id" SERIAL NOT NULL,
-        "teacher_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "startAt" TIMESTAMPTZ NOT NULL,
-        "endAt" TIMESTAMPTZ NOT NULL
-    );
-
-ALTER TABLE
-    "teacher_availabilities"
-ADD
-    PRIMARY KEY ("id", "teacher_id");
-
-CREATE INDEX
-    "teacher_idx" ON "teacher_availabilities" USING BTREE ("teacher_id");

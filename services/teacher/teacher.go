@@ -116,7 +116,6 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
 			CreatedAt: c.CreatedAt,
-			UpdatedAt: c.UpdatedAt,
 		})
 	}
 	return ret, nil
@@ -154,16 +153,16 @@ func (s *Service) EndClass(ctx context.Context, classId string) error {
 	return s.wsService.EndClass(class.ID)
 }
 
-func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TeacherAvalibility, error) {
-	res, err := db.Pg.ListTeacherAvailabilities(ctx, httpmw.ContextSessionUserID(ctx))
+func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TimeSlot, error) {
+	res, err := db.Pg.ListTimeSlots(ctx, httpmw.ContextSessionUserID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.TeacherAvalibility, 0, len(res))
+	ret := make([]*rpc.TimeSlot, 0, len(res))
 	for _, c := range res {
-		ret = append(ret, &rpc.TeacherAvalibility{
-			Id:        c.ID,
+		ret = append(ret, &rpc.TimeSlot{
+			Id:        c.ID.String(),
 			TeacherId: c.TeacherID,
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
@@ -173,30 +172,61 @@ func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TeacherAvalibi
 	return ret, nil
 }
 
-func (s *Service) AddAvailability(ctx context.Context, startAt time.Time, endAt time.Time) (*rpc.TeacherAvalibility, error) {
-	res, err := db.Pg.AddTeacherAvailability(ctx, db.AddTeacherAvailabilityParams{
+func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityRequest) ([]*rpc.TimeSlot, error) {
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	defer tx.Rollback()
+
+	for _, t := range req.Times {
+		_, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
+			TeacherID: httpmw.ContextSessionUserID(ctx),
+			StartAt:   t.StartAt,
+			EndAt:     t.EndAt,
+		})
+		if err != nil {
+			log.Warn("could not add availability", "err", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+	}
+
+	timeSlots, err := tx.FindTimeSlotsTeacherAndTime(ctx, db.FindTimeSlotsTeacherAndTimeParams{
 		TeacherID: httpmw.ContextSessionUserID(ctx),
-		StartAt:   startAt,
-		EndAt:     endAt,
+		StartAt:   req.StartAt,
+		EndAt:     req.EndAt,
 	})
 	if err != nil {
-		log.Warn("could not add availability", "err", err)
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	return &rpc.TeacherAvalibility{
-		Id:        res.ID,
-		TeacherId: res.TeacherID,
-		StartAt:   res.StartAt,
-		EndAt:     res.EndAt,
-	}, nil
+	err = tx.Commit()
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
+	for _, t := range timeSlots {
+		ret = append(ret, &rpc.TimeSlot{
+			Id:        t.ID.String(),
+			TeacherId: t.TeacherID,
+			StartAt:   t.StartAt,
+			EndAt:     t.EndAt,
+		})
+	}
+
+	return ret, nil
 }
 
-func (s *Service) UpdateAvailability(ctx context.Context, id int32, startAt time.Time, endAt time.Time) (*rpc.TeacherAvalibility, error) {
-	res, err := db.Pg.UpdateTeacherAvailability(ctx, db.UpdateTeacherAvailabilityParams{
+func (s *Service) UpdateAvailability(ctx context.Context, id string, startAt time.Time, endAt time.Time) (*rpc.TimeSlot, error) {
+	timeslotID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty id param"))
+	}
+	res, err := db.Pg.UpdateTimeSlot(ctx, db.UpdateTimeSlotParams{
 		StartAt:   startAt,
 		EndAt:     endAt,
-		ID:        id,
+		ID:        timeslotID,
 		TeacherID: httpmw.ContextSessionUserID(ctx),
 	})
 	if err != nil {
@@ -204,17 +234,21 @@ func (s *Service) UpdateAvailability(ctx context.Context, id int32, startAt time
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	return &rpc.TeacherAvalibility{
-		Id:        res.ID,
+	return &rpc.TimeSlot{
+		Id:        res.ID.String(),
 		TeacherId: res.TeacherID,
 		StartAt:   res.StartAt,
 		EndAt:     res.EndAt,
 	}, nil
 }
 
-func (s *Service) DeleteAvailability(ctx context.Context, id int32) error {
-	err := db.Pg.DeleteTeacherAvailability(ctx, db.DeleteTeacherAvailabilityParams{
-		ID:        id,
+func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
+	timeslotID, err := uuid.Parse(id)
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty id param"))
+	}
+	err = db.Pg.DeleteTimeSlot(ctx, db.DeleteTimeSlotParams{
+		ID:        timeslotID,
 		TeacherID: httpmw.ContextSessionUserID(ctx),
 	})
 	if err != nil {
