@@ -76,7 +76,7 @@ func (q *Queries) FindTimeSlot(ctx context.Context, id uuid.UUID) (*TimeSlot, er
 	return &i, err
 }
 
-const findTimeSlotsTeacherAndTime = `-- name: FindTimeSlotsTeacherAndTime :many
+const findTimeSlotsTimeRange = `-- name: FindTimeSlotsTimeRange :many
 
 SELECT id, start_at, end_at, teacher_id
 FROM "time_slots"
@@ -86,14 +86,14 @@ WHERE
     AND "end_at" <= $3
 `
 
-type FindTimeSlotsTeacherAndTimeParams struct {
+type FindTimeSlotsTimeRangeParams struct {
 	TeacherID string
 	StartAt   time.Time
 	EndAt     time.Time
 }
 
-func (q *Queries) FindTimeSlotsTeacherAndTime(ctx context.Context, arg FindTimeSlotsTeacherAndTimeParams) ([]*TimeSlot, error) {
-	rows, err := q.db.QueryContext(ctx, findTimeSlotsTeacherAndTime, arg.TeacherID, arg.StartAt, arg.EndAt)
+func (q *Queries) FindTimeSlotsTimeRange(ctx context.Context, arg FindTimeSlotsTimeRangeParams) ([]*TimeSlot, error) {
+	rows, err := q.db.QueryContext(ctx, findTimeSlotsTimeRange, arg.TeacherID, arg.StartAt, arg.EndAt)
 	if err != nil {
 		return nil, err
 	}

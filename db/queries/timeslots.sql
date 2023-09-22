@@ -6,7 +6,7 @@ SELECT * FROM "time_slots" WHERE "teacher_id" = $1;
 
 SELECT * FROM "time_slots" WHERE "id" = $1;
 
--- name: FindTimeSlotsTeacherAndTime :many
+-- name: FindTimeSlotsTimeRange :many
 
 SELECT *
 FROM "time_slots"

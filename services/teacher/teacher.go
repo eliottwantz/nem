@@ -185,9 +185,12 @@ func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityR
 	}
 	defer tx.Rollback()
 
+	teacherID := httpmw.ContextSessionUserID(ctx)
+	timeSlots := make([]*db.TimeSlot, 0, len(req.Times))
+
 	for _, t := range req.Times {
-		_, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
-			TeacherID: httpmw.ContextSessionUserID(ctx),
+		res, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
+			TeacherID: teacherID,
 			StartAt:   t.StartAt,
 			EndAt:     t.EndAt,
 		})
@@ -195,15 +198,7 @@ func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityR
 			log.Warn("could not add availability", "err", err)
 			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 		}
-	}
-
-	timeSlots, err := tx.FindTimeSlotsTeacherAndTime(ctx, db.FindTimeSlotsTeacherAndTimeParams{
-		TeacherID: httpmw.ContextSessionUserID(ctx),
-		StartAt:   req.StartAt,
-		EndAt:     req.EndAt,
-	})
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		timeSlots = append(timeSlots, res)
 	}
 
 	err = tx.Commit()
@@ -263,8 +258,10 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 		}
 
+		timeSlots := make([]*db.TimeSlot, 0, len(req.Times))
+
 		for _, t := range req.Times {
-			_, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
+			res, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
 				TeacherID: teacherID,
 				StartAt:   t.StartAt,
 				EndAt:     t.EndAt,
@@ -273,15 +270,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 				log.Warn("could not add availability", "err", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 			}
-		}
-
-		timeSlots, err := tx.FindTimeSlotsTeacherAndTime(ctx, db.FindTimeSlotsTeacherAndTimeParams{
-			TeacherID: teacherID,
-			StartAt:   req.StartAt,
-			EndAt:     req.EndAt,
-		})
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			timeSlots = append(timeSlots, res)
 		}
 
 		ret := make([]*rpc.TimeSlot, 0, len(req.Times))
