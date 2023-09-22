@@ -78,7 +78,7 @@ CREATE TABLE
         "is_private" BOOLEAN NOT NULL,
         "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+        "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
     );
 
 CREATE INDEX "idx_class_timeslotid" ON "class" ("time_slot_id");

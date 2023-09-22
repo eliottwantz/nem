@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -13,6 +12,8 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
+	"github.com/lib/pq"
 )
 
 type Service struct {
@@ -173,6 +174,11 @@ func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TimeSlot, erro
 }
 
 func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityRequest) ([]*rpc.TimeSlot, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	}
+
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -218,28 +224,107 @@ func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityR
 	return ret, nil
 }
 
-func (s *Service) UpdateAvailability(ctx context.Context, id string, startAt time.Time, endAt time.Time) (*rpc.TimeSlot, error) {
-	timeslotID, err := uuid.Parse(id)
+func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabilityRequest) ([]*rpc.TimeSlot, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	}
+
+	timeslotID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty id param"))
 	}
-	res, err := db.Pg.UpdateTimeSlot(ctx, db.UpdateTimeSlotParams{
-		StartAt:   startAt,
-		EndAt:     endAt,
-		ID:        timeslotID,
-		TeacherID: httpmw.ContextSessionUserID(ctx),
-	})
+	teacherID := httpmw.ContextSessionUserID(ctx)
+
+	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
-		log.Warn("could not update availability", "err", err)
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
+	defer tx.Rollback()
 
-	return &rpc.TimeSlot{
-		Id:        res.ID.String(),
-		TeacherId: res.TeacherID,
-		StartAt:   res.StartAt,
-		EndAt:     res.EndAt,
-	}, nil
+	_, err = tx.FindClassByTeacherAndTimeSlotId(ctx, db.FindClassByTeacherAndTimeSlotIdParams{
+		TeacherID: teacherID,
+		ID:        timeslotID,
+	})
+	if err == nil {
+		// There is a class for that time slot. Cannot update it
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("cannot update this time slot because there is already an existing class on this time slot"))
+	}
+
+	if len(req.Times) > 1 {
+		// The user updated a time slot to span on multiple one hour time slots
+		// First delete the old time slot then add the new ones
+		err = tx.DeleteTimeSlot(ctx, db.DeleteTimeSlotParams{
+			ID:        timeslotID,
+			TeacherID: teacherID,
+		})
+		if err != nil {
+			log.Warn("could not delete availability", "err", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+
+		for _, t := range req.Times {
+			_, err := tx.AddTimeSlot(ctx, db.AddTimeSlotParams{
+				TeacherID: teacherID,
+				StartAt:   t.StartAt,
+				EndAt:     t.EndAt,
+			})
+			if err != nil {
+				log.Warn("could not add availability", "err", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			}
+		}
+
+		timeSlots, err := tx.FindTimeSlotsTeacherAndTime(ctx, db.FindTimeSlotsTeacherAndTimeParams{
+			TeacherID: teacherID,
+			StartAt:   req.StartAt,
+			EndAt:     req.EndAt,
+		})
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+
+		ret := make([]*rpc.TimeSlot, 0, len(req.Times))
+		for _, t := range timeSlots {
+			ret = append(ret, &rpc.TimeSlot{
+				Id:        t.ID.String(),
+				TeacherId: t.TeacherID,
+				StartAt:   t.StartAt,
+				EndAt:     t.EndAt,
+			})
+		}
+
+		err = tx.Commit()
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+
+		return ret, nil
+	} else {
+
+		res, err := db.Pg.UpdateTimeSlot(ctx, db.UpdateTimeSlotParams{
+			StartAt:   req.StartAt,
+			EndAt:     req.EndAt,
+			ID:        timeslotID,
+			TeacherID: teacherID,
+		})
+		if err != nil {
+			log.Warn("could not update availability", "err", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+
+		err = tx.Commit()
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+
+		return []*rpc.TimeSlot{{
+			Id:        res.ID.String(),
+			TeacherId: res.TeacherID,
+			StartAt:   res.StartAt,
+			EndAt:     res.EndAt,
+		}}, nil
+	}
 }
 
 func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
@@ -252,7 +337,13 @@ func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
 		TeacherID: httpmw.ContextSessionUserID(ctx),
 	})
 	if err != nil {
-		log.Warn("could not delete availability", "err", err)
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				log.Warn("Trying to delete a time slot that already has a class on it")
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("cannot delete this time slot because there is already an existing class on this time slot"))
+			}
+		}
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 

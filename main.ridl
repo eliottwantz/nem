@@ -90,6 +90,12 @@ struct AddAvailabilityRequest
     - startAt: timestamp
     - endAt: timestamp
 
+struct EditAvailabilityRequest
+    - id: string
+    - times: []TimesRequest
+    - startAt: timestamp
+    - endAt: timestamp
+
 struct TimeSlot
     - id: string
     - teacherId: string
@@ -131,7 +137,7 @@ service TeacherServiceAPI
     - ListClasses() => (classes: []Class)
     - ListAvailabilities() => (timeSlots: []TimeSlot)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
-    - UpdateAvailability(id: string, startAt: timestamp, endAt: timestamp) => (timeSlot: TimeSlot)
+    - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)
     - StartClass(classId: string)
     - EndClass(classId: string)

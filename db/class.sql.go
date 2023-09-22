@@ -139,7 +139,6 @@ WHERE
     t.teacher_id = $1
     AND t.start_at = $2
     AND t.end_at = $3
-ORDER BY cl.created_at ASC
 `
 
 type FindClassByTeacherAndTimeParams struct {
@@ -164,6 +163,58 @@ type FindClassByTeacherAndTimeRow struct {
 func (q *Queries) FindClassByTeacherAndTime(ctx context.Context, arg FindClassByTeacherAndTimeParams) (*FindClassByTeacherAndTimeRow, error) {
 	row := q.db.QueryRowContext(ctx, findClassByTeacherAndTime, arg.TeacherID, arg.StartAt, arg.EndAt)
 	var i FindClassByTeacherAndTimeRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsPrivate,
+		&i.LearnID,
+		&i.CreatedAt,
+		&i.TimeSlotID,
+		&i.Language,
+		&i.Topic,
+		&i.StartAt,
+		&i.EndAt,
+	)
+	return &i, err
+}
+
+const findClassByTeacherAndTimeSlotId = `-- name: FindClassByTeacherAndTimeSlotId :one
+
+SELECT
+    cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
+    c.language,
+    c.topic,
+    t.start_at,
+    t.end_at
+FROM "class" cl
+    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
+WHERE
+    t.teacher_id = $1
+    AND t.id = $2
+`
+
+type FindClassByTeacherAndTimeSlotIdParams struct {
+	TeacherID string
+	ID        uuid.UUID
+}
+
+type FindClassByTeacherAndTimeSlotIdRow struct {
+	ID         uuid.UUID
+	Name       string
+	IsPrivate  bool
+	LearnID    int32
+	CreatedAt  time.Time
+	TimeSlotID uuid.UUID
+	Language   string
+	Topic      string
+	StartAt    time.Time
+	EndAt      time.Time
+}
+
+func (q *Queries) FindClassByTeacherAndTimeSlotId(ctx context.Context, arg FindClassByTeacherAndTimeSlotIdParams) (*FindClassByTeacherAndTimeSlotIdRow, error) {
+	row := q.db.QueryRowContext(ctx, findClassByTeacherAndTimeSlotId, arg.TeacherID, arg.ID)
+	var i FindClassByTeacherAndTimeSlotIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,

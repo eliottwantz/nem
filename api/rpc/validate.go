@@ -29,3 +29,20 @@ func (r CreateClassRequest) Validate() error {
 		validation.Field(&r.TimeSlotId, validation.Required),
 	)
 }
+
+func (r AddAvailabilityRequest) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Times, validation.Required),
+		validation.Field(&r.StartAt, validation.Required),
+		validation.Field(&r.EndAt, validation.Required),
+	)
+}
+
+func (r EditAvailabilityRequest) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Id, validation.Required),
+		validation.Field(&r.Times, validation.Required),
+		validation.Field(&r.StartAt, validation.Required),
+		validation.Field(&r.EndAt, validation.Required),
+	)
+}
