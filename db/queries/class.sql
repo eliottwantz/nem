@@ -3,9 +3,12 @@
 SELECT
     cl.*,
     c.language,
-    c.topic
+    c.topic,
+    t.start_at,
+    t.end_at
 FROM "class" cl
     JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
 ORDER BY cl.created_at ASC;
 
 -- name: FindClass :one
@@ -13,11 +16,45 @@ ORDER BY cl.created_at ASC;
 SELECT
     cl.*,
     c.language,
-    c.topic
+    c.topic,
+    t.start_at,
+    t.end_at
 FROM "class" cl
     JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
 WHERE cl.id = $1
 ORDER BY cl.created_at ASC;
+
+-- name: FindClassByTeacherAndTime :one
+
+SELECT
+    cl.*,
+    c.language,
+    c.topic,
+    t.start_at,
+    t.end_at
+FROM "class" cl
+    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
+WHERE
+    t.teacher_id = $1
+    AND t.start_at = $2
+    AND t.end_at = $3;
+
+-- name: FindClassByTeacherAndTimeSlotId :one
+
+SELECT
+    cl.*,
+    c.language,
+    c.topic,
+    t.start_at,
+    t.end_at
+FROM "class" cl
+    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
+WHERE
+    t.teacher_id = $1
+    AND t.id = $2;
 
 -- name: ListUsersInClass :many
 
@@ -39,10 +76,13 @@ WHERE uc.class_id = $1;
 SELECT
     cl.*,
     c.language,
-    c.topic
+    c.topic,
+    t.start_at,
+    t.end_at
 FROM "class" cl
     JOIN "user_class" uc ON cl.id = uc.class_id
     JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
 WHERE uc.user_id = $1
 ORDER BY uc.created_at ASC;
 
@@ -52,8 +92,8 @@ INSERT INTO
     "class" (
         name,
         learn_id,
-        start_at,
-        end_at
+        is_private,
+        time_slot_id
     )
 VALUES ($1, $2, $3, $4) RETURNING *;
 

@@ -17,5 +17,32 @@ func (r AdminCreateClassRequest) Validate() error {
 		validation.Field(&r.UserIDs, validation.Required),
 		validation.Field(&r.Name, validation.Required),
 		validation.Field(&r.LearnId, validation.Required),
+		validation.Field(&r.TimeSlotId, validation.Required),
+	)
+}
+
+func (r CreateClassRequest) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.UserIDs, validation.Required),
+		validation.Field(&r.Name, validation.Required),
+		validation.Field(&r.LearnId, validation.Required),
+		validation.Field(&r.TimeSlotId, validation.Required),
+	)
+}
+
+func (r AddAvailabilityRequest) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Times, validation.Required),
+		validation.Field(&r.StartAt, validation.Required),
+		validation.Field(&r.EndAt, validation.Required),
+	)
+}
+
+func (r EditAvailabilityRequest) Validate() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Id, validation.Required),
+		validation.Field(&r.Times, validation.Required),
+		validation.Field(&r.StartAt, validation.Required),
+		validation.Field(&r.EndAt, validation.Required),
 	)
 }

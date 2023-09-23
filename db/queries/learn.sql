@@ -51,6 +51,17 @@ FROM "learn" l
     JOIN "user" u ON u.id = uc.user_id
 WHERE u.role = 'teacher';
 
+-- name: ListTeachersForLearn :many
+
+SELECT DISTINCT u.*
+FROM "learn" l
+    JOIN "user_learn" uc ON l.id = uc.learn_id
+    JOIN "user" u ON u.id = uc.user_id
+WHERE
+    u.role = 'teacher'
+    AND l.language = $1
+    AND l.topic = $2;
+
 -- name: CreateLearn :one
 
 INSERT INTO

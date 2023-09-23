@@ -10,8 +10,7 @@ struct AdminCreateClassRequest
     - userIDs: []string
     - name: string
     - learnId: int32
-    - start_at: timestamp
-    - end_at: timestamp
+    - timeSlotId: string
 
 
 service AdminServiceAPI
@@ -57,13 +56,13 @@ struct Teach
 
 struct Class
     - id: string
+    - teacherId: string
     - name: string
     - language: string
     - topic: string
     - startAt: timestamp
     - endAt: timestamp
     - createdAt: timestamp
-    - updatedAt: timestamp
 
 struct ClassDetails
     - class: Class
@@ -82,11 +81,34 @@ struct MessageResponse
     - classId: string
     - user: User
 
-struct TeacherAvalibility
-    - id: int32
+struct TimesRequest
+    - startAt: timestamp
+    - endAt: timestamp
+
+struct AddAvailabilityRequest
+    - times: []TimesRequest
+    - startAt: timestamp
+    - endAt: timestamp
+
+struct EditAvailabilityRequest
+    - id: string
+    - times: []TimesRequest
+    - startAt: timestamp
+    - endAt: timestamp
+
+struct TimeSlot
+    - id: string
     - teacherId: string
     - startAt: timestamp
     - endAt: timestamp
+
+struct CreateClassRequest
+    - userIDs: []string
+    - name: string
+    - isPrivate: bool
+    - learnId: int32
+    - timeSlotId: string
+
 
 #################### STRUCTS ####################
 
@@ -113,10 +135,10 @@ service TeacherServiceAPI
     - ListTeaches() => (teaches: []Teach)
     - Teach(language: string, topic: string) => (teach: Teach)
     - ListClasses() => (classes: []Class)
-    - ListAvailabilities() => (availabilities: []TeacherAvalibility)
-    - AddAvailability(startAt: timestamp, endAt: timestamp) => (availability: TeacherAvalibility)
-    - UpdateAvailability(id: int32, startAt: timestamp, endAt: timestamp) => (availability: TeacherAvalibility)
-    - DeleteAvailability(id: int32)
+    - ListAvailabilities() => (timeSlots: []TimeSlot)
+    - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
+    - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
+    - DeleteAvailability(id: string)
     - StartClass(classId: string)
     - EndClass(classId: string)
 
@@ -124,8 +146,11 @@ service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
     - ListAvailableLearns() => (learns: []Learn)
+    - ListTeachersForLearn(lang: string, topic: string) => (teachers: []User)
+    - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
     - ShowClassDetails(classId: string) => (class: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)
+    - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
     - SendMessage(message: Message)

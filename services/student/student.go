@@ -115,7 +115,6 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
 			CreatedAt: c.CreatedAt,
-			UpdatedAt: c.UpdatedAt,
 		})
 	}
 	return ret, nil
