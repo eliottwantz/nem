@@ -291,6 +291,68 @@ func (q *Queries) ListClasses(ctx context.Context) ([]*ListClassesRow, error) {
 	return items, nil
 }
 
+const listClassesOfTeacher = `-- name: ListClassesOfTeacher :many
+
+SELECT
+    cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
+    c.language,
+    c.topic,
+    t.start_at,
+    t.end_at
+FROM "class" cl
+    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
+WHERE t.teacher_id = $1
+ORDER BY t.start_at ASC
+`
+
+type ListClassesOfTeacherRow struct {
+	ID         uuid.UUID
+	Name       string
+	IsPrivate  bool
+	LearnID    int32
+	CreatedAt  time.Time
+	TimeSlotID uuid.UUID
+	Language   string
+	Topic      string
+	StartAt    time.Time
+	EndAt      time.Time
+}
+
+func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID string) ([]*ListClassesOfTeacherRow, error) {
+	rows, err := q.db.QueryContext(ctx, listClassesOfTeacher, teacherID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListClassesOfTeacherRow
+	for rows.Next() {
+		var i ListClassesOfTeacherRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.IsPrivate,
+			&i.LearnID,
+			&i.CreatedAt,
+			&i.TimeSlotID,
+			&i.Language,
+			&i.Topic,
+			&i.StartAt,
+			&i.EndAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listClassesOfUser = `-- name: ListClassesOfUser :many
 
 SELECT

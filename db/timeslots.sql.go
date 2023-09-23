@@ -120,6 +120,58 @@ func (q *Queries) FindTimeSlotsTimeRange(ctx context.Context, arg FindTimeSlotsT
 	return items, nil
 }
 
+const listTeachersAvailableTimeSlots = `-- name: ListTeachersAvailableTimeSlots :many
+
+SELECT
+    ts.id, ts.start_at, ts.end_at, ts.teacher_id,
+    c."id" AS class_id,
+    COUNT(uc."user_id") AS num_users
+FROM "time_slots" ts
+    LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
+    LEFT JOIN "user_class" uc ON c."id" = uc."class_id"
+WHERE ts."teacher_id" = $1
+GROUP BY ts."id", c."id"
+`
+
+type ListTeachersAvailableTimeSlotsRow struct {
+	ID        uuid.UUID
+	StartAt   time.Time
+	EndAt     time.Time
+	TeacherID string
+	ClassID   uuid.NullUUID
+	NumUsers  int64
+}
+
+func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID string) ([]*ListTeachersAvailableTimeSlotsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachersAvailableTimeSlots, teacherID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListTeachersAvailableTimeSlotsRow
+	for rows.Next() {
+		var i ListTeachersAvailableTimeSlotsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartAt,
+			&i.EndAt,
+			&i.TeacherID,
+			&i.ClassID,
+			&i.NumUsers,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTimeSlots = `-- name: ListTimeSlots :many
 
 SELECT id, start_at, end_at, teacher_id FROM "time_slots" WHERE "teacher_id" = $1

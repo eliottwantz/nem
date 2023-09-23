@@ -86,6 +86,20 @@ FROM "class" cl
 WHERE uc.user_id = $1
 ORDER BY uc.created_at ASC;
 
+-- name: ListClassesOfTeacher :many
+
+SELECT
+    cl.*,
+    c.language,
+    c.topic,
+    t.start_at,
+    t.end_at
+FROM "class" cl
+    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "time_slots" t ON cl.time_slot_id = t.id
+WHERE t.teacher_id = $1
+ORDER BY t.start_at ASC;
+
 -- name: CreateClass :one
 
 INSERT INTO

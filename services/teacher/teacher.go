@@ -102,7 +102,7 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 }
 
 func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
-	res, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextSessionUserID(ctx))
+	res, err := db.Pg.ListClassesOfTeacher(ctx, httpmw.ContextSessionUserID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}

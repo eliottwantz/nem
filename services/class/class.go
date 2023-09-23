@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 	"github.com/livekit/protocol/auth"
+	"golang.org/x/exp/slices"
 )
 
 type Service struct {
@@ -170,13 +171,32 @@ func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId strin
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
 	}
 
-	availabilities, err := db.Pg.ListTimeSlots(ctx, teacherId)
+	timeSlots, err := db.Pg.ListTeachersAvailableTimeSlots(ctx, teacherId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.TimeSlot, 0, len(availabilities))
-	for _, t := range availabilities {
+	userClasses, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextSessionUserID(ctx))
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	userClassesTimeSlots := make([]string, 0, len(userClasses))
+	for _, c := range userClasses {
+		userClassesTimeSlots = append(userClassesTimeSlots, c.TimeSlotID.String())
+	}
+
+	now := time.Now()
+	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
+	for _, t := range timeSlots {
+		if slices.Contains(userClassesTimeSlots, t.ID.String()) {
+			continue
+		}
+		if t.NumUsers >= 4 {
+			continue
+		}
+		if t.StartAt.Before(now) || t.EndAt.Before(now) {
+			continue
+		}
 		ret = append(ret, &rpc.TimeSlot{
 			Id:        t.ID.String(),
 			TeacherId: t.TeacherID,
@@ -264,14 +284,12 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	for _, uID := range []string{httpmw.ContextSessionUserID(ctx), timeSlot.TeacherID} {
-		err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
-			ClassID: dbClass.ID,
-			UserID:  uID,
-		})
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
+	err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
+		ClassID: dbClass.ID,
+		UserID:  httpmw.ContextSessionUserID(ctx),
+	})
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
 	err = tx.Commit()
