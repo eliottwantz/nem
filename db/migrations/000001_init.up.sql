@@ -59,7 +59,7 @@ ALTER TABLE "user_learn" ADD PRIMARY KEY ("user_id", "learn_id");
 
 CREATE Table
     if NOT exists "time_slots" (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
         "start_at" TIMESTAMPTZ NOT NULL,
         "end_at" TIMESTAMPTZ NOT NULL,
         "teacher_id" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -73,12 +73,12 @@ CREATE INDEX
 
 CREATE TABLE
     IF NOT EXISTS "class" (
-        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" TEXT NOT NULL,
         "is_private" BOOLEAN NOT NULL,
         "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
+        "time_slot_id" TEXT NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT
     );
 
 CREATE INDEX "idx_class_timeslotid" ON "class" ("time_slot_id");
@@ -86,7 +86,7 @@ CREATE INDEX "idx_class_timeslotid" ON "class" ("time_slot_id");
 CREATE TABLE
     IF NOT EXISTS "user_class" (
         "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "class_id" TEXT NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
@@ -94,10 +94,10 @@ ALTER TABLE "user_class" ADD PRIMARY KEY ("user_id", "class_id");
 
 CREATE TABLE
     IF NOT EXISTS "message" (
-        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
         "text" TEXT NOT NULL,
         "user_id" TEXT NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "class_id" TEXT NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
     );

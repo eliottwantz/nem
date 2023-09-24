@@ -20,15 +20,7 @@ SELECT * FROM "learn" WHERE topic = $1;
 
 -- name: ListUsersInLearn :many
 
-SELECT
-    u.id,
-    u.first_name,
-    u.last_name,
-    u.role,
-    u.prefered_language,
-    u.avatar_file_path,
-    u.avatar_url,
-    u.created_at
+SELECT u.*
 FROM "user" u
     JOIN "user_learn" uc ON u.id = uc.user_id
 WHERE uc.learn_id = $1;

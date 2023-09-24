@@ -27,6 +27,8 @@ service AdminServiceAPI
 
 struct User
     - id: string
+    - email: string
+    - emailVerified: bool
     - firstName: string
     - lastName: string
     - role: string
@@ -34,6 +36,7 @@ struct User
     - avatarFilePath: string
     - avatarUrl: string
     - createdAt: timestamp
+    - updatedAt: timestamp
 
 struct CreateUserRequest
     - firstName: string
@@ -57,6 +60,7 @@ struct Teach
 struct Class
     - id: string
     - teacherId: string
+    - isPrivate: bool
     - name: string
     - language: string
     - topic: string
@@ -103,7 +107,6 @@ struct TimeSlot
     - endAt: timestamp
 
 struct CreateClassRequest
-    - userIDs: []string
     - name: string
     - isPrivate: bool
     - learnId: int32
@@ -139,6 +142,7 @@ service TeacherServiceAPI
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)
+    - CancelClass(classId: string) => (usersInClass: []User, teacher: User)
     - StartClass(classId: string)
     - EndClass(classId: string)
 

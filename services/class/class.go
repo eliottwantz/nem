@@ -12,7 +12,6 @@ import (
 	"nem/utils"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/livekit/protocol/auth"
 	"golang.org/x/exp/slices"
 )
@@ -44,8 +43,10 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID.String(),
+			Id:        c.ID,
 			Name:      c.Name,
+			TeacherId: c.TeacherID,
+			IsPrivate: c.IsPrivate,
 			Language:  c.Language,
 			Topic:     c.Topic,
 			StartAt:   c.StartAt,
@@ -76,9 +77,8 @@ func (s *Service) ListAvailableLearns(ctx context.Context) ([]*rpc.Learn, error)
 }
 
 func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.ClassDetails, error) {
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if classId == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
 	tx, err := db.Pg.NewTx(ctx)
@@ -87,12 +87,12 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 	}
 	defer tx.Rollback()
 
-	dbCourse, err := tx.FindClass(ctx, cID)
+	dbClass, err := tx.FindClass(ctx, classId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	dbUsers, err := tx.ListUsersInClass(ctx, cID)
+	dbUsers, err := tx.ListUsersInClass(ctx, classId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -104,27 +104,20 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 
 	rpcUsers := make([]*rpc.User, 0, len(dbUsers))
 	for _, u := range dbUsers {
-		rpcUsers = append(rpcUsers, &rpc.User{
-			Id:               u.ID,
-			FirstName:        u.FirstName,
-			LastName:         u.LastName,
-			Role:             string(u.Role),
-			PreferedLanguage: u.PreferedLanguage,
-			AvatarFilePath:   u.AvatarFilePath,
-			AvatarUrl:        u.AvatarUrl,
-			CreatedAt:        u.CreatedAt,
-		})
+		rpcUsers = append(rpcUsers, rpc.FromDbUser(u))
 	}
 
 	return &rpc.ClassDetails{
 		Class: &rpc.Class{
-			Id:        dbCourse.ID.String(),
-			Name:      dbCourse.Name,
-			Language:  dbCourse.Language,
-			Topic:     dbCourse.Topic,
-			StartAt:   dbCourse.StartAt,
-			EndAt:     dbCourse.EndAt,
-			CreatedAt: dbCourse.CreatedAt,
+			Id:        dbClass.ID,
+			Name:      dbClass.Name,
+			Language:  dbClass.Language,
+			Topic:     dbClass.Topic,
+			TeacherId: dbClass.TeacherID,
+			IsPrivate: dbClass.IsPrivate,
+			StartAt:   dbClass.StartAt,
+			EndAt:     dbClass.EndAt,
+			CreatedAt: dbClass.CreatedAt,
 		},
 		Users: rpcUsers,
 	}, nil
@@ -182,13 +175,13 @@ func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId strin
 	}
 	userClassesTimeSlots := make([]string, 0, len(userClasses))
 	for _, c := range userClasses {
-		userClassesTimeSlots = append(userClassesTimeSlots, c.TimeSlotID.String())
+		userClassesTimeSlots = append(userClassesTimeSlots, c.TimeSlotID)
 	}
 
 	now := time.Now()
 	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
 	for _, t := range timeSlots {
-		if slices.Contains(userClassesTimeSlots, t.ID.String()) {
+		if slices.Contains(userClassesTimeSlots, t.ID) {
 			continue
 		}
 		if t.NumUsers >= 4 {
@@ -198,7 +191,7 @@ func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId strin
 			continue
 		}
 		ret = append(ret, &rpc.TimeSlot{
-			Id:        t.ID.String(),
+			Id:        t.ID,
 			TeacherId: t.TeacherID,
 			StartAt:   t.StartAt,
 			EndAt:     t.EndAt,
@@ -220,15 +213,16 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 	defer tx.Rollback()
 
-	timeSlotID, err := uuid.Parse(req.TimeSlotId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if req.TimeSlotId == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty timeSlotId param"))
 	}
 
-	timeSlot, err := tx.FindTimeSlot(ctx, timeSlotID)
+	timeSlot, err := tx.FindTimeSlot(ctx, req.TimeSlotId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
+
+	uID := httpmw.ContextSessionUserID(ctx)
 
 	{
 		exists, err := tx.FindClassByTeacherAndTime(ctx, db.FindClassByTeacherAndTimeParams{
@@ -250,14 +244,15 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 			}
 			err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
 				ClassID: exists.ID,
-				UserID:  httpmw.ContextSessionUserID(ctx),
+				UserID:  uID,
 			})
 			if err != nil {
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 			}
 			return &rpc.Class{
-				Id:        exists.ID.String(),
+				Id:        exists.ID,
 				TeacherId: timeSlot.TeacherID,
+				IsPrivate: exists.IsPrivate,
 				Name:      exists.Name,
 				Language:  exists.Language,
 				Topic:     exists.Topic,
@@ -273,7 +268,8 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
 		Name:       req.Name,
 		LearnID:    req.LearnId,
-		TimeSlotID: timeSlotID,
+		TimeSlotID: req.TimeSlotId,
+		IsPrivate:  req.IsPrivate,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -286,7 +282,7 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
 		ClassID: dbClass.ID,
-		UserID:  httpmw.ContextSessionUserID(ctx),
+		UserID:  uID,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -298,8 +294,9 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 
 	return &rpc.Class{
-		Id:        dbClass.ID.String(),
+		Id:        dbClass.ID,
 		TeacherId: timeSlot.TeacherID,
+		IsPrivate: dbClass.IsPrivate,
 		Name:      dbClass.Name,
 		Language:  learnInfo.Language,
 		Topic:     learnInfo.Topic,

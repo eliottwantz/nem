@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const addUserToLearn = `-- name: AddUserToLearn :exec
@@ -291,42 +290,25 @@ func (q *Queries) ListTeachersForLearn(ctx context.Context, arg ListTeachersForL
 
 const listUsersInLearn = `-- name: ListUsersInLearn :many
 
-SELECT
-    u.id,
-    u.first_name,
-    u.last_name,
-    u.role,
-    u.prefered_language,
-    u.avatar_file_path,
-    u.avatar_url,
-    u.created_at
+SELECT u.id, u.email, u.email_verified, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
     JOIN "user_learn" uc ON u.id = uc.user_id
 WHERE uc.learn_id = $1
 `
 
-type ListUsersInLearnRow struct {
-	ID               string
-	FirstName        string
-	LastName         string
-	Role             Role
-	PreferedLanguage string
-	AvatarFilePath   string
-	AvatarUrl        string
-	CreatedAt        time.Time
-}
-
-func (q *Queries) ListUsersInLearn(ctx context.Context, learnID int32) ([]*ListUsersInLearnRow, error) {
+func (q *Queries) ListUsersInLearn(ctx context.Context, learnID int32) ([]*User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersInLearn, learnID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*ListUsersInLearnRow
+	var items []*User
 	for rows.Next() {
-		var i ListUsersInLearnRow
+		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -334,6 +316,7 @@ func (q *Queries) ListUsersInLearn(ctx context.Context, learnID int32) ([]*ListU
 			&i.AvatarFilePath,
 			&i.AvatarUrl,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

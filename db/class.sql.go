@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const addUserToClass = `-- name: AddUserToClass :exec
@@ -22,7 +20,7 @@ DO NOTHING
 
 type AddUserToClassParams struct {
 	UserID  string
-	ClassID uuid.UUID
+	ClassID string
 }
 
 func (q *Queries) AddUserToClass(ctx context.Context, arg AddUserToClassParams) error {
@@ -46,7 +44,7 @@ type CreateClassParams struct {
 	Name       string
 	LearnID    int32
 	IsPrivate  bool
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 }
 
 func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Class, error) {
@@ -73,7 +71,7 @@ const deleteClass = `-- name: DeleteClass :exec
 DELETE FROM "class" WHERE id = $1
 `
 
-func (q *Queries) DeleteClass(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteClass(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteClass, id)
 	return err
 }
@@ -84,6 +82,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -94,19 +93,20 @@ ORDER BY cl.created_at ASC
 `
 
 type FindClassRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
 
-func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, error) {
+func (q *Queries) FindClass(ctx context.Context, id string) (*FindClassRow, error) {
 	row := q.db.QueryRowContext(ctx, findClass, id)
 	var i FindClassRow
 	err := row.Scan(
@@ -118,6 +118,7 @@ func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, e
 		&i.TimeSlotID,
 		&i.Language,
 		&i.Topic,
+		&i.TeacherID,
 		&i.StartAt,
 		&i.EndAt,
 	)
@@ -130,6 +131,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -148,14 +150,15 @@ type FindClassByTeacherAndTimeParams struct {
 }
 
 type FindClassByTeacherAndTimeRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -172,6 +175,7 @@ func (q *Queries) FindClassByTeacherAndTime(ctx context.Context, arg FindClassBy
 		&i.TimeSlotID,
 		&i.Language,
 		&i.Topic,
+		&i.TeacherID,
 		&i.StartAt,
 		&i.EndAt,
 	)
@@ -184,6 +188,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -196,18 +201,19 @@ WHERE
 
 type FindClassByTeacherAndTimeSlotIdParams struct {
 	TeacherID string
-	ID        uuid.UUID
+	ID        string
 }
 
 type FindClassByTeacherAndTimeSlotIdRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -224,6 +230,7 @@ func (q *Queries) FindClassByTeacherAndTimeSlotId(ctx context.Context, arg FindC
 		&i.TimeSlotID,
 		&i.Language,
 		&i.Topic,
+		&i.TeacherID,
 		&i.StartAt,
 		&i.EndAt,
 	)
@@ -236,6 +243,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -245,14 +253,15 @@ ORDER BY cl.created_at ASC
 `
 
 type ListClassesRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -275,6 +284,7 @@ func (q *Queries) ListClasses(ctx context.Context) ([]*ListClassesRow, error) {
 			&i.TimeSlotID,
 			&i.Language,
 			&i.Topic,
+			&i.TeacherID,
 			&i.StartAt,
 			&i.EndAt,
 		); err != nil {
@@ -297,6 +307,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -307,14 +318,15 @@ ORDER BY t.start_at ASC
 `
 
 type ListClassesOfTeacherRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -337,6 +349,7 @@ func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID string) ([
 			&i.TimeSlotID,
 			&i.Language,
 			&i.Topic,
+			&i.TeacherID,
 			&i.StartAt,
 			&i.EndAt,
 		); err != nil {
@@ -359,6 +372,7 @@ SELECT
     cl.id, cl.name, cl.is_private, cl.learn_id, cl.created_at, cl.time_slot_id,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -370,14 +384,15 @@ ORDER BY uc.created_at ASC
 `
 
 type ListClassesOfUserRow struct {
-	ID         uuid.UUID
+	ID         string
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
 	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	TimeSlotID string
 	Language   string
 	Topic      string
+	TeacherID  string
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -400,6 +415,7 @@ func (q *Queries) ListClassesOfUser(ctx context.Context, userID string) ([]*List
 			&i.TimeSlotID,
 			&i.Language,
 			&i.Topic,
+			&i.TeacherID,
 			&i.StartAt,
 			&i.EndAt,
 		); err != nil {
@@ -418,42 +434,25 @@ func (q *Queries) ListClassesOfUser(ctx context.Context, userID string) ([]*List
 
 const listUsersInClass = `-- name: ListUsersInClass :many
 
-SELECT
-    u.id,
-    u.first_name,
-    u.last_name,
-    u.role,
-    u.prefered_language,
-    u.avatar_file_path,
-    u.avatar_url,
-    u.created_at
+SELECT u.id, u.email, u.email_verified, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
     JOIN "user_class" uc ON u.id = uc.user_id
 WHERE uc.class_id = $1
 `
 
-type ListUsersInClassRow struct {
-	ID               string
-	FirstName        string
-	LastName         string
-	Role             Role
-	PreferedLanguage string
-	AvatarFilePath   string
-	AvatarUrl        string
-	CreatedAt        time.Time
-}
-
-func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*ListUsersInClassRow, error) {
+func (q *Queries) ListUsersInClass(ctx context.Context, classID string) ([]*User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersInClass, classID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*ListUsersInClassRow
+	var items []*User
 	for rows.Next() {
-		var i ListUsersInClassRow
+		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
+			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -461,6 +460,7 @@ func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*L
 			&i.AvatarFilePath,
 			&i.AvatarUrl,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -482,7 +482,7 @@ DELETE FROM "user_class" WHERE user_id = $1 AND class_id = $2
 
 type RemoveUserFromClassParams struct {
 	UserID  string
-	ClassID uuid.UUID
+	ClassID string
 }
 
 func (q *Queries) RemoveUserFromClass(ctx context.Context, arg RemoveUserFromClassParams) error {

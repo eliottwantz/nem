@@ -7,9 +7,8 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const addTimeSlot = `-- name: AddTimeSlot :one
@@ -50,7 +49,7 @@ WHERE
 `
 
 type DeleteTimeSlotParams struct {
-	ID        uuid.UUID
+	ID        string
 	TeacherID string
 }
 
@@ -64,7 +63,7 @@ const findTimeSlot = `-- name: FindTimeSlot :one
 SELECT id, start_at, end_at, teacher_id FROM "time_slots" WHERE "id" = $1
 `
 
-func (q *Queries) FindTimeSlot(ctx context.Context, id uuid.UUID) (*TimeSlot, error) {
+func (q *Queries) FindTimeSlot(ctx context.Context, id string) (*TimeSlot, error) {
 	row := q.db.QueryRowContext(ctx, findTimeSlot, id)
 	var i TimeSlot
 	err := row.Scan(
@@ -134,11 +133,11 @@ GROUP BY ts."id", c."id"
 `
 
 type ListTeachersAvailableTimeSlotsRow struct {
-	ID        uuid.UUID
+	ID        string
 	StartAt   time.Time
 	EndAt     time.Time
 	TeacherID string
-	ClassID   uuid.NullUUID
+	ClassID   sql.NullString
 	NumUsers  int64
 }
 
@@ -219,7 +218,7 @@ WHERE
 type UpdateTimeSlotParams struct {
 	StartAt   time.Time
 	EndAt     time.Time
-	ID        uuid.UUID
+	ID        string
 	TeacherID string
 }
 

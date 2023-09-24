@@ -11,7 +11,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -108,8 +107,10 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID.String(),
+			Id:        c.ID,
 			Name:      c.Name,
+			TeacherId: c.TeacherID,
+			IsPrivate: c.IsPrivate,
 			Language:  c.Language,
 			Topic:     c.Topic,
 			StartAt:   c.StartAt,
@@ -123,12 +124,11 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 func (s *Service) JoinClass(ctx context.Context, classId string) error {
 	s.logger.Info("join class", "classId", classId)
 
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if classId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	class, err := db.Pg.FindClass(ctx, cID)
+	class, err := db.Pg.FindClass(ctx, classId)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
@@ -139,12 +139,11 @@ func (s *Service) JoinClass(ctx context.Context, classId string) error {
 func (s *Service) LeaveClass(ctx context.Context, classId string) error {
 	s.logger.Info("leave class", "classId", classId)
 
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if classId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	class, err := db.Pg.FindClass(ctx, cID)
+	class, err := db.Pg.FindClass(ctx, classId)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}

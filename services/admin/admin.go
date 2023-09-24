@@ -9,7 +9,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 )
 
 type Service struct{}
@@ -76,8 +75,10 @@ func (s *Service) AdminListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID.String(),
+			Id:        c.ID,
 			Name:      c.Name,
+			TeacherId: c.TeacherID,
+			IsPrivate: c.IsPrivate,
 			Language:  c.Language,
 			Topic:     c.Topic,
 			StartAt:   c.StartAt,
@@ -101,21 +102,20 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 	}
 	defer tx.Rollback()
 
-	timeSlotID, err := uuid.Parse(req.TimeSlotId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if req.TimeSlotId == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty timeSlotId param"))
 	}
 
 	class, err := tx.CreateClass(ctx, db.CreateClassParams{
 		Name:       req.Name,
 		LearnID:    req.LearnId,
-		TimeSlotID: timeSlotID,
+		TimeSlotID: req.TimeSlotId,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	timeSlot, err := tx.FindTimeSlot(ctx, timeSlotID)
+	timeSlot, err := tx.FindTimeSlot(ctx, req.TimeSlotId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -141,8 +141,10 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 	}
 
 	return &rpc.Class{
-		Id:        class.ID.String(),
+		Id:        class.ID,
 		Name:      class.Name,
+		TeacherId: timeSlot.TeacherID,
+		IsPrivate: class.IsPrivate,
 		Language:  learn.Language,
 		Topic:     learn.Topic,
 		StartAt:   timeSlot.StartAt,

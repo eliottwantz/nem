@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 )
 
 // EmittedMessage represents an emitted message
@@ -15,9 +14,9 @@ type EmittedMessage struct {
 
 // ReceivedMessage represents a received websocket message
 type ReceivedMessage struct {
-	Action Action    `json:"action"`
-	RoomID uuid.UUID `json:"roomId"`
-	Data   any       `json:"data"`
+	Action Action `json:"action"`
+	RoomID string `json:"roomId"`
+	Data   any    `json:"data"`
 }
 
 // encode encodes the given EmittedMessage into a byte slice.

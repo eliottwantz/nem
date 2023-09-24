@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createMessage = `-- name: CreateMessage :one
@@ -21,7 +19,7 @@ VALUES ($1, $2, $3) RETURNING id, text, user_id, class_id, created_at, updated_a
 
 type CreateMessageParams struct {
 	UserID  string
-	ClassID uuid.UUID
+	ClassID string
 	Text    string
 }
 
@@ -44,7 +42,7 @@ const deleteMessage = `-- name: DeleteMessage :exec
 DELETE FROM "message" WHERE "id" = $1
 `
 
-func (q *Queries) DeleteMessage(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteMessage(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteMessage, id)
 	return err
 }
@@ -96,7 +94,7 @@ WHERE "id" = $3 RETURNING id, text, user_id, class_id, created_at, updated_at
 type UpdateMessageParams struct {
 	Text      string
 	UpdatedAt time.Time
-	ID        uuid.UUID
+	ID        string
 }
 
 func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (*Message, error) {

@@ -23,7 +23,6 @@ func (r AdminCreateClassRequest) Validate() error {
 
 func (r CreateClassRequest) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.UserIDs, validation.Required),
 		validation.Field(&r.Name, validation.Required),
 		validation.Field(&r.LearnId, validation.Required),
 		validation.Field(&r.TimeSlotId, validation.Required),

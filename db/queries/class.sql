@@ -4,6 +4,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -17,6 +18,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -31,6 +33,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -47,6 +50,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -58,15 +62,7 @@ WHERE
 
 -- name: ListUsersInClass :many
 
-SELECT
-    u.id,
-    u.first_name,
-    u.last_name,
-    u.role,
-    u.prefered_language,
-    u.avatar_file_path,
-    u.avatar_url,
-    u.created_at
+SELECT u.*
 FROM "user" u
     JOIN "user_class" uc ON u.id = uc.user_id
 WHERE uc.class_id = $1;
@@ -77,6 +73,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
@@ -92,6 +89,7 @@ SELECT
     cl.*,
     c.language,
     c.topic,
+    t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl

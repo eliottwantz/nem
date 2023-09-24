@@ -9,8 +9,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -28,11 +26,6 @@ func NewService(wsService *ws.Service) *Service {
 func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 	s.logger.Info("message received")
 
-	cID, err := uuid.Parse(message.ClassId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
 	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextSessionUserID(ctx))
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -40,7 +33,7 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 
 	msg, err := db.Pg.CreateMessage(ctx, db.CreateMessageParams{
 		UserID:  u.ID,
-		ClassID: cID,
+		ClassID: message.ClassId,
 		Text:    message.Text,
 	})
 	if err != nil {
@@ -48,12 +41,12 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 	}
 
 	responseMsg := rpc.MessageResponse{
-		Id:        msg.ID.String(),
+		Id:        msg.ID,
 		Text:      msg.Text,
 		CreatedAt: msg.CreatedAt,
 		UpdatedAt: msg.UpdatedAt,
-		ClassId:   msg.ClassID.String(),
+		ClassId:   msg.ClassID,
 		User:      rpc.FromDbUser(u),
 	}
-	return s.wsService.EmitNewMessage(cID, &responseMsg)
+	return s.wsService.EmitNewMessage(message.ClassId, &responseMsg)
 }

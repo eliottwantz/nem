@@ -11,7 +11,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
 )
@@ -107,16 +106,20 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
+	tID := httpmw.ContextSessionUserID(ctx)
+
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID.String(),
+			Id:        c.ID,
 			Name:      c.Name,
+			IsPrivate: c.IsPrivate,
 			Language:  c.Language,
 			Topic:     c.Topic,
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
 			CreatedAt: c.CreatedAt,
+			TeacherId: tID,
 		})
 	}
 	return ret, nil
@@ -125,12 +128,11 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 func (s *Service) StartClass(ctx context.Context, classId string) error {
 	s.logger.Info("start class", "classId", classId)
 
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	if classId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	class, err := db.Pg.FindClass(ctx, cID)
+	class, err := db.Pg.FindClass(ctx, classId)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
@@ -141,12 +143,11 @@ func (s *Service) StartClass(ctx context.Context, classId string) error {
 func (s *Service) EndClass(ctx context.Context, classId string) error {
 	s.logger.Info("end class", "classId", classId)
 
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
+	if classId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	class, err := db.Pg.FindClass(ctx, cID)
+	class, err := db.Pg.FindClass(ctx, classId)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
@@ -163,7 +164,7 @@ func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TimeSlot, erro
 	ret := make([]*rpc.TimeSlot, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.TimeSlot{
-			Id:        c.ID.String(),
+			Id:        c.ID,
 			TeacherId: c.TeacherID,
 			StartAt:   c.StartAt,
 			EndAt:     c.EndAt,
@@ -209,7 +210,7 @@ func (s *Service) AddAvailability(ctx context.Context, req *rpc.AddAvailabilityR
 	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
 	for _, t := range timeSlots {
 		ret = append(ret, &rpc.TimeSlot{
-			Id:        t.ID.String(),
+			Id:        t.ID,
 			TeacherId: t.TeacherID,
 			StartAt:   t.StartAt,
 			EndAt:     t.EndAt,
@@ -225,9 +226,8 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
 	}
 
-	timeslotID, err := uuid.Parse(req.Id)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty id param"))
+	if req.Id == "" {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty timeslot id param"))
 	}
 	teacherID := httpmw.ContextSessionUserID(ctx)
 
@@ -239,7 +239,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 
 	_, err = tx.FindClassByTeacherAndTimeSlotId(ctx, db.FindClassByTeacherAndTimeSlotIdParams{
 		TeacherID: teacherID,
-		ID:        timeslotID,
+		ID:        req.Id,
 	})
 	if err == nil {
 		// There is a class for that time slot. Cannot update it
@@ -250,7 +250,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 		// The user updated a time slot to span on multiple one hour time slots
 		// First delete the old time slot then add the new ones
 		err = tx.DeleteTimeSlot(ctx, db.DeleteTimeSlotParams{
-			ID:        timeslotID,
+			ID:        req.Id,
 			TeacherID: teacherID,
 		})
 		if err != nil {
@@ -276,7 +276,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 		ret := make([]*rpc.TimeSlot, 0, len(req.Times))
 		for _, t := range timeSlots {
 			ret = append(ret, &rpc.TimeSlot{
-				Id:        t.ID.String(),
+				Id:        t.ID,
 				TeacherId: t.TeacherID,
 				StartAt:   t.StartAt,
 				EndAt:     t.EndAt,
@@ -294,7 +294,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 		res, err := db.Pg.UpdateTimeSlot(ctx, db.UpdateTimeSlotParams{
 			StartAt:   req.StartAt,
 			EndAt:     req.EndAt,
-			ID:        timeslotID,
+			ID:        req.Id,
 			TeacherID: teacherID,
 		})
 		if err != nil {
@@ -308,7 +308,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 		}
 
 		return []*rpc.TimeSlot{{
-			Id:        res.ID.String(),
+			Id:        res.ID,
 			TeacherId: res.TeacherID,
 			StartAt:   res.StartAt,
 			EndAt:     res.EndAt,
@@ -317,12 +317,11 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 }
 
 func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
-	timeslotID, err := uuid.Parse(id)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty id param"))
+	if id == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty timeslot id param"))
 	}
-	err = db.Pg.DeleteTimeSlot(ctx, db.DeleteTimeSlotParams{
-		ID:        timeslotID,
+	err := db.Pg.DeleteTimeSlot(ctx, db.DeleteTimeSlotParams{
+		ID:        id,
 		TeacherID: httpmw.ContextSessionUserID(ctx),
 	})
 	if err != nil {
@@ -337,4 +336,63 @@ func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) CancelClass(ctx context.Context, classId string) ([]*rpc.User, *rpc.User, error) {
+	if classId == "" {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty class id"))
+	}
+
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.FindClass(ctx, classId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
+		}
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	usersInClass, err := tx.ListUsersInClass(ctx, classId)
+	if err != nil {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	// Remove all students from class
+	for _, u := range usersInClass {
+		err = tx.RemoveUserFromClass(ctx, db.RemoveUserFromClassParams{
+			UserID:  u.ID,
+			ClassID: classId,
+		})
+		if err != nil {
+			return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+	}
+
+	teacher, err := tx.FindUserByID(ctx, httpmw.ContextSessionUserID(ctx))
+	if err != nil {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	// Delete class
+	err = tx.DeleteClass(ctx, classId)
+	if err != nil {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.User, 0, len(usersInClass))
+	for _, u := range usersInClass {
+		ret = append(ret, rpc.FromDbUser(u))
+	}
+
+	return ret, rpc.FromDbUser(teacher), nil
 }
