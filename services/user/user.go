@@ -35,6 +35,19 @@ func (s *Service) Get(ctx context.Context) (*rpc.User, error) {
 	return rpc.FromDbUser(u), nil
 }
 
+func (s *Service) FindUserByID(ctx context.Context, id string) (*rpc.User, error) {
+	u, err := db.Pg.FindUserByID(ctx, id)
+	if err != nil {
+		s.logger.Warn("could not find user", "err", err)
+		if err == sql.ErrNoRows {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
+		}
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrGet)
+	}
+
+	return rpc.FromDbUser(u), nil
+}
+
 func (s *Service) Create(ctx context.Context, req *rpc.CreateUserRequest) (*rpc.User, error) {
 	if !db.Role(req.Role).Valid() {
 		s.logger.Warn("invalid role", "role", req.Role)

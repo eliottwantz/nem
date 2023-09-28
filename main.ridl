@@ -62,6 +62,7 @@ struct Class
     - teacherId: string
     - isPrivate: bool
     - name: string
+    - hasStarted: bool
     - language: string
     - topic: string
     - startAt: timestamp
@@ -71,6 +72,7 @@ struct Class
 struct ClassDetails
     - class: Class
     - users: []User
+    - teacher: User
 
 
 struct Message
@@ -120,6 +122,7 @@ struct CreateClassRequest
 
 service UserServiceAPI
     - Get() => (user: User)
+    - FindUserByID(id: string) => (user: User)
     - Create(req: CreateUserRequest) => (user: User)
     - ChooseRole(role: string)
     - UpdatePreferedLanguage(lang: string)
@@ -152,7 +155,7 @@ service ClassServiceAPI
     - ListAvailableLearns() => (learns: []Learn)
     - ListTeachersForLearn(lang: string, topic: string) => (teachers: []User)
     - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
-    - ShowClassDetails(classId: string) => (class: ClassDetails)
+    - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 

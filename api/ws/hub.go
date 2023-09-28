@@ -130,7 +130,7 @@ func (h *Hub) createRoom(id string) *Room {
 
 func (h *Hub) removeRoom(r *Room) {
 	for c := range r.clients {
-		delete(c.rooms, r)
+		r.unregister <- c
 	}
 	delete(h.rooms, r)
 }

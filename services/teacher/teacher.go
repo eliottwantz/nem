@@ -111,15 +111,16 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID,
-			Name:      c.Name,
-			IsPrivate: c.IsPrivate,
-			Language:  c.Language,
-			Topic:     c.Topic,
-			StartAt:   c.StartAt,
-			EndAt:     c.EndAt,
-			CreatedAt: c.CreatedAt,
-			TeacherId: tID,
+			Id:         c.ID,
+			Name:       c.Name,
+			IsPrivate:  c.IsPrivate,
+			HasStarted: c.HasStarted,
+			Language:   c.Language,
+			Topic:      c.Topic,
+			StartAt:    c.StartAt,
+			EndAt:      c.EndAt,
+			CreatedAt:  c.CreatedAt,
+			TeacherId:  tID,
 		})
 	}
 	return ret, nil
@@ -135,6 +136,11 @@ func (s *Service) StartClass(ctx context.Context, classId string) error {
 	class, err := db.Pg.FindClass(ctx, classId)
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
+	}
+
+	err = db.Pg.SetClassHasStarted(ctx, class.ID)
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
 	return s.wsService.StartClass(class.ID, httpmw.ContextSessionUserID(ctx))

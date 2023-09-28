@@ -76,17 +76,21 @@ func (s *Service) EndClass(roomId string) error {
 		return err
 	}
 
+	s.hub.PublishToRoom(&EmittedMessage{
+		Action: ActionClassEnded,
+		Data:   nil,
+	}, roomId)
+
 	s.hub.removeRoom(r)
 
 	return nil
 }
 
 func (s *Service) EmitNewMessage(roomID string, message *rpc.MessageResponse) error {
-	msg := EmittedMessage{
+	s.hub.PublishToRoom(&EmittedMessage{
 		Action: ActionEmitNewMessage,
 		Data:   message,
-	}
-	s.hub.PublishToRoom(&msg, roomID)
+	}, roomID)
 
 	return nil
 }

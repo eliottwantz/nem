@@ -123,3 +123,7 @@ DELETE FROM "user_class" WHERE user_id = $1 AND class_id = $2;
 -- name: DeleteClass :exec
 
 DELETE FROM "class" WHERE id = $1;
+
+-- name: SetClassHasStarted :exec
+
+UPDATE "class" SET has_started = true WHERE id = $1;

@@ -43,15 +43,16 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID,
-			Name:      c.Name,
-			TeacherId: c.TeacherID,
-			IsPrivate: c.IsPrivate,
-			Language:  c.Language,
-			Topic:     c.Topic,
-			StartAt:   c.StartAt,
-			EndAt:     c.EndAt,
-			CreatedAt: c.CreatedAt,
+			Id:         c.ID,
+			Name:       c.Name,
+			HasStarted: c.HasStarted,
+			TeacherId:  c.TeacherID,
+			IsPrivate:  c.IsPrivate,
+			Language:   c.Language,
+			Topic:      c.Topic,
+			StartAt:    c.StartAt,
+			EndAt:      c.EndAt,
+			CreatedAt:  c.CreatedAt,
 		})
 	}
 
@@ -97,6 +98,11 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
+	teacher, err := tx.FindUserByID(ctx, dbClass.TeacherID)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -109,17 +115,19 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 
 	return &rpc.ClassDetails{
 		Class: &rpc.Class{
-			Id:        dbClass.ID,
-			Name:      dbClass.Name,
-			Language:  dbClass.Language,
-			Topic:     dbClass.Topic,
-			TeacherId: dbClass.TeacherID,
-			IsPrivate: dbClass.IsPrivate,
-			StartAt:   dbClass.StartAt,
-			EndAt:     dbClass.EndAt,
-			CreatedAt: dbClass.CreatedAt,
+			Id:         dbClass.ID,
+			Name:       dbClass.Name,
+			Language:   dbClass.Language,
+			HasStarted: dbClass.HasStarted,
+			Topic:      dbClass.Topic,
+			TeacherId:  dbClass.TeacherID,
+			IsPrivate:  dbClass.IsPrivate,
+			StartAt:    dbClass.StartAt,
+			EndAt:      dbClass.EndAt,
+			CreatedAt:  dbClass.CreatedAt,
 		},
-		Users: rpcUsers,
+		Users:   rpcUsers,
+		Teacher: rpc.FromDbUser(teacher),
 	}, nil
 }
 
@@ -250,15 +258,16 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 			}
 			return &rpc.Class{
-				Id:        exists.ID,
-				TeacherId: timeSlot.TeacherID,
-				IsPrivate: exists.IsPrivate,
-				Name:      exists.Name,
-				Language:  exists.Language,
-				Topic:     exists.Topic,
-				StartAt:   timeSlot.StartAt,
-				EndAt:     timeSlot.EndAt,
-				CreatedAt: exists.CreatedAt,
+				Id:         exists.ID,
+				TeacherId:  timeSlot.TeacherID,
+				IsPrivate:  exists.IsPrivate,
+				HasStarted: exists.HasStarted,
+				Name:       exists.Name,
+				Language:   exists.Language,
+				Topic:      exists.Topic,
+				StartAt:    timeSlot.StartAt,
+				EndAt:      timeSlot.EndAt,
+				CreatedAt:  exists.CreatedAt,
 			}, nil
 		} else if err != sql.ErrNoRows {
 			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -294,14 +303,15 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 
 	return &rpc.Class{
-		Id:        dbClass.ID,
-		TeacherId: timeSlot.TeacherID,
-		IsPrivate: dbClass.IsPrivate,
-		Name:      dbClass.Name,
-		Language:  learnInfo.Language,
-		Topic:     learnInfo.Topic,
-		StartAt:   timeSlot.StartAt,
-		EndAt:     timeSlot.EndAt,
-		CreatedAt: dbClass.CreatedAt,
+		Id:         dbClass.ID,
+		TeacherId:  timeSlot.TeacherID,
+		IsPrivate:  dbClass.IsPrivate,
+		HasStarted: dbClass.HasStarted,
+		Name:       dbClass.Name,
+		Language:   learnInfo.Language,
+		Topic:      learnInfo.Topic,
+		StartAt:    timeSlot.StartAt,
+		EndAt:      timeSlot.EndAt,
+		CreatedAt:  dbClass.CreatedAt,
 	}, nil
 }

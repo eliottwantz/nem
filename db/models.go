@@ -77,8 +77,9 @@ type Class struct {
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	CreatedAt  time.Time
 	TimeSlotID string
+	HasStarted bool
+	CreatedAt  time.Time
 }
 
 type EmailVerificationToken struct {
