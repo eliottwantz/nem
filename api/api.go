@@ -27,11 +27,11 @@ import (
 	"nem/utils"
 
 	"github.com/charmbracelet/log"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/jwalton/gchalk"
 	"golang.org/x/mod/modfile"
 )
@@ -49,6 +49,7 @@ type Api struct {
 	messageService *message.Service
 	wsHub          *ws.Hub
 	wsService      *ws.Service
+	jwauth         *jwtauth.JWTAuth
 }
 
 type Services struct {
@@ -60,6 +61,7 @@ type Services struct {
 	MessageService *message.Service
 	WsHub          *ws.Hub
 	WsService      *ws.Service
+	JWTAuth        *jwtauth.JWTAuth
 }
 
 func New(
@@ -109,6 +111,7 @@ func New(
 		messageService: services.MessageService,
 		wsHub:          services.WsHub,
 		wsService:      services.WsService,
+		jwauth:         services.JWTAuth,
 	}
 
 	api.routes()
@@ -138,8 +141,7 @@ func (api *Api) routes() {
 	}
 
 	api.r.Group(func(r chi.Router) {
-		// r.Use(httpmw.WSAuth(api.jwauth))
-		r.Use(httpmw.Auth)
+		r.Use(httpmw.Auth(api.jwauth))
 		r.Get("/ws", api.wsHub.ServeWS)
 	})
 
@@ -154,8 +156,7 @@ func (api *Api) routes() {
 
 			// Private routes
 			r.Group(func(r chi.Router) {
-				// r.Use(httpmw.Auth(api.jwauth))
-				r.Use(httpmw.Auth)
+				r.Use(httpmw.Auth(api.jwauth))
 
 				r.Post("/*", func(w http.ResponseWriter, req *http.Request) {
 					req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")

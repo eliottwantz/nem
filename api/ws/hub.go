@@ -9,6 +9,7 @@ import (
 	"nem/services/user"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
@@ -67,7 +68,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newClient(httpmw.ContextSessionUserID(r.Context()), conn, h)
+	c := newClient(httpmw.ContextUID(r.Context()), conn, h)
 
 	go c.writePump()
 	go c.readPump()
@@ -94,13 +95,13 @@ func (h *Hub) Run() {
 //
 // The function takes in the message to be sent as a byte array and the ID of the room.
 // It finds the room with the given ID and publishes the message to all clients in that room.
-func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId string) {
+func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId uuid.UUID) {
 	if room, err := h.findRoomById(roomId); err == nil {
 		room.broadcast <- msg
 	}
 }
 
-func (h *Hub) findRoomById(id string) (*Room, error) {
+func (h *Hub) findRoomById(id uuid.UUID) (*Room, error) {
 	for room := range h.rooms {
 		if room.id == id {
 			return room, nil
@@ -110,7 +111,7 @@ func (h *Hub) findRoomById(id string) (*Room, error) {
 	return nil, errors.New("ws room not found")
 }
 
-func (h *Hub) findClientById(id string) (*Client, error) {
+func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
 	for c := range h.clients {
 		if c.id == id {
 			return c, nil
@@ -120,7 +121,7 @@ func (h *Hub) findClientById(id string) (*Client, error) {
 	return nil, errors.New("ws client not found")
 }
 
-func (h *Hub) createRoom(id string) *Room {
+func (h *Hub) createRoom(id uuid.UUID) *Room {
 	room := NewRoom(id, h.redisClient)
 	go room.Run()
 	h.rooms[room] = struct{}{}

@@ -9,6 +9,7 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -26,14 +27,14 @@ func NewService(wsService *ws.Service) *Service {
 func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 	s.logger.Info("message received")
 
-	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextSessionUserID(ctx))
+	u, err := db.Pg.FindUserByID(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
 	msg, err := db.Pg.CreateMessage(ctx, db.CreateMessageParams{
 		UserID:  u.ID,
-		ClassID: message.ClassId,
+		ClassID: uuid.MustParse(message.ClassId),
 		Text:    message.Text,
 	})
 	if err != nil {
@@ -41,12 +42,12 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 	}
 
 	responseMsg := rpc.MessageResponse{
-		Id:        msg.ID,
+		Id:        msg.ID.String(),
 		Text:      msg.Text,
 		CreatedAt: msg.CreatedAt,
 		UpdatedAt: msg.UpdatedAt,
-		ClassId:   msg.ClassID,
+		ClassId:   msg.ClassID.String(),
 		User:      rpc.FromDbUser(u),
 	}
-	return s.wsService.EmitNewMessage(message.ClassId, &responseMsg)
+	return s.wsService.EmitNewMessage(msg.ClassID, &responseMsg)
 }

@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const addUserToClass = `-- name: AddUserToClass :exec
@@ -19,8 +21,8 @@ DO NOTHING
 `
 
 type AddUserToClassParams struct {
-	UserID  string
-	ClassID string
+	UserID  uuid.UUID
+	ClassID uuid.UUID
 }
 
 func (q *Queries) AddUserToClass(ctx context.Context, arg AddUserToClassParams) error {
@@ -44,7 +46,7 @@ type CreateClassParams struct {
 	Name       string
 	LearnID    int32
 	IsPrivate  bool
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 }
 
 func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Class, error) {
@@ -72,7 +74,7 @@ const deleteClass = `-- name: DeleteClass :exec
 DELETE FROM "class" WHERE id = $1
 `
 
-func (q *Queries) DeleteClass(ctx context.Context, id string) error {
+func (q *Queries) DeleteClass(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteClass, id)
 	return err
 }
@@ -94,21 +96,21 @@ ORDER BY cl.created_at ASC
 `
 
 type FindClassRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
 
-func (q *Queries) FindClass(ctx context.Context, id string) (*FindClassRow, error) {
+func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, error) {
 	row := q.db.QueryRowContext(ctx, findClass, id)
 	var i FindClassRow
 	err := row.Scan(
@@ -147,22 +149,22 @@ WHERE
 `
 
 type FindClassByTeacherAndTimeParams struct {
-	TeacherID string
+	TeacherID uuid.UUID
 	StartAt   time.Time
 	EndAt     time.Time
 }
 
 type FindClassByTeacherAndTimeRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -205,21 +207,21 @@ WHERE
 `
 
 type FindClassByTeacherAndTimeSlotIdParams struct {
-	TeacherID string
-	ID        string
+	TeacherID uuid.UUID
+	ID        uuid.UUID
 }
 
 type FindClassByTeacherAndTimeSlotIdRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -260,16 +262,16 @@ ORDER BY cl.created_at ASC
 `
 
 type ListClassesRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
@@ -327,21 +329,21 @@ ORDER BY t.start_at ASC
 `
 
 type ListClassesOfTeacherRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
 
-func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID string) ([]*ListClassesOfTeacherRow, error) {
+func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID) ([]*ListClassesOfTeacherRow, error) {
 	rows, err := q.db.QueryContext(ctx, listClassesOfTeacher, teacherID)
 	if err != nil {
 		return nil, err
@@ -395,21 +397,21 @@ ORDER BY uc.created_at ASC
 `
 
 type ListClassesOfUserRow struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
 	Language   string
 	Topic      string
-	TeacherID  string
+	TeacherID  uuid.UUID
 	StartAt    time.Time
 	EndAt      time.Time
 }
 
-func (q *Queries) ListClassesOfUser(ctx context.Context, userID string) ([]*ListClassesOfUserRow, error) {
+func (q *Queries) ListClassesOfUser(ctx context.Context, userID uuid.UUID) ([]*ListClassesOfUserRow, error) {
 	rows, err := q.db.QueryContext(ctx, listClassesOfUser, userID)
 	if err != nil {
 		return nil, err
@@ -447,13 +449,13 @@ func (q *Queries) ListClassesOfUser(ctx context.Context, userID string) ([]*List
 
 const listUsersInClass = `-- name: ListUsersInClass :many
 
-SELECT u.id, u.email, u.email_verified, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT u.id, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
     JOIN "user_class" uc ON u.id = uc.user_id
 WHERE uc.class_id = $1
 `
 
-func (q *Queries) ListUsersInClass(ctx context.Context, classID string) ([]*User, error) {
+func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersInClass, classID)
 	if err != nil {
 		return nil, err
@@ -464,8 +466,6 @@ func (q *Queries) ListUsersInClass(ctx context.Context, classID string) ([]*User
 		var i User
 		if err := rows.Scan(
 			&i.ID,
-			&i.Email,
-			&i.EmailVerified,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -494,8 +494,8 @@ DELETE FROM "user_class" WHERE user_id = $1 AND class_id = $2
 `
 
 type RemoveUserFromClassParams struct {
-	UserID  string
-	ClassID string
+	UserID  uuid.UUID
+	ClassID uuid.UUID
 }
 
 func (q *Queries) RemoveUserFromClass(ctx context.Context, arg RemoveUserFromClassParams) error {
@@ -508,7 +508,7 @@ const setClassHasStarted = `-- name: SetClassHasStarted :exec
 UPDATE "class" SET has_started = true WHERE id = $1
 `
 
-func (q *Queries) SetClassHasStarted(ctx context.Context, id string) error {
+func (q *Queries) SetClassHasStarted(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, setClassHasStarted, id)
 	return err
 }

@@ -5,10 +5,11 @@
 package db
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Role string
@@ -73,19 +74,13 @@ func AllRoleValues() []Role {
 }
 
 type Class struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
 	LearnID    int32
-	TimeSlotID string
+	TimeSlotID uuid.UUID
 	HasStarted bool
 	CreatedAt  time.Time
-}
-
-type EmailVerificationToken struct {
-	ID      string
-	UserID  string
-	Expires int64
 }
 
 type Learn struct {
@@ -95,31 +90,23 @@ type Learn struct {
 }
 
 type Message struct {
-	ID        string
+	ID        uuid.UUID
 	Text      string
-	UserID    string
-	ClassID   string
+	UserID    uuid.UUID
+	ClassID   uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type PasswordResetToken struct {
-	ID      string
-	UserID  string
-	Expires int64
-}
-
 type TimeSlot struct {
-	ID        string
+	ID        uuid.UUID
 	StartAt   time.Time
 	EndAt     time.Time
-	TeacherID string
+	TeacherID uuid.UUID
 }
 
 type User struct {
-	ID               string
-	Email            string
-	EmailVerified    bool
+	ID               uuid.UUID
 	FirstName        string
 	LastName         string
 	Role             Role
@@ -131,19 +118,13 @@ type User struct {
 }
 
 type UserClass struct {
-	UserID    string
-	ClassID   string
+	UserID    uuid.UUID
+	ClassID   uuid.UUID
 	CreatedAt time.Time
 }
 
-type UserKey struct {
-	ID             string
-	UserID         string
-	HashedPassword sql.NullString
-}
-
 type UserLearn struct {
-	UserID    string
+	UserID    uuid.UUID
 	LearnID   int32
 	CreatedAt time.Time
 	UpdatedAt time.Time

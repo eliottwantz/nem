@@ -1,22 +1,22 @@
 name: "nem"
 
 services:
-  postgres:
-    container_name: postgres_container
-    image: postgres
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${PG_PASS}
-      PGDATA: /data/postgres
-    volumes:
-      - postgres:/data/postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - nem-network
-    restart: unless-stopped
+  # postgres:
+  #   container_name: postgres_container
+  #   image: postgres
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  #     POSTGRES_PASSWORD: ${PG_PASS}
+  #     PGDATA: /data/postgres
+  #   volumes:
+  #     - postgres:/data/postgres
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - nem-network
+  #   restart: unless-stopped
 
   redis:
     image: redis
@@ -34,13 +34,13 @@ services:
     networks:
       - nem-network
 
-  mail:
-    image: inbucket/inbucket:3.0.3
-    ports:
-      - "2500:2500" # SMTP
-      - "9000:9000" # web interface
-      - "1100:1100" # POP3
-    restart: unless-stopped
+  # mail:
+  #   image: inbucket/inbucket:3.0.3
+  #   ports:
+  #     - "2500:2500" # SMTP
+  #     - "9000:9000" # web interface
+  #     - "1100:1100" # POP3
+  #   restart: unless-stopped
 
 volumes:
   postgres:

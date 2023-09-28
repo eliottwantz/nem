@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
 // Room represents a websocket room
 type Room struct {
-	id         string
+	id         uuid.UUID
 	clients    map[*Client]struct{}
 	register   chan *Client
 	unregister chan *Client
@@ -21,7 +22,7 @@ type Room struct {
 var ctx = context.Background()
 
 // NewRoom creates a new Room
-func NewRoom(id string, rds *redis.Client) *Room {
+func NewRoom(id uuid.UUID, rds *redis.Client) *Room {
 	return &Room{
 		id:         id,
 		clients:    make(map[*Client]struct{}),
@@ -31,10 +32,6 @@ func NewRoom(id string, rds *redis.Client) *Room {
 		redis:      rds,
 		logger:     log.With("ws room", id),
 	}
-}
-
-func (r *Room) GetId() string {
-	return r.id
 }
 
 func (r *Room) Run() {
@@ -58,14 +55,14 @@ func (r *Room) Run() {
 }
 
 func (r *Room) publishRoomMessage(message []byte) {
-	err := r.redis.Publish(ctx, r.GetId(), message).Err()
+	err := r.redis.Publish(ctx, r.id.String(), message).Err()
 	if err != nil {
 		r.logger.Warn("publish error", "err", err)
 	}
 }
 
 func (r *Room) subscribeToRoomMessages() {
-	ch := r.redis.Subscribe(ctx, r.GetId()).Channel()
+	ch := r.redis.Subscribe(ctx, r.id.String()).Channel()
 
 	for msg := range ch {
 		for client := range r.clients {

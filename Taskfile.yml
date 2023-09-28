@@ -77,13 +77,13 @@ tasks:
 
   up:
     cmds:
-      # - supabase start
+      - supabase start
       - docker compose up -d
     desc: Start containers
 
   down:
     cmds:
-      # - supabase stop
+      - supabase stop
       - docker compose down
     desc: Stop containers
 
@@ -117,6 +117,7 @@ tasks:
 
   resetdb:
     cmds:
+      - supabse stop
       - docker compose down -v
       - task: up
     desc: Reset db

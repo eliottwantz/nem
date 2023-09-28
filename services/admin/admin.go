@@ -9,6 +9,7 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 )
 
 type Service struct{}
@@ -30,7 +31,7 @@ func (s *Service) AdminListUsers(ctx context.Context) ([]*rpc.User, error) {
 	rpcUsers := make([]*rpc.User, 0, len(users))
 	for _, user := range users {
 		rpcUsers = append(rpcUsers, &rpc.User{
-			Id:               user.ID,
+			Id:               user.ID.String(),
 			FirstName:        user.FirstName,
 			LastName:         user.LastName,
 			Role:             string(user.Role),
@@ -45,7 +46,8 @@ func (s *Service) AdminListUsers(ctx context.Context) ([]*rpc.User, error) {
 }
 
 func (s *Service) AdminSetRole(ctx context.Context, userId string, role string) error {
-	if userId == "" {
+	uID, err := uuid.Parse(userId)
+	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("user id is empty"))
 	}
 
@@ -54,8 +56,8 @@ func (s *Service) AdminSetRole(ctx context.Context, userId string, role string) 
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrInvalidRole)
 	}
 
-	err := db.Pg.SetUserRole(ctx, db.SetUserRoleParams{
-		ID:   userId,
+	err = db.Pg.SetUserRole(ctx, db.SetUserRoleParams{
+		ID:   uID,
 		Role: db.Role(role),
 	})
 	if err != nil {
@@ -75,9 +77,9 @@ func (s *Service) AdminListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:        c.ID,
+			Id:        c.ID.String(),
 			Name:      c.Name,
-			TeacherId: c.TeacherID,
+			TeacherId: c.TeacherID.String(),
 			IsPrivate: c.IsPrivate,
 			Language:  c.Language,
 			Topic:     c.Topic,
@@ -102,27 +104,28 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 	}
 	defer tx.Rollback()
 
-	if req.TimeSlotId == "" {
+	tID, err := uuid.Parse(req.TimeSlotId)
+	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty timeSlotId param"))
 	}
 
 	class, err := tx.CreateClass(ctx, db.CreateClassParams{
 		Name:       req.Name,
 		LearnID:    req.LearnId,
-		TimeSlotID: req.TimeSlotId,
+		TimeSlotID: tID,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	timeSlot, err := tx.FindTimeSlot(ctx, req.TimeSlotId)
+	timeSlot, err := tx.FindTimeSlot(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
 	for _, uID := range req.UserIDs {
 		err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
-			UserID:  uID,
+			UserID:  uuid.MustParse(uID),
 			ClassID: class.ID,
 		})
 		if err != nil {
@@ -141,9 +144,9 @@ func (s *Service) AdminCreateClass(ctx context.Context, req *rpc.AdminCreateClas
 	}
 
 	return &rpc.Class{
-		Id:        class.ID,
+		Id:        class.ID.String(),
 		Name:      class.Name,
-		TeacherId: timeSlot.TeacherID,
+		TeacherId: timeSlot.TeacherID.String(),
 		IsPrivate: class.IsPrivate,
 		Language:  learn.Language,
 		Topic:     learn.Topic,
