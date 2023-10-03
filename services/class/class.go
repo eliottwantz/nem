@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"slices"
 	"time"
 
 	"nem/api/httpmw"
@@ -14,7 +15,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 	"github.com/livekit/protocol/auth"
-	"golang.org/x/exp/slices"
 )
 
 type Service struct {
