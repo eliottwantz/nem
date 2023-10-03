@@ -3,6 +3,7 @@ CREATE TYPE "role" AS ENUM ('student', 'teacher', 'admin');
 CREATE TABLE
     "user" (
         id UUID PRIMARY KEY REFERENCES "auth"."users"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "email" TEXT NOT NULL UNIQUE,
         "first_name" TEXT NOT NULL,
         "last_name" TEXT NOT NULL,
         "role" "role" NOT NULL,

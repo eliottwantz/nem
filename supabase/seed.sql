@@ -98,6 +98,38 @@ VALUES (
         NULL
     ), (
         '00000000-0000-0000-0000-000000000000',
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0',
+        'authenticated',
+        'authenticated',
+        'teacher2@nem.com',
+        '$2a$10$zmDR3TUYnaC4OvbTrufahOkYILCeD55SH40PJ4vv86NNz0QdkjgcG',
+        '2022-10-04 03:41:27.39308+00',
+        NULL,
+        '',
+        NULL,
+        '',
+        NULL,
+        '',
+        '',
+        NULL,
+        NULL,
+        '{"provider": "email", "providers": ["email"]}',
+        '{}',
+        NULL,
+        '2022-10-04 03:41:27.391146+00',
+        '2022-10-04 03:41:27.39308+00',
+        NULL,
+        NULL,
+        '',
+        '',
+        NULL,
+        '',
+        0,
+        NULL,
+        '',
+        NULL
+    ), (
+        '00000000-0000-0000-0000-000000000000',
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde',
         'authenticated',
         'authenticated',
@@ -189,6 +221,14 @@ VALUES (
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
     ), (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0',
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+        '{"sub": "9974eb35-ff48-43eb-a047-9af99abfd3d0","email":"teacher2@nem.com"}',
+        'email',
+        '2022-10-04 04:45:00.000+00',
+        '2022-10-04 03:41:27.391146+00',
+        '2022-10-04 03:41:27.39308+00'
+    ), (
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde',
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid,
         '{"sub": "d8264d2b-99ba-4e4c-a86f-f7eaad15ccde","email":"a@nem.com"}',
@@ -209,6 +249,7 @@ VALUES (
 insert into
     "public"."user" (
         id,
+        email,
         first_name,
         last_name,
         role,
@@ -216,24 +257,35 @@ insert into
     )
 values (
         '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b':: uuid,
+        'admin@nem.com',
         'admin',
         'admin',
         'admin',
         'en'
     ), (
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid,
+        'teacher@nem.com',
+        'teacher',
+        'teacher',
+        'teacher',
+        'en'
+    ), (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+        'teacher2@nem.com',
         'teacher',
         'teacher',
         'teacher',
         'en'
     ), (
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid,
+        'a@nem.com',
         'a',
         'a',
         'student',
         'en'
     ), (
         '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid,
+        'b@nem.com',
         'b',
         'b',
         'student',

@@ -19,12 +19,13 @@ SELECT * FROM "user" WHERE id = $1;
 INSERT INTO
     "user" (
         id,
+        email,
         first_name,
         last_name,
         role,
         prefered_language
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING *;
+VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: UpdateUserNames :one
 

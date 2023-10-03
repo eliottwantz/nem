@@ -28,7 +28,6 @@ service AdminServiceAPI
 struct User
     - id: string
     - email: string
-    - emailVerified: bool
     - firstName: string
     - lastName: string
     - role: string
@@ -154,6 +153,7 @@ service ClassServiceAPI
     - ListTopics() => (topics: []string)
     - ListAvailableLearns() => (learns: []Learn)
     - ListTeachersForLearn(lang: string, topic: string) => (teachers: []User)
+    - ListLearnsOfTeacher(teacherId: string) => (learns: []Learn)
     - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)

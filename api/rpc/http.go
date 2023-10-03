@@ -22,6 +22,7 @@ func ResReq(ctx context.Context) (http.ResponseWriter, *http.Request) {
 func FromDbUser(dbUser *db.User) *User {
 	return &User{
 		Id:               dbUser.ID.String(),
+		Email:            dbUser.Email,
 		FirstName:        dbUser.FirstName,
 		LastName:         dbUser.LastName,
 		Role:             string(dbUser.Role),

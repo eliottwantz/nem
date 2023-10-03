@@ -449,7 +449,7 @@ func (q *Queries) ListClassesOfUser(ctx context.Context, userID uuid.UUID) ([]*L
 
 const listUsersInClass = `-- name: ListUsersInClass :many
 
-SELECT u.id, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
     JOIN "user_class" uc ON u.id = uc.user_id
 WHERE uc.class_id = $1
@@ -466,6 +466,7 @@ func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*U
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,

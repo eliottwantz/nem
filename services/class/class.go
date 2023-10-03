@@ -261,6 +261,10 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 			if err != nil {
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 			}
+			err = tx.Commit()
+			if err != nil {
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			}
 			return &rpc.Class{
 				Id:         exists.ID.String(),
 				TeacherId:  timeSlot.TeacherID.String(),
@@ -318,4 +322,27 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		EndAt:      timeSlot.EndAt,
 		CreatedAt:  dbClass.CreatedAt,
 	}, nil
+}
+
+func (s *Service) ListLearnsOfTeacher(ctx context.Context, teacherId string) ([]*rpc.Learn, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
+	}
+
+	learns, err := db.Pg.ListLearnsOfUser(ctx, tID)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.Learn, 0, len(learns))
+	for _, l := range learns {
+		ret = append(ret, &rpc.Learn{
+			Id:       l.ID,
+			Language: l.Language,
+			Topic:    l.Topic,
+		})
+	}
+
+	return ret, nil
 }

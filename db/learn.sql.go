@@ -240,7 +240,7 @@ func (q *Queries) ListLearnsWhereTopicIs(ctx context.Context, topic string) ([]*
 
 const listTeachersForLearn = `-- name: ListTeachersForLearn :many
 
-SELECT DISTINCT u.id, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT DISTINCT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "learn" l
     JOIN "user_learn" uc ON l.id = uc.learn_id
     JOIN "user" u ON u.id = uc.user_id
@@ -266,6 +266,7 @@ func (q *Queries) ListTeachersForLearn(ctx context.Context, arg ListTeachersForL
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,
@@ -290,7 +291,7 @@ func (q *Queries) ListTeachersForLearn(ctx context.Context, arg ListTeachersForL
 
 const listUsersInLearn = `-- name: ListUsersInLearn :many
 
-SELECT u.id, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
     JOIN "user_learn" uc ON u.id = uc.user_id
 WHERE uc.learn_id = $1
@@ -307,6 +308,7 @@ func (q *Queries) ListUsersInLearn(ctx context.Context, learnID int32) ([]*User,
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Email,
 			&i.FirstName,
 			&i.LastName,
 			&i.Role,

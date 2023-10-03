@@ -117,9 +117,10 @@ tasks:
 
   resetdb:
     cmds:
-      - supabse stop
-      - docker compose down -v
-      - task: up
+      # - supabse stop
+      - supabase db reset
+      # - docker compose down -v
+      # - task: up
     desc: Reset db
 
   certs:
