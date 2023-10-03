@@ -9,7 +9,7 @@ version = v0.1.0
 struct AdminCreateClassRequest
     - userIDs: []string
     - name: string
-    - learnId: int32
+    - topicTaughtId: int32
     - timeSlotId: string
 
 
@@ -37,6 +37,18 @@ struct User
     - createdAt: timestamp
     - updatedAt: timestamp
 
+struct Teacher
+    - baseUser: User
+    - bio: string
+    - hourRate: int32
+    - spokenLanguages: []SpokenLanguage
+    - topicsTaught: []TopicTaught
+
+struct SpokenLanguage
+    - id: string
+    - language: string
+    - proficiency: string
+
 struct CreateUserRequest
     - firstName: string
     - lastName: string
@@ -46,15 +58,11 @@ struct CreateUserRequest
 struct CreateUserResponse
     - user: User
 
-struct Learn
+struct TopicTaught
     - id: int32
     - language: string
     - topic: string
 
-struct Teach
-    - id: int32
-    - language: string
-    - topic: string
 
 struct Class
     - id: string
@@ -110,7 +118,7 @@ struct TimeSlot
 struct CreateClassRequest
     - name: string
     - isPrivate: bool
-    - learnId: int32
+    - topicTaughtId: int32
     - timeSlotId: string
 
 
@@ -122,6 +130,7 @@ struct CreateClassRequest
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
+    - FindTeacherByID(id: string) => (teacher: Teacher)
     - Create(req: CreateUserRequest) => (user: User)
     - ChooseRole(role: string)
     - UpdatePreferedLanguage(lang: string)
@@ -130,16 +139,16 @@ service UserServiceAPI
     - Delete()
 
 service StudentServiceAPI
-    - ListLearns() => (learns: []Learn)
-    - Learn(language: string, topic: string) => (learn: Learn)
     - ListClasses() => (classes: []Class)
+    - ListTeachers() => (teachers: []Teacher)
     - JoinClass(classId: string)
     - LeaveClass(classId: string)
 
 service TeacherServiceAPI
-    - ListTeaches() => (teaches: []Teach)
-    - Teach(language: string, topic: string) => (teach: Teach)
     - ListClasses() => (classes: []Class)
+    - ListStudents() => (students: []User)
+    - ListTopicsTaught() => (TopicsTaught: []TopicTaught)
+    - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
     - ListAvailabilities() => (timeSlots: []TimeSlot)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
@@ -151,9 +160,9 @@ service TeacherServiceAPI
 service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
-    - ListAvailableLearns() => (learns: []Learn)
-    - ListTeachersForLearn(lang: string, topic: string) => (teachers: []User)
-    - ListLearnsOfTeacher(teacherId: string) => (learns: []Learn)
+    - ListAvailableTopicsTaught() => (topicsTaught: []TopicTaught)
+    - ListTeachersForTopicTaught(lang: string, topic: string) => (teachers: []Teacher)
+    - ListTopicsTaughtOfTeacher(teacherId: string) => (topicsTaught: []TopicTaught)
     - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)

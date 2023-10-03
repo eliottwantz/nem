@@ -2,7 +2,6 @@ package student
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"nem/api/httpmw"
@@ -26,81 +25,8 @@ func NewService(wsService *ws.Service) *Service {
 	}
 }
 
-func (s *Service) ListLearns(ctx context.Context) ([]*rpc.Learn, error) {
-	res, err := db.Pg.ListLearnsOfUser(ctx, httpmw.ContextUID(ctx))
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	ret := make([]*rpc.Learn, 0, len(res))
-	for _, c := range res {
-		ret = append(ret, &rpc.Learn{
-			Id:       c.ID,
-			Language: c.Language,
-			Topic:    c.Topic,
-		})
-	}
-
-	return ret, nil
-}
-
-func (s *Service) Learn(ctx context.Context, language string, topic string) (*rpc.Learn, error) {
-	if language == "" {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty language param"))
-	}
-	if topic == "" {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty topic param"))
-	}
-
-	tx, err := db.Pg.NewTx(ctx)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	defer tx.Rollback()
-
-	learn, err := tx.FindLearnLangTopic(ctx, db.FindLearnLangTopicParams{
-		Language: language,
-		Topic:    topic,
-	})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Learn doesn't exist, need to create it
-			learn, err = tx.CreateLearn(ctx, db.CreateLearnParams{
-				Language: language,
-				Topic:    topic,
-			})
-			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-			}
-
-		} else {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-	}
-
-	// Add user to learn
-	err = tx.AddUserToLearn(ctx, db.AddUserToLearnParams{
-		UserID:  httpmw.ContextUID(ctx),
-		LearnID: learn.ID,
-	})
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	return &rpc.Learn{
-		Id:       learn.ID,
-		Language: learn.Language,
-		Topic:    learn.Topic,
-	}, nil
-}
-
 func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
-	res, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextUID(ctx))
+	res, err := db.Pg.ListClassesOfStudent(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -152,4 +78,46 @@ func (s *Service) LeaveClass(ctx context.Context, classId string) error {
 	}
 
 	return s.wsService.LeaveClass(class.ID, httpmw.ContextUID(ctx))
+}
+
+func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
+	res, err := db.Pg.ListTeachersOfStudent(ctx, httpmw.ContextUID(ctx))
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.Teacher, 0, len(res))
+	for _, u := range res {
+		topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+		spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+		ret = append(ret, rpc.FromDbTeacher(
+			&db.User{
+				ID:               u.ID,
+				Email:            u.Email,
+				FirstName:        u.FirstName,
+				LastName:         u.LastName,
+				Role:             u.Role,
+				PreferedLanguage: u.PreferedLanguage,
+				AvatarFilePath:   u.AvatarFilePath,
+				AvatarUrl:        u.AvatarUrl,
+				CreatedAt:        u.CreatedAt,
+				UpdatedAt:        u.UpdatedAt,
+			},
+			&db.Teacher{
+				ID:       u.ID,
+				Bio:      u.Bio,
+				HourRate: u.HourRate,
+			},
+			topicsTaught,
+			spokenLangs,
+		))
+	}
+
+	return ret, nil
 }

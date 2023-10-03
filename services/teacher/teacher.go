@@ -28,15 +28,15 @@ func NewService(wsService *ws.Service) *Service {
 	}
 }
 
-func (s *Service) ListTeaches(ctx context.Context) ([]*rpc.Teach, error) {
-	res, err := db.Pg.ListLearnsOfUser(ctx, httpmw.ContextUID(ctx))
+func (s *Service) ListTopicsTaught(ctx context.Context) ([]*rpc.TopicTaught, error) {
+	res, err := db.Pg.ListTopicTaughtOfTeacher(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.Teach, 0, len(res))
+	ret := make([]*rpc.TopicTaught, 0, len(res))
 	for _, c := range res {
-		ret = append(ret, &rpc.Teach{
+		ret = append(ret, &rpc.TopicTaught{
 			Id:       c.ID,
 			Language: c.Language,
 			Topic:    c.Topic,
@@ -46,7 +46,21 @@ func (s *Service) ListTeaches(ctx context.Context) ([]*rpc.Teach, error) {
 	return ret, nil
 }
 
-func (s *Service) Teach(ctx context.Context, language string, topic string) (*rpc.Teach, error) {
+func (s *Service) ListStudents(ctx context.Context) ([]*rpc.User, error) {
+	res, err := db.Pg.ListStudentsOfTeacher(ctx, httpmw.ContextUID(ctx))
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]*rpc.User, 0, len(res))
+	for _, c := range res {
+		ret = append(ret, rpc.FromDbUser(c))
+	}
+
+	return ret, nil
+}
+
+func (s *Service) Teach(ctx context.Context, language string, topic string) (*rpc.TopicTaught, error) {
 	if language == "" {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty language param"))
 	}
@@ -60,14 +74,14 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 	}
 	defer tx.Rollback()
 
-	learn, err := tx.FindLearnLangTopic(ctx, db.FindLearnLangTopicParams{
+	learn, err := tx.FindTopicTaughtLangTopic(ctx, db.FindTopicTaughtLangTopicParams{
 		Language: language,
 		Topic:    topic,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Learn doesn't exist, need to create it
-			learn, err = tx.CreateLearn(ctx, db.CreateLearnParams{
+			// TopicTaught doesn't exist, need to create it
+			learn, err = tx.CreateTopicTaught(ctx, db.CreateTopicTaughtParams{
 				Language: language,
 				Topic:    topic,
 			})
@@ -81,9 +95,9 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 	}
 
 	// Add user to learn
-	err = tx.AddUserToLearn(ctx, db.AddUserToLearnParams{
-		UserID:  httpmw.ContextUID(ctx),
-		LearnID: learn.ID,
+	err = tx.AddTeacherToTopicTaught(ctx, db.AddTeacherToTopicTaughtParams{
+		TeacherID:     httpmw.ContextUID(ctx),
+		TopicTaughtID: learn.ID,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -94,7 +108,7 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	return &rpc.Teach{
+	return &rpc.TopicTaught{
 		Id:       learn.ID,
 		Language: learn.Language,
 		Topic:    learn.Topic,
@@ -249,10 +263,7 @@ func (s *Service) UpdateAvailability(ctx context.Context, req *rpc.EditAvailabil
 	}
 	defer tx.Rollback()
 
-	_, err = tx.FindClassByTeacherAndTimeSlotId(ctx, db.FindClassByTeacherAndTimeSlotIdParams{
-		TeacherID: teacherID,
-		ID:        tID,
-	})
+	_, err = tx.FindClassByTimeslot(ctx, tID)
 	if err == nil {
 		// There is a class for that time slot. Cannot update it
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("cannot update this time slot because there is already an existing class on this time slot"))
@@ -371,16 +382,16 @@ func (s *Service) CancelClass(ctx context.Context, classId string) ([]*rpc.User,
 		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	usersInClass, err := tx.ListUsersInClass(ctx, cID)
+	usersInClass, err := tx.ListStudentsInClass(ctx, cID)
 	if err != nil {
 		return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
 	// Remove all students from class
 	for _, u := range usersInClass {
-		err = tx.RemoveUserFromClass(ctx, db.RemoveUserFromClassParams{
-			UserID:  u.ID,
-			ClassID: cID,
+		err = tx.RemoveStudentFromClass(ctx, db.RemoveStudentFromClassParams{
+			StudentID: u.ID,
+			ClassID:   cID,
 		})
 		if err != nil {
 			return nil, nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)

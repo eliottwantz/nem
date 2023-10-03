@@ -45,7 +45,7 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 		Id:        msg.ID.String(),
 		Text:      msg.Text,
 		CreatedAt: msg.CreatedAt,
-		UpdatedAt: msg.UpdatedAt,
+		UpdatedAt: msg.UpdatedAt.Time,
 		ClassId:   msg.ClassID.String(),
 		User:      rpc.FromDbUser(u),
 	}

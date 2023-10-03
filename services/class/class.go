@@ -35,40 +35,15 @@ func (s *Service) ListTopics(ctx context.Context) ([]string, error) {
 	return db.Topics, nil
 }
 
-func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
-	res, err := db.Pg.ListClasses(ctx)
+func (s *Service) ListAvailableTopicsTaught(ctx context.Context) ([]*rpc.TopicTaught, error) {
+	res, err := db.Pg.ListAvailableTopicTaught(ctx)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.Class, 0, len(res))
+	ret := make([]*rpc.TopicTaught, 0, len(res))
 	for _, c := range res {
-		ret = append(ret, &rpc.Class{
-			Id:         c.ID.String(),
-			Name:       c.Name,
-			HasStarted: c.HasStarted,
-			TeacherId:  c.TeacherID.String(),
-			IsPrivate:  c.IsPrivate,
-			Language:   c.Language,
-			Topic:      c.Topic,
-			StartAt:    c.StartAt,
-			EndAt:      c.EndAt,
-			CreatedAt:  c.CreatedAt,
-		})
-	}
-
-	return ret, nil
-}
-
-func (s *Service) ListAvailableLearns(ctx context.Context) ([]*rpc.Learn, error) {
-	res, err := db.Pg.ListAvailableLearns(ctx)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	ret := make([]*rpc.Learn, 0, len(res))
-	for _, c := range res {
-		ret = append(ret, &rpc.Learn{
+		ret = append(ret, &rpc.TopicTaught{
 			Id:       c.ID,
 			Language: c.Language,
 			Topic:    c.Topic,
@@ -95,7 +70,7 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	dbUsers, err := tx.ListUsersInClass(ctx, cID)
+	dbUsers, err := tx.ListStudentsInClass(ctx, cID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -146,14 +121,14 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 	return at.ToJWT()
 }
 
-func (s *Service) ListTeachersForLearn(ctx context.Context, lang string, topic string) ([]*rpc.User, error) {
+func (s *Service) ListTeachersForTopicTaught(ctx context.Context, lang string, topic string) ([]*rpc.Teacher, error) {
 	if lang == "" {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("lang is empty"))
 	}
 	if topic == "" {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("topic is empty"))
 	}
-	teachers, err := db.Pg.ListTeachersForLearn(ctx, db.ListTeachersForLearnParams{
+	teachers, err := db.Pg.ListTeachersForTopicTaught(ctx, db.ListTeachersForTopicTaughtParams{
 		Language: lang,
 		Topic:    topic,
 	})
@@ -161,9 +136,37 @@ func (s *Service) ListTeachersForLearn(ctx context.Context, lang string, topic s
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.User, 0, len(teachers))
-	for _, t := range teachers {
-		ret = append(ret, rpc.FromDbUser(t))
+	ret := make([]*rpc.Teacher, 0, len(teachers))
+	for _, u := range teachers {
+		topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+		spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
+		if err != nil {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		}
+		ret = append(ret, rpc.FromDbTeacher(
+			&db.User{
+				ID:               u.ID,
+				Email:            u.Email,
+				FirstName:        u.FirstName,
+				LastName:         u.LastName,
+				Role:             u.Role,
+				PreferedLanguage: u.PreferedLanguage,
+				AvatarFilePath:   u.AvatarFilePath,
+				AvatarUrl:        u.AvatarUrl,
+				CreatedAt:        u.CreatedAt,
+				UpdatedAt:        u.UpdatedAt,
+			},
+			&db.Teacher{
+				ID:       u.ID,
+				Bio:      u.Bio,
+				HourRate: u.HourRate,
+			},
+			topicsTaught,
+			spokenLangs,
+		))
 	}
 
 	return ret, nil
@@ -180,7 +183,7 @@ func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId strin
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	userClasses, err := db.Pg.ListClassesOfUser(ctx, httpmw.ContextUID(ctx))
+	userClasses, err := db.Pg.ListClassesOfStudent(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -237,14 +240,10 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	uID := httpmw.ContextUID(ctx)
 
 	{
-		exists, err := tx.FindClassByTeacherAndTime(ctx, db.FindClassByTeacherAndTimeParams{
-			TeacherID: timeSlot.TeacherID,
-			StartAt:   timeSlot.StartAt,
-			EndAt:     timeSlot.EndAt,
-		})
+		exists, err := tx.FindClassByTimeslot(ctx, timeSlot.ID)
 		if err == nil {
 			// Add user to this class if there if less than 4 students in the class and not private
-			users, err := tx.ListUsersInClass(ctx, exists.ID)
+			users, err := tx.ListStudentsInClass(ctx, exists.ID)
 			if err != nil {
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 			}
@@ -254,9 +253,9 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 			if exists.IsPrivate {
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is private"))
 			}
-			err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
-				ClassID: exists.ID,
-				UserID:  uID,
+			err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
+				ClassID:   exists.ID,
+				StudentID: uID,
 			})
 			if err != nil {
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -283,23 +282,23 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
-		Name:       req.Name,
-		LearnID:    req.LearnId,
-		TimeSlotID: tID,
-		IsPrivate:  req.IsPrivate,
+		Name:          req.Name,
+		TopicTaughtID: req.TopicTaughtId,
+		TimeSlotID:    tID,
+		IsPrivate:     req.IsPrivate,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	learnInfo, err := tx.FindLearn(ctx, req.LearnId)
+	learnInfo, err := tx.FindTopicTaught(ctx, req.TopicTaughtId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	err = tx.AddUserToClass(ctx, db.AddUserToClassParams{
-		ClassID: dbClass.ID,
-		UserID:  uID,
+	err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
+		ClassID:   dbClass.ID,
+		StudentID: uID,
 	})
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -324,20 +323,20 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}, nil
 }
 
-func (s *Service) ListLearnsOfTeacher(ctx context.Context, teacherId string) ([]*rpc.Learn, error) {
+func (s *Service) ListTopicsTaughtOfTeacher(ctx context.Context, teacherId string) ([]*rpc.TopicTaught, error) {
 	tID, err := uuid.Parse(teacherId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
 	}
 
-	learns, err := db.Pg.ListLearnsOfUser(ctx, tID)
+	learns, err := db.Pg.ListTopicTaughtOfTeacher(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.Learn, 0, len(learns))
+	ret := make([]*rpc.TopicTaught, 0, len(learns))
 	for _, l := range learns {
-		ret = append(ret, &rpc.Learn{
+		ret = append(ret, &rpc.TopicTaught{
 			Id:       l.ID,
 			Language: l.Language,
 			Topic:    l.Topic,

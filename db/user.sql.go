@@ -11,6 +11,23 @@ import (
 	"github.com/google/uuid"
 )
 
+const addToListOfStudents = `-- name: AddToListOfStudents :exec
+
+INSERT INTO
+    "students_teacher" (teacher_id, student_id)
+VALUES ($1, $2)
+`
+
+type AddToListOfStudentsParams struct {
+	TeacherID uuid.UUID
+	StudentID uuid.UUID
+}
+
+func (q *Queries) AddToListOfStudents(ctx context.Context, arg AddToListOfStudentsParams) error {
+	_, err := q.db.ExecContext(ctx, addToListOfStudents, arg.TeacherID, arg.StudentID)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 
 INSERT INTO
@@ -145,13 +162,17 @@ func (q *Queries) ListStudents(ctx context.Context) ([]*User, error) {
 	return items, nil
 }
 
-const listTeachers = `-- name: ListTeachers :many
+const listStudentsOfTeacher = `-- name: ListStudentsOfTeacher :many
 
-SELECT id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE role = 'teacher'
+SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+FROM "students_teacher" sot
+    JOIN "teacher" t ON sot.teacher_id = t.id
+    JOIN "user" u ON sot.student_id = u.id
+WHERE t.id = $1
 `
 
-func (q *Queries) ListTeachers(ctx context.Context) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachers)
+func (q *Queries) ListStudentsOfTeacher(ctx context.Context, id uuid.UUID) ([]*User, error) {
+	rows, err := q.db.QueryContext(ctx, listStudentsOfTeacher, id)
 	if err != nil {
 		return nil, err
 	}

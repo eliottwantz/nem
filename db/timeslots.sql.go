@@ -125,10 +125,10 @@ const listTeachersAvailableTimeSlots = `-- name: ListTeachersAvailableTimeSlots 
 SELECT
     ts.id, ts.start_at, ts.end_at, ts.teacher_id,
     c."id" AS class_id,
-    COUNT(uc."user_id") AS num_users
+    COUNT(sc."student_id") AS num_users
 FROM "time_slots" ts
     LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
-    LEFT JOIN "user_class" uc ON c."id" = uc."class_id"
+    LEFT JOIN "student_class" sc ON c."id" = sc."class_id"
 WHERE ts."teacher_id" = $1
 GROUP BY ts."id", c."id"
 `

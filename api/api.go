@@ -18,7 +18,6 @@ import (
 	"nem/api/rpc"
 	"nem/api/ws"
 	"nem/db"
-	"nem/services/admin"
 	"nem/services/class"
 	"nem/services/message"
 	"nem/services/student"
@@ -41,7 +40,7 @@ type Api struct {
 
 	r chi.Router
 
-	adminService   *admin.Service
+	// adminService   *admin.Service
 	userService    *user.Service
 	teacherService *teacher.Service
 	studentService *student.Service
@@ -53,7 +52,7 @@ type Api struct {
 }
 
 type Services struct {
-	AdminService   *admin.Service
+	// AdminService   *admin.Service
 	UserService    *user.Service
 	TeacherService *teacher.Service
 	StudentService *student.Service
@@ -102,8 +101,8 @@ func New(
 			Handler: r,
 		},
 
-		r:              r,
-		adminService:   services.AdminService,
+		r: r,
+		// adminService:   services.AdminService,
 		userService:    services.UserService,
 		teacherService: services.TeacherService,
 		studentService: services.StudentService,
@@ -132,8 +131,8 @@ func (api *Api) routes() {
 		studentService rpc.WebRPCServer
 		messageService rpc.WebRPCServer
 	}{
-		userService:    rpc.NewUserServiceAPIServer(api.userService),
-		adminService:   rpc.NewAdminServiceAPIServer(api.adminService),
+		userService: rpc.NewUserServiceAPIServer(api.userService),
+		// adminService:   rpc.NewAdminServiceAPIServer(api.adminService),
 		classService:   rpc.NewClassServiceAPIServer(api.classService),
 		teacherService: rpc.NewTeacherServiceAPIServer(api.teacherService),
 		studentService: rpc.NewStudentServiceAPIServer(api.studentService),

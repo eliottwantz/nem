@@ -12,21 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-const addUserToClass = `-- name: AddUserToClass :exec
+const addStudentToClass = `-- name: AddStudentToClass :exec
 
 INSERT INTO
-    "user_class" (user_id, class_id)
-VALUES ($1, $2) ON CONFLICT (user_id, class_id)
-DO NOTHING
+    "student_class" (student_id, class_id)
+VALUES ($1, $2)
 `
 
-type AddUserToClassParams struct {
-	UserID  uuid.UUID
-	ClassID uuid.UUID
+type AddStudentToClassParams struct {
+	StudentID uuid.UUID
+	ClassID   uuid.UUID
 }
 
-func (q *Queries) AddUserToClass(ctx context.Context, arg AddUserToClassParams) error {
-	_, err := q.db.ExecContext(ctx, addUserToClass, arg.UserID, arg.ClassID)
+func (q *Queries) AddStudentToClass(ctx context.Context, arg AddStudentToClassParams) error {
+	_, err := q.db.ExecContext(ctx, addStudentToClass, arg.StudentID, arg.ClassID)
 	return err
 }
 
@@ -35,25 +34,25 @@ const createClass = `-- name: CreateClass :one
 INSERT INTO
     "class" (
         name,
-        learn_id,
         is_private,
+        topic_taught_id,
         time_slot_id
     )
-VALUES ($1, $2, $3, $4) RETURNING id, name, is_private, learn_id, time_slot_id, has_started, created_at
+VALUES ($1, $2, $3, $4) RETURNING id, name, is_private, topic_taught_id, time_slot_id, has_started, created_at
 `
 
 type CreateClassParams struct {
-	Name       string
-	LearnID    int32
-	IsPrivate  bool
-	TimeSlotID uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
 }
 
 func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Class, error) {
 	row := q.db.QueryRowContext(ctx, createClass,
 		arg.Name,
-		arg.LearnID,
 		arg.IsPrivate,
+		arg.TopicTaughtID,
 		arg.TimeSlotID,
 	)
 	var i Class
@@ -61,7 +60,7 @@ func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Clas
 		&i.ID,
 		&i.Name,
 		&i.IsPrivate,
-		&i.LearnID,
+		&i.TopicTaughtID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -82,32 +81,32 @@ func (q *Queries) DeleteClass(ctx context.Context, id uuid.UUID) error {
 const findClass = `-- name: FindClass :one
 
 SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
-    c.language,
-    c.topic,
-    t.teacher_id,
-    t.start_at,
-    t.end_at
+    cl.id, cl.name, cl.is_private, cl.topic_taught_id, cl.time_slot_id, cl.has_started, cl.created_at,
+    tt.language,
+    tt.topic,
+    teacher_id,
+    start_at,
+    end_at
 FROM "class" cl
-    JOIN "learn" c ON cl.learn_id = c.id
-    JOIN "time_slots" t ON cl.time_slot_id = t.id
+    JOIN "topic_taught" tt ON cl.topic_taught_id = tid
+    JOIN "time_slots" ts ON cl.time_slot_id = id
 WHERE cl.id = $1
 ORDER BY cl.created_at ASC
 `
 
 type FindClassRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID            uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
+	HasStarted    bool
+	CreatedAt     time.Time
+	Language      string
+	Topic         string
+	TeacherID     uuid.UUID
+	StartAt       time.Time
+	EndAt         time.Time
 }
 
 func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, error) {
@@ -117,7 +116,7 @@ func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, e
 		&i.ID,
 		&i.Name,
 		&i.IsPrivate,
-		&i.LearnID,
+		&i.TopicTaughtID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -130,53 +129,44 @@ func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, e
 	return &i, err
 }
 
-const findClassByTeacherAndTime = `-- name: FindClassByTeacherAndTime :one
+const findClassByTimeslot = `-- name: FindClassByTimeslot :one
 
 SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
-    c.language,
-    c.topic,
+    cl.id, cl.name, cl.is_private, cl.topic_taught_id, cl.time_slot_id, cl.has_started, cl.created_at,
+    tt.language,
+    tt.topic,
     t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
-    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "topic_taught" tt ON cl.topic_taught_id = tt.id
     JOIN "time_slots" t ON cl.time_slot_id = t.id
-WHERE
-    t.teacher_id = $1
-    AND t.start_at = $2
-    AND t.end_at = $3
+WHERE t.id = $1
 `
 
-type FindClassByTeacherAndTimeParams struct {
-	TeacherID uuid.UUID
-	StartAt   time.Time
-	EndAt     time.Time
+type FindClassByTimeslotRow struct {
+	ID            uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
+	HasStarted    bool
+	CreatedAt     time.Time
+	Language      string
+	Topic         string
+	TeacherID     uuid.UUID
+	StartAt       time.Time
+	EndAt         time.Time
 }
 
-type FindClassByTeacherAndTimeRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
-}
-
-func (q *Queries) FindClassByTeacherAndTime(ctx context.Context, arg FindClassByTeacherAndTimeParams) (*FindClassByTeacherAndTimeRow, error) {
-	row := q.db.QueryRowContext(ctx, findClassByTeacherAndTime, arg.TeacherID, arg.StartAt, arg.EndAt)
-	var i FindClassByTeacherAndTimeRow
+func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindClassByTimeslotRow, error) {
+	row := q.db.QueryRowContext(ctx, findClassByTimeslot, id)
+	var i FindClassByTimeslotRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.IsPrivate,
-		&i.LearnID,
+		&i.TopicTaughtID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -189,107 +179,52 @@ func (q *Queries) FindClassByTeacherAndTime(ctx context.Context, arg FindClassBy
 	return &i, err
 }
 
-const findClassByTeacherAndTimeSlotId = `-- name: FindClassByTeacherAndTimeSlotId :one
+const listClassesOfStudent = `-- name: ListClassesOfStudent :many
 
 SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
-    c.language,
-    c.topic,
+    cl.id, cl.name, cl.is_private, cl.topic_taught_id, cl.time_slot_id, cl.has_started, cl.created_at,
+    tt.language,
+    tt.topic,
     t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
-    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "student_class" sc ON cl.id = sc.class_id
+    JOIN "topic_taught" tt ON cl.learn_id = tt.id
     JOIN "time_slots" t ON cl.time_slot_id = t.id
-WHERE
-    t.teacher_id = $1
-    AND t.id = $2
+WHERE sc.student_id = $1
+ORDER BY sc.created_at ASC
 `
 
-type FindClassByTeacherAndTimeSlotIdParams struct {
-	TeacherID uuid.UUID
-	ID        uuid.UUID
+type ListClassesOfStudentRow struct {
+	ID            uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
+	HasStarted    bool
+	CreatedAt     time.Time
+	Language      string
+	Topic         string
+	TeacherID     uuid.UUID
+	StartAt       time.Time
+	EndAt         time.Time
 }
 
-type FindClassByTeacherAndTimeSlotIdRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
-}
-
-func (q *Queries) FindClassByTeacherAndTimeSlotId(ctx context.Context, arg FindClassByTeacherAndTimeSlotIdParams) (*FindClassByTeacherAndTimeSlotIdRow, error) {
-	row := q.db.QueryRowContext(ctx, findClassByTeacherAndTimeSlotId, arg.TeacherID, arg.ID)
-	var i FindClassByTeacherAndTimeSlotIdRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.IsPrivate,
-		&i.LearnID,
-		&i.TimeSlotID,
-		&i.HasStarted,
-		&i.CreatedAt,
-		&i.Language,
-		&i.Topic,
-		&i.TeacherID,
-		&i.StartAt,
-		&i.EndAt,
-	)
-	return &i, err
-}
-
-const listClasses = `-- name: ListClasses :many
-
-SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
-    c.language,
-    c.topic,
-    t.teacher_id,
-    t.start_at,
-    t.end_at
-FROM "class" cl
-    JOIN "learn" c ON cl.learn_id = c.id
-    JOIN "time_slots" t ON cl.time_slot_id = t.id
-ORDER BY cl.created_at ASC
-`
-
-type ListClassesRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
-}
-
-func (q *Queries) ListClasses(ctx context.Context) ([]*ListClassesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listClasses)
+func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID) ([]*ListClassesOfStudentRow, error) {
+	rows, err := q.db.QueryContext(ctx, listClassesOfStudent, studentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*ListClassesRow
+	var items []*ListClassesOfStudentRow
 	for rows.Next() {
-		var i ListClassesRow
+		var i ListClassesOfStudentRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.IsPrivate,
-			&i.LearnID,
+			&i.TopicTaughtID,
 			&i.TimeSlotID,
 			&i.HasStarted,
 			&i.CreatedAt,
@@ -315,32 +250,32 @@ func (q *Queries) ListClasses(ctx context.Context) ([]*ListClassesRow, error) {
 const listClassesOfTeacher = `-- name: ListClassesOfTeacher :many
 
 SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
+    cl.id, cl.name, cl.is_private, cl.topic_taught_id, cl.time_slot_id, cl.has_started, cl.created_at,
     c.language,
     c.topic,
     t.teacher_id,
     t.start_at,
     t.end_at
 FROM "class" cl
-    JOIN "learn" c ON cl.learn_id = c.id
+    JOIN "topic_taught" c ON cl.topic_taught_id = c.id
     JOIN "time_slots" t ON cl.time_slot_id = t.id
 WHERE t.teacher_id = $1
 ORDER BY t.start_at ASC
 `
 
 type ListClassesOfTeacherRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID            uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
+	HasStarted    bool
+	CreatedAt     time.Time
+	Language      string
+	Topic         string
+	TeacherID     uuid.UUID
+	StartAt       time.Time
+	EndAt         time.Time
 }
 
 func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID) ([]*ListClassesOfTeacherRow, error) {
@@ -356,7 +291,7 @@ func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID)
 			&i.ID,
 			&i.Name,
 			&i.IsPrivate,
-			&i.LearnID,
+			&i.TopicTaughtID,
 			&i.TimeSlotID,
 			&i.HasStarted,
 			&i.CreatedAt,
@@ -379,84 +314,16 @@ func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID)
 	return items, nil
 }
 
-const listClassesOfUser = `-- name: ListClassesOfUser :many
-
-SELECT
-    cl.id, cl.name, cl.is_private, cl.learn_id, cl.time_slot_id, cl.has_started, cl.created_at,
-    c.language,
-    c.topic,
-    t.teacher_id,
-    t.start_at,
-    t.end_at
-FROM "class" cl
-    JOIN "user_class" uc ON cl.id = uc.class_id
-    JOIN "learn" c ON cl.learn_id = c.id
-    JOIN "time_slots" t ON cl.time_slot_id = t.id
-WHERE uc.user_id = $1
-ORDER BY uc.created_at ASC
-`
-
-type ListClassesOfUserRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	Language   string
-	Topic      string
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
-}
-
-func (q *Queries) ListClassesOfUser(ctx context.Context, userID uuid.UUID) ([]*ListClassesOfUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, listClassesOfUser, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*ListClassesOfUserRow
-	for rows.Next() {
-		var i ListClassesOfUserRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.IsPrivate,
-			&i.LearnID,
-			&i.TimeSlotID,
-			&i.HasStarted,
-			&i.CreatedAt,
-			&i.Language,
-			&i.Topic,
-			&i.TeacherID,
-			&i.StartAt,
-			&i.EndAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listUsersInClass = `-- name: ListUsersInClass :many
+const listStudentsInClass = `-- name: ListStudentsInClass :many
 
 SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "user" u
-    JOIN "user_class" uc ON u.id = uc.user_id
-WHERE uc.class_id = $1
+    JOIN "student_class" sc ON u.id = sc.student_id
+WHERE sc.class_id = $1
 `
 
-func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersInClass, classID)
+func (q *Queries) ListStudentsInClass(ctx context.Context, classID uuid.UUID) ([]*User, error) {
+	rows, err := q.db.QueryContext(ctx, listStudentsInClass, classID)
 	if err != nil {
 		return nil, err
 	}
@@ -489,18 +356,18 @@ func (q *Queries) ListUsersInClass(ctx context.Context, classID uuid.UUID) ([]*U
 	return items, nil
 }
 
-const removeUserFromClass = `-- name: RemoveUserFromClass :exec
+const removeStudentFromClass = `-- name: RemoveStudentFromClass :exec
 
-DELETE FROM "user_class" WHERE user_id = $1 AND class_id = $2
+DELETE FROM "student_class" WHERE student_id = $1 AND class_id = $2
 `
 
-type RemoveUserFromClassParams struct {
-	UserID  uuid.UUID
-	ClassID uuid.UUID
+type RemoveStudentFromClassParams struct {
+	StudentID uuid.UUID
+	ClassID   uuid.UUID
 }
 
-func (q *Queries) RemoveUserFromClass(ctx context.Context, arg RemoveUserFromClassParams) error {
-	_, err := q.db.ExecContext(ctx, removeUserFromClass, arg.UserID, arg.ClassID)
+func (q *Queries) RemoveStudentFromClass(ctx context.Context, arg RemoveStudentFromClassParams) error {
+	_, err := q.db.ExecContext(ctx, removeStudentFromClass, arg.StudentID, arg.ClassID)
 	return err
 }
 

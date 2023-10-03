@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"time"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -95,7 +95,7 @@ WHERE "id" = $3 RETURNING id, text, user_id, class_id, created_at, updated_at
 
 type UpdateMessageParams struct {
 	Text      string
-	UpdatedAt time.Time
+	UpdatedAt sql.NullTime
 	ID        uuid.UUID
 }
 

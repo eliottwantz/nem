@@ -11,36 +11,83 @@ CREATE TABLE
         "avatar_file_path" TEXT NOT NULL DEFAULT '',
         "avatar_url" TEXT NOT NULL DEFAULT '',
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+        "updated_at" TIMESTAMPTZ
     );
 
 CREATE INDEX "role_idx" ON "user" USING BTREE ("role");
 
+CREATE Table
+    "teacher" (
+        id UUID PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "bio" TEXT NOT NULL,
+        "hour_rate" INT NOT NULL CONSTRAINT "hour_rate_check" CHECK (hour_rate > 0)
+    );
+
 CREATE TABLE
-    IF NOT EXISTS "learn" (
-        "id" SERIAL PRIMARY KEY,
+    "spoken_language" (
+        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "language" TEXT NOT NULL,
-        "topic" TEXT NOT NULL
+        "proficiency" TEXT NOT NULL
     );
-
-CREATE UNIQUE INDEX "lang_topic_idx" ON "learn" USING BTREE ("language", "topic");
 
 CREATE TABLE
-    IF NOT EXISTS "user_learn" (
-        "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+    "teacher_spoken_language" (
+        "spoken_language_id" UUID NOT NULL REFERENCES "spoken_language"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY (
+            "spoken_language_id",
+            "teacher_id"
+        )
     );
 
-ALTER TABLE "user_learn" ADD PRIMARY KEY ("user_id", "learn_id");
+CREATE TABLE
+    IF NOT EXISTS "topic_taught" (
+        "id" SERIAL PRIMARY KEY,
+        "topic" TEXT NOT NULL,
+        "language" TEXT NOT NULL
+    );
+
+CREATE UNIQUE INDEX "topic_language_idx" ON "topic_taught" ("topic", "language");
+
+CREATE TABLE
+    "teacher_topic_taught" (
+        "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "topic_taught_id" INT NOT NULL REFERENCES "topic_taught"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY (
+            "teacher_id",
+            "topic_taught_id"
+        )
+    );
+
+CREATE TABLE
+    "hours_bank" (
+        "hours" INT NOT NULL,
+        "student_id" UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY ("student_id", "teacher_id")
+    );
+
+CREATE TABLE
+    "subscription_student" (
+        "student_id" UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "subscription_id" UUID NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY ("student_id", "teacher_id")
+    );
+
+CREATE TABLE
+    "subscriptions" (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "name" TEXT NOT NULL,
+        "hours" INT NOT NULL
+    );
 
 CREATE Table
     if NOT exists "time_slots" (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "start_at" TIMESTAMPTZ NOT NULL,
         "end_at" TIMESTAMPTZ NOT NULL,
-        "teacher_id" UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE
+        "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 CREATE INDEX
@@ -54,7 +101,7 @@ CREATE TABLE
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" TEXT NOT NULL,
         "is_private" BOOLEAN NOT NULL,
-        "learn_id" INT NOT NULL REFERENCES "learn" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "topic_taught_id" INT NOT NULL REFERENCES "topic_taught" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT ON UPDATE RESTRICT,
         "has_started" BOOLEAN NOT NULL DEFAULT false,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -63,13 +110,19 @@ CREATE TABLE
 CREATE INDEX "idx_class_timeslotid" ON "class" ("time_slot_id");
 
 CREATE TABLE
-    IF NOT EXISTS "user_class" (
-        "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    IF NOT EXISTS "student_class" (
+        "student_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-        "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+        PRIMARY KEY ("user_id", "class_id")
     );
 
-ALTER TABLE "user_class" ADD PRIMARY KEY ("user_id", "class_id");
+CREATE TABLE
+    "students_teacher" (
+        "student_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        "teacher_id" UUID NOT NULL REFERENCES "teacher" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        PRIMARY KEY ("student_id", "teacher_id")
+    );
 
 CREATE TABLE
     IF NOT EXISTS "message" (
@@ -78,5 +131,5 @@ CREATE TABLE
         "user_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+        "updated_at" TIMESTAMPTZ
     );

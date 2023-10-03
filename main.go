@@ -9,7 +9,6 @@ import (
 	"nem/api"
 	"nem/api/ws"
 	"nem/db"
-	"nem/services/admin"
 	"nem/services/class"
 	"nem/services/message"
 	"nem/services/student"
@@ -51,7 +50,7 @@ func setup() error {
 	if err != nil {
 		return fmt.Errorf("error creating user service: %w", err)
 	}
-	adminService := admin.NewService()
+	// adminService := admin.NewService()
 	classService := class.NewService()
 
 	// Endpoints layer
@@ -70,7 +69,7 @@ func setup() error {
 	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
 
 	api := api.New(&api.Services{
-		AdminService:   adminService,
+		// AdminService:   adminService,
 		UserService:    userService,
 		TeacherService: teacherService,
 		StudentService: studentService,
