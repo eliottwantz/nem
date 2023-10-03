@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Netflix/go-env"
 	"github.com/joho/godotenv"
@@ -22,11 +21,8 @@ type Config struct {
 }
 
 func LoadEnv() error {
-	prod := os.Getenv("PRODUCTION")
-	if prod != "" && prod == "false" {
-		if err := godotenv.Load(); err != nil {
-			return fmt.Errorf("load .env: %w", err)
-		}
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("load .env: %w", err)
 	}
 
 	if _, err := env.UnmarshalFromEnviron(&Cfg); err != nil {
