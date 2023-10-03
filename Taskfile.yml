@@ -78,7 +78,7 @@ tasks:
   up:
     cmds:
       - supabase start
-      - docker compose up -d
+      - docker compose up redis -d
     desc: Start containers
 
   down:

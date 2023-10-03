@@ -1,57 +1,33 @@
-# flyctl launch added from .gitignore
-# Created by https://www.toptal.com/developers/gitignore/api/go
-# Edit at https://www.toptal.com/developers/gitignore?templates=go
-
-### Go ###
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+# Include any files or directories that you don't want to be copied to your
+# container here (e.g., local build artifacts, temporary files, etc.).
 #
-# Binaries for programs and plugins
-**/*.exe
-**/*.exe~
-**/*.dll
-**/*.so
-**/*.dylib
+# For more help, visit the .dockerignore file reference guide at
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
-# Test binary, built with `go test -c`
-**/*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-**/*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
-**/go.work
-
+**/.DS_Store
+**/.classpath
+**/.dockerignore
 **/.env
-# End of https://www.toptal.com/developers/gitignore/api/go
-
-**/.idea
-**/certs
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.toolstarget
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
 **/bin
-**/worktrees
-
-# flyctl launch added from supabase/.gitignore
-# Supabase
-supabase/**/.branches
-supabase/**/.temp
-
-# flyctl launch added from web/.gitignore
-web/**/.DS_Store
-web/**/node_modules
-web/build
-web/.svelte-kit
-web/package
-web/**/.env
-web/**/.env.*
-!web/**/.env.example
-web/**/vite.config.js.timestamp-*
-web/**/vite.config.ts.timestamp-*
-web/**/.turbo
-web/**/.vercel
-
-# flyctl launch added from web/node_modules/.pnpm/tailwindcss@3.3.3/node_modules/tailwindcss/stubs/.gitignore
-!web/node_modules/.pnpm/tailwindcss@3.3.3/node_modules/tailwindcss/stubs/**/*
-fly.toml
+**/charts
+**/docker-compose*
+**/compose*
+**/Dockerfile*
+**/node_modules
+**/npm-debug.log
+**/obj
+**/secrets.dev.yaml
+**/values.dev.yaml
+LICENSE
+README.md
+nem-website
