@@ -2,6 +2,18 @@
 
 SELECT * FROM "time_slots" WHERE "teacher_id" = $1;
 
+-- name: ListTeachersAvailableTimeSlots :many
+
+SELECT
+    ts.*,
+    c."id" AS class_id,
+    COUNT(sc."student_id") AS num_users
+FROM "time_slots" ts
+    LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
+    LEFT JOIN "student_class" sc ON c."id" = sc."class_id"
+WHERE ts."teacher_id" = $1
+GROUP BY ts."id", c."id";
+
 -- name: FindTimeSlot :one
 
 SELECT * FROM "time_slots" WHERE "id" = $1;

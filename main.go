@@ -9,7 +9,6 @@ import (
 	"nem/api"
 	"nem/api/ws"
 	"nem/db"
-	"nem/services/admin"
 	"nem/services/class"
 	"nem/services/message"
 	"nem/services/student"
@@ -18,6 +17,7 @@ import (
 	"nem/utils"
 
 	"github.com/charmbracelet/log"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func main() {
@@ -50,7 +50,7 @@ func setup() error {
 	if err != nil {
 		return fmt.Errorf("error creating user service: %w", err)
 	}
-	adminService := admin.NewService()
+	// adminService := admin.NewService()
 	classService := class.NewService()
 
 	// Endpoints layer
@@ -66,9 +66,10 @@ func setup() error {
 	teacherService := teacher.NewService(wsService)
 	studentService := student.NewService(wsService)
 	messageService := message.NewService(wsService)
+	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
 
 	api := api.New(&api.Services{
-		AdminService:   adminService,
+		// AdminService:   adminService,
 		UserService:    userService,
 		TeacherService: teacherService,
 		StudentService: studentService,
@@ -76,6 +77,7 @@ func setup() error {
 		MessageService: messageService,
 		WsHub:          wsHub,
 		WsService:      wsService,
+		JWTAuth:        jwtAuth,
 	})
 
 	return api.Start(ctx)

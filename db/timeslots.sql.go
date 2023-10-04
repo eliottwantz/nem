@@ -24,7 +24,7 @@ VALUES ($1, $2, $3) RETURNING id, start_at, end_at, teacher_id
 `
 
 type AddTimeSlotParams struct {
-	TeacherID string
+	TeacherID uuid.UUID
 	StartAt   time.Time
 	EndAt     time.Time
 }
@@ -51,7 +51,7 @@ WHERE
 
 type DeleteTimeSlotParams struct {
 	ID        uuid.UUID
-	TeacherID string
+	TeacherID uuid.UUID
 }
 
 func (q *Queries) DeleteTimeSlot(ctx context.Context, arg DeleteTimeSlotParams) error {
@@ -87,7 +87,7 @@ WHERE
 `
 
 type FindTimeSlotsTimeRangeParams struct {
-	TeacherID string
+	TeacherID uuid.UUID
 	StartAt   time.Time
 	EndAt     time.Time
 }
@@ -120,12 +120,64 @@ func (q *Queries) FindTimeSlotsTimeRange(ctx context.Context, arg FindTimeSlotsT
 	return items, nil
 }
 
+const listTeachersAvailableTimeSlots = `-- name: ListTeachersAvailableTimeSlots :many
+
+SELECT
+    ts.id, ts.start_at, ts.end_at, ts.teacher_id,
+    c."id" AS class_id,
+    COUNT(sc."student_id") AS num_users
+FROM "time_slots" ts
+    LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
+    LEFT JOIN "student_class" sc ON c."id" = sc."class_id"
+WHERE ts."teacher_id" = $1
+GROUP BY ts."id", c."id"
+`
+
+type ListTeachersAvailableTimeSlotsRow struct {
+	ID        uuid.UUID
+	StartAt   time.Time
+	EndAt     time.Time
+	TeacherID uuid.UUID
+	ClassID   uuid.NullUUID
+	NumUsers  int64
+}
+
+func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*ListTeachersAvailableTimeSlotsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachersAvailableTimeSlots, teacherID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*ListTeachersAvailableTimeSlotsRow
+	for rows.Next() {
+		var i ListTeachersAvailableTimeSlotsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartAt,
+			&i.EndAt,
+			&i.TeacherID,
+			&i.ClassID,
+			&i.NumUsers,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTimeSlots = `-- name: ListTimeSlots :many
 
 SELECT id, start_at, end_at, teacher_id FROM "time_slots" WHERE "teacher_id" = $1
 `
 
-func (q *Queries) ListTimeSlots(ctx context.Context, teacherID string) ([]*TimeSlot, error) {
+func (q *Queries) ListTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*TimeSlot, error) {
 	rows, err := q.db.QueryContext(ctx, listTimeSlots, teacherID)
 	if err != nil {
 		return nil, err
@@ -168,7 +220,7 @@ type UpdateTimeSlotParams struct {
 	StartAt   time.Time
 	EndAt     time.Time
 	ID        uuid.UUID
-	TeacherID string
+	TeacherID uuid.UUID
 }
 
 func (q *Queries) UpdateTimeSlot(ctx context.Context, arg UpdateTimeSlotParams) (*TimeSlot, error) {

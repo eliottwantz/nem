@@ -34,10 +34,6 @@ func NewRoom(id uuid.UUID, rds *redis.Client) *Room {
 	}
 }
 
-func (r *Room) GetId() uuid.UUID {
-	return r.id
-}
-
 func (r *Room) Run() {
 	go r.subscribeToRoomMessages()
 
@@ -59,14 +55,14 @@ func (r *Room) Run() {
 }
 
 func (r *Room) publishRoomMessage(message []byte) {
-	err := r.redis.Publish(ctx, r.GetId().String(), message).Err()
+	err := r.redis.Publish(ctx, r.id.String(), message).Err()
 	if err != nil {
 		r.logger.Warn("publish error", "err", err)
 	}
 }
 
 func (r *Room) subscribeToRoomMessages() {
-	ch := r.redis.Subscribe(ctx, r.GetId().String()).Channel()
+	ch := r.redis.Subscribe(ctx, r.id.String()).Channel()
 
 	for msg := range ch {
 		for client := range r.clients {

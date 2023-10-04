@@ -3,93 +3,65 @@ package httpmw
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"net/url"
 
 	"nem/api/rpc"
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-)
-
-const (
-	sessionName = "auth_session"
+	"github.com/go-chi/jwtauth/v5"
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
 type (
-	ctxSessionIdKey struct{}
-	ctxSessionKey   struct{}
+	ctxTokenKey struct{}
 )
 
-func Auth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		sessionID := getSessionID(r)
-		fmt.Println()
-		fmt.Println("SESSION_ID:", sessionID)
-		fmt.Println()
-		if sessionID == "" {
-			log.Warn("not session id for request")
-			rpc.RespondWithError(w, rpc.ErrUnauthorized)
-			return
-		}
+func Auth(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			token, err := jwtauth.VerifyRequest(ja, r, jwtauth.TokenFromHeader, jwtauth.TokenFromQuery)
+			if err != nil {
+				log.Warn("could not verify request", "err", err)
+				rpc.RespondWithError(w, rpc.ErrUnauthorized)
+				return
+			}
 
-		sessionStr, err := db.Redis.Get(ctx, "session:"+sessionID).Result()
-		if err != nil {
-			log.Error("could not get session from redis", "err", err)
-			return
-		}
+			if token == nil || jwt.Validate(token) != nil {
+				log.Warn("could not validate token", "err", err)
+				rpc.RespondWithError(w, rpc.ErrUnauthorized)
+				return
+			}
 
-		var u db.SessionUser
-		err = json.Unmarshal([]byte(sessionStr), &u)
-		if err != nil {
-			log.Error("could not unmarshal session", "err", err)
-			return
-		}
-
-		ctx = context.WithValue(ctx, ctxSessionIdKey{}, sessionID)
-		ctx = context.WithValue(ctx, ctxSessionKey{}, &u)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func getSessionID(r *http.Request) string {
-	sessionID := r.Header.Get(sessionName)
-	if sessionID != "" {
-		return sessionID
+			ctx = context.WithValue(ctx, ctxTokenKey{}, token)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
-
-	sessionID = r.URL.Query().Get(sessionName)
-	if sessionID != "" {
-		return sessionID
-	}
-
-	return ""
 }
 
-func ContextSessionUser(c context.Context) *db.SessionUser {
-	u := c.Value(ctxSessionKey{}).(*db.SessionUser)
-	return u
+func ContextJWT(c context.Context) jwt.Token {
+	token := c.Value(ctxTokenKey{}).(jwt.Token)
+	return token
 }
 
-func ContextSessionUserID(c context.Context) string {
-	session := ContextSessionUser(c)
-	if session == nil {
-		return ""
-	}
-	return session.UserID
-}
-
-func ContextSessionID(c context.Context) string {
-	sessionID := c.Value(ctxSessionIdKey{}).(string)
-	return sessionID
+func ContextUID(c context.Context) uuid.UUID {
+	token := ContextJWT(c)
+	return uuid.MustParse(token.Subject())
 }
 
 // OnlyRoles middleware restricts access to accounts having roles parameter in their access token.
 func OnlyRoles(roles ...db.Role) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			u := ContextSessionUser(r.Context())
+			uID := ContextUID(r.Context())
+			u, err := db.Pg.FindUserByID(r.Context(), uID)
+			if err != nil {
+				rpc.RespondWithError(w, rpc.ErrPermissionDenied)
+				return
+			}
 			if !hasRole(u.Role, roles) {
 				rpc.RespondWithError(w, rpc.ErrPermissionDenied)
 				return
@@ -108,4 +80,21 @@ func hasRole(role db.Role, roles []db.Role) bool {
 		}
 	}
 	return false
+}
+
+func decodeURLEncodedToken(token string) (string, error) {
+	decoded, err := url.QueryUnescape(token)
+	if err != nil {
+		return "", err
+	}
+	return decoded, nil
+}
+
+func unmarshallTokenArray(token string) ([]string, error) {
+	var arr []string
+	err := json.Unmarshal([]byte(token), &arr)
+	if err != nil {
+		return nil, err
+	}
+	return arr, nil
 }

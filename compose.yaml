@@ -1,0 +1,24 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis:/data
+    networks:
+      - supabase_network_nem
+
+volumes:
+  postgres:
+  redis:
+
+networks:
+  supabase_network_nem:
+    external: true

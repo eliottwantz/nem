@@ -75,52 +75,91 @@ func AllRoleValues() []Role {
 }
 
 type Class struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	LearnID    int32
-	CreatedAt  time.Time
-	TimeSlotID uuid.UUID
+	ID            uuid.UUID
+	Name          string
+	IsPrivate     bool
+	TopicTaughtID int32
+	TimeSlotID    uuid.UUID
+	HasStarted    bool
+	CreatedAt     time.Time
 }
 
-type EmailVerificationToken struct {
-	ID      string
-	UserID  string
-	Expires int64
-}
-
-type Learn struct {
-	ID       int32
-	Language string
-	Topic    string
+type HoursBank struct {
+	Hours     int32
+	StudentID uuid.UUID
+	TeacherID uuid.UUID
 }
 
 type Message struct {
 	ID        uuid.UUID
 	Text      string
-	UserID    string
+	UserID    uuid.UUID
 	ClassID   uuid.UUID
 	CreatedAt time.Time
-	UpdatedAt time.Time
+	UpdatedAt sql.NullTime
 }
 
-type PasswordResetToken struct {
-	ID      string
-	UserID  string
-	Expires int64
+type SpokenLanguage struct {
+	ID          uuid.UUID
+	Language    string
+	Proficiency string
+}
+
+type StudentClass struct {
+	StudentID uuid.UUID
+	ClassID   uuid.UUID
+	CreatedAt time.Time
+}
+
+type StudentsTeacher struct {
+	StudentID uuid.UUID
+	TeacherID uuid.UUID
+}
+
+type Subscription struct {
+	ID    uuid.UUID
+	Name  string
+	Hours int32
+}
+
+type SubscriptionStudent struct {
+	StudentID      uuid.UUID
+	TeacherID      uuid.UUID
+	SubscriptionID uuid.UUID
+}
+
+type Teacher struct {
+	ID       uuid.UUID
+	Bio      string
+	HourRate int32
+}
+
+type TeacherSpokenLanguage struct {
+	SpokenLanguageID uuid.UUID
+	TeacherID        uuid.UUID
+}
+
+type TeacherTopicTaught struct {
+	TeacherID     uuid.UUID
+	TopicTaughtID int32
 }
 
 type TimeSlot struct {
 	ID        uuid.UUID
 	StartAt   time.Time
 	EndAt     time.Time
-	TeacherID string
+	TeacherID uuid.UUID
+}
+
+type TopicTaught struct {
+	ID       int32
+	Topic    string
+	Language string
 }
 
 type User struct {
-	ID               string
+	ID               uuid.UUID
 	Email            string
-	EmailVerified    bool
 	FirstName        string
 	LastName         string
 	Role             Role
@@ -128,24 +167,5 @@ type User struct {
 	AvatarFilePath   string
 	AvatarUrl        string
 	CreatedAt        time.Time
-	UpdatedAt        time.Time
-}
-
-type UserClass struct {
-	UserID    string
-	ClassID   uuid.UUID
-	CreatedAt time.Time
-}
-
-type UserKey struct {
-	ID             string
-	UserID         string
-	HashedPassword sql.NullString
-}
-
-type UserLearn struct {
-	UserID    string
-	LearnID   int32
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UpdatedAt        sql.NullTime
 }

@@ -21,7 +21,7 @@ func NewService(hub *Hub) *Service {
 	}
 }
 
-func (s *Service) JoinClass(roomId uuid.UUID, userId string) error {
+func (s *Service) JoinClass(roomId, userId uuid.UUID) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -39,7 +39,7 @@ func (s *Service) JoinClass(roomId uuid.UUID, userId string) error {
 	return nil
 }
 
-func (s *Service) LeaveClass(roomId uuid.UUID, userId string) error {
+func (s *Service) LeaveClass(roomId, userId uuid.UUID) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -57,7 +57,7 @@ func (s *Service) LeaveClass(roomId uuid.UUID, userId string) error {
 	return nil
 }
 
-func (s *Service) StartClass(roomId uuid.UUID, userId string) error {
+func (s *Service) StartClass(roomId, userId uuid.UUID) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -77,17 +77,21 @@ func (s *Service) EndClass(roomId uuid.UUID) error {
 		return err
 	}
 
+	s.hub.PublishToRoom(&EmittedMessage{
+		Action: ActionClassEnded,
+		Data:   nil,
+	}, roomId)
+
 	s.hub.removeRoom(r)
 
 	return nil
 }
 
 func (s *Service) EmitNewMessage(roomID uuid.UUID, message *rpc.MessageResponse) error {
-	msg := EmittedMessage{
+	s.hub.PublishToRoom(&EmittedMessage{
 		Action: ActionEmitNewMessage,
 		Data:   message,
-	}
-	s.hub.PublishToRoom(&msg, roomID)
+	}, roomID)
 
 	return nil
 }

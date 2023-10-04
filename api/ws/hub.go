@@ -68,7 +68,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newClient(httpmw.ContextSessionUserID(r.Context()), conn, h)
+	c := newClient(httpmw.ContextUID(r.Context()), conn, h)
 
 	go c.writePump()
 	go c.readPump()
@@ -111,7 +111,7 @@ func (h *Hub) findRoomById(id uuid.UUID) (*Room, error) {
 	return nil, errors.New("ws room not found")
 }
 
-func (h *Hub) findClientById(id string) (*Client, error) {
+func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
 	for c := range h.clients {
 		if c.id == id {
 			return c, nil
@@ -131,7 +131,7 @@ func (h *Hub) createRoom(id uuid.UUID) *Room {
 
 func (h *Hub) removeRoom(r *Room) {
 	for c := range r.clients {
-		delete(c.rooms, r)
+		r.unregister <- c
 	}
 	delete(h.rooms, r)
 }

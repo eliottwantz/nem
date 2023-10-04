@@ -6,9 +6,19 @@ SELECT * FROM "user";
 
 SELECT * FROM "user" WHERE role = 'student';
 
--- name: ListTeachers :many
+-- name: ListStudentsOfTeacher :many
 
-SELECT * FROM "user" WHERE role = 'teacher';
+SELECT u.*
+FROM "students_teacher" sot
+    JOIN "teacher" t ON sot.teacher_id = t.id
+    JOIN "user" u ON sot.student_id = u.id
+WHERE t.id = $1;
+
+-- name: AddToListOfStudents :exec
+
+INSERT INTO
+    "students_teacher" (teacher_id, student_id)
+VALUES ($1, $2);
 
 -- name: FindUserByID :one
 
@@ -19,12 +29,13 @@ SELECT * FROM "user" WHERE id = $1;
 INSERT INTO
     "user" (
         id,
+        email,
         first_name,
         last_name,
         role,
         prefered_language
     )
-VALUES ($1, $2, $3, $4, $5) RETURNING *;
+VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: UpdateUserNames :one
 

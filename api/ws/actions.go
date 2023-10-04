@@ -18,4 +18,6 @@ const (
 
 	ActionEmitAddToTyping      Action = "addToTyping"
 	ActionEmitRemoveFromTyping Action = "removeFromTyping"
+
+	ActionClassEnded Action = "classEnded"
 )
