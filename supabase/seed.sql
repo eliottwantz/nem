@@ -293,5 +293,5 @@ values (
     );
 
 insert into
-    "public".learn (language, topic)
-values ('English', 'Language'), ('French', 'Language'), ('Arabic', 'Language');
+    "public".topic_taught (language, topic)
+values ('English', 'English'), ('English', 'French'), ('French', 'English'), ('English', 'Arabic'), ('French', 'Maths');

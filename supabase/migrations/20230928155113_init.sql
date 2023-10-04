@@ -68,18 +68,18 @@ CREATE TABLE
     );
 
 CREATE TABLE
+    "subscription" (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "name" TEXT NOT NULL,
+        "hours" INT NOT NULL
+    );
+
+CREATE TABLE
     "subscription_student" (
         "student_id" UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "subscription_id" UUID NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         PRIMARY KEY ("student_id", "teacher_id")
-    );
-
-CREATE TABLE
-    "subscriptions" (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        "name" TEXT NOT NULL,
-        "hours" INT NOT NULL
     );
 
 CREATE Table
@@ -114,7 +114,7 @@ CREATE TABLE
         "student_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "class_id" UUID NOT NULL REFERENCES "class" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-        PRIMARY KEY ("user_id", "class_id")
+        PRIMARY KEY ("student_id", "class_id")
     );
 
 CREATE TABLE
