@@ -1,15 +1,4 @@
 services:
-  server:
-    build:
-      context: .
-      target: final
-    env_file:
-      - .env.dev
-    ports:
-      - 8080:8080
-    networks:
-      - supabase_network_nem
-
   redis:
     image: redis
     ports:
