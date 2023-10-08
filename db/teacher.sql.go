@@ -100,7 +100,7 @@ const findTeacherByID = `-- name: FindTeacherByID :one
 SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "teacher" t
     JOIN "user" u ON t.id = u.id
-WHERE u.id = $1
+WHERE t.id = $1
 `
 
 type FindTeacherByIDRow struct {
@@ -157,64 +157,6 @@ func (q *Queries) ListSpokenLanguagesOfTeacher(ctx context.Context, teacherID uu
 	for rows.Next() {
 		var i SpokenLanguage
 		if err := rows.Scan(&i.ID, &i.Language, &i.Proficiency); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTeachers = `-- name: ListTeachers :many
-
-SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
-FROM "teacher" t
-    JOIN "user" u ON sot.teacher_id = u.id
-`
-
-type ListTeachersRow struct {
-	Bio              string
-	HourRate         int32
-	ID               uuid.UUID
-	Email            string
-	FirstName        string
-	LastName         string
-	Role             Role
-	PreferedLanguage string
-	AvatarFilePath   string
-	AvatarUrl        string
-	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
-}
-
-func (q *Queries) ListTeachers(ctx context.Context) ([]*ListTeachersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*ListTeachersRow
-	for rows.Next() {
-		var i ListTeachersRow
-		if err := rows.Scan(
-			&i.Bio,
-			&i.HourRate,
-			&i.ID,
-			&i.Email,
-			&i.FirstName,
-			&i.LastName,
-			&i.Role,
-			&i.PreferedLanguage,
-			&i.AvatarFilePath,
-			&i.AvatarUrl,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -302,7 +244,7 @@ func (q *Queries) ListTeachersForTopicTaught(ctx context.Context, arg ListTeache
 const listTeachersOfStudent = `-- name: ListTeachersOfStudent :many
 
 SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
-FROM "students_teacher" sot
+FROM "students_of_teacher" sot
     JOIN "teacher" t ON sot.teacher_id = t.id
     JOIN "user" u ON sot.teacher_id = u.id
 WHERE sot.student_id = $1

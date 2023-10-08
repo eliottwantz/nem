@@ -58,9 +58,20 @@ func FromDbTopicsTaught(t []*db.TopicTaught) []*TopicTaught {
 	return ret
 }
 
-func FromDbTeacher(u *db.User, t *db.Teacher, tt []*db.TopicTaught, lang []*db.SpokenLanguage) *Teacher {
+func FromDbTeacher(t *db.FindTeacherByIDRow, lang []*db.SpokenLanguage, tt []*db.TopicTaught) *Teacher {
 	return &Teacher{
-		BaseUser:        FromDbUser(u),
+		BaseUser: FromDbUser(&db.User{
+			ID:               t.ID,
+			Email:            t.Email,
+			FirstName:        t.FirstName,
+			LastName:         t.LastName,
+			Role:             t.Role,
+			PreferedLanguage: t.PreferedLanguage,
+			AvatarFilePath:   t.AvatarFilePath,
+			AvatarUrl:        t.AvatarUrl,
+			CreatedAt:        t.CreatedAt,
+			UpdatedAt:        t.UpdatedAt,
+		}),
 		Bio:             t.Bio,
 		HourRate:        t.HourRate,
 		SpokenLanguages: FromDBSpokenLanguage(lang),

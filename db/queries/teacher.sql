@@ -1,9 +1,3 @@
--- name: ListTeachers :many
-
-SELECT t.bio, t.hour_rate, u.*
-FROM "teacher" t
-    JOIN "user" u ON sot.teacher_id = u.id;
-
 -- name: ListTeachersForTopicTaught :many
 
 SELECT
@@ -23,12 +17,12 @@ WHERE
 SELECT t.bio, t.hour_rate, u.*
 FROM "teacher" t
     JOIN "user" u ON t.id = u.id
-WHERE u.id = $1;
+WHERE t.id = $1;
 
 -- name: ListTeachersOfStudent :many
 
 SELECT t.bio, t.hour_rate, u.*
-FROM "students_teacher" sot
+FROM "students_of_teacher" sot
     JOIN "teacher" t ON sot.teacher_id = t.id
     JOIN "user" u ON sot.teacher_id = u.id
 WHERE sot.student_id = $1;

@@ -292,6 +292,13 @@ values (
         'en'
     );
 
+INSERT INTO "student" (id)
+VALUES (
+        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid
+    ), (
+        '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid
+    );
+
 INSERT INTO
     "teacher" (id, bio, hour_rate)
 VALUES (

@@ -105,13 +105,17 @@ type SpokenLanguage struct {
 	Proficiency string
 }
 
+type Student struct {
+	ID uuid.UUID
+}
+
 type StudentClass struct {
 	StudentID uuid.UUID
 	ClassID   uuid.UUID
 	CreatedAt time.Time
 }
 
-type StudentsTeacher struct {
+type StudentsOfTeacher struct {
 	StudentID uuid.UUID
 	TeacherID uuid.UUID
 }

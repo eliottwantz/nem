@@ -81,7 +81,7 @@ func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher,
 	}
 
 	return rpc.FromDbTeacher(
-		&db.User{
+		&db.FindTeacherByIDRow{
 			ID:               u.ID,
 			Email:            u.Email,
 			FirstName:        u.FirstName,
@@ -89,17 +89,14 @@ func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher,
 			Role:             u.Role,
 			PreferedLanguage: u.PreferedLanguage,
 			AvatarFilePath:   u.AvatarFilePath,
+			Bio:              u.Bio,
+			HourRate:         u.HourRate,
 			AvatarUrl:        u.AvatarUrl,
 			CreatedAt:        u.CreatedAt,
 			UpdatedAt:        u.UpdatedAt,
 		},
-		&db.Teacher{
-			ID:       u.ID,
-			Bio:      u.Bio,
-			HourRate: u.HourRate,
-		},
-		topicsTaught,
 		spokenLangs,
+		topicsTaught,
 	), nil
 }
 
@@ -109,9 +106,15 @@ func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentReque
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("invalid role"))
 	}
 
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	defer tx.Rollback()
+
 	uID := httpmw.ContextUID(ctx)
 	s.logger.Info("access token", "uID", uID)
-	_, err := db.Pg.CreateUser(ctx, db.CreateUserParams{
+	_, err = tx.CreateUser(ctx, db.CreateUserParams{
 		ID:               uID,
 		Email:            req.Email,
 		FirstName:        req.FirstName,
@@ -121,9 +124,11 @@ func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentReque
 	})
 	if err != nil {
 		s.logger.Warn("could not create user", "err", err)
-		if err == sql.ErrNoRows {
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
-		}
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	_, err = tx.CreateStudent(ctx, uID)
+	if err != nil {
+		s.logger.Warn("could not create student", "err", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
@@ -166,8 +171,6 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 		}
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
-	// Add the user's spoken languages if it's a teacher
-
 	// Create the teacher
 	_, err = tx.CreateTeacher(ctx, db.CreateTeacherParams{
 		ID:       u.ID,
@@ -215,25 +218,6 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 	err = tx.Commit()
 	if err != nil {
 		s.logger.Warn("could not commit transaction creating user", "err", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	return nil
-}
-
-func (s *Service) ChooseRole(ctx context.Context, role string) error {
-	uID := httpmw.ContextUID(ctx)
-
-	if !db.Role(role).Valid() {
-		s.logger.Warn("invalid role", "role", role, "uID", uID)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("invalid role"))
-	}
-
-	err := db.Pg.SetUserRole(ctx, db.SetUserRoleParams{
-		ID:   uID,
-		Role: db.Role(role),
-	})
-	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 

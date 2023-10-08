@@ -75,7 +75,7 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	teacher, err := tx.FindUserByID(ctx, dbClass.TeacherID)
+	teacher, lang, topics, err := db.FindFullTeacher(ctx, tx.Queries, dbClass.TeacherID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -104,7 +104,7 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 			CreatedAt:  dbClass.CreatedAt,
 		},
 		Users:   rpcUsers,
-		Teacher: rpc.FromDbUser(teacher),
+		Teacher: rpc.FromDbTeacher(teacher, lang, topics),
 	}, nil
 }
 
@@ -147,7 +147,7 @@ func (s *Service) ListTeachersForTopicTaught(ctx context.Context, lang string, t
 			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 		}
 		ret = append(ret, rpc.FromDbTeacher(
-			&db.User{
+			&db.FindTeacherByIDRow{
 				ID:               u.ID,
 				Email:            u.Email,
 				FirstName:        u.FirstName,
@@ -156,16 +156,13 @@ func (s *Service) ListTeachersForTopicTaught(ctx context.Context, lang string, t
 				PreferedLanguage: u.PreferedLanguage,
 				AvatarFilePath:   u.AvatarFilePath,
 				AvatarUrl:        u.AvatarUrl,
+				Bio:              u.Bio,
+				HourRate:         u.HourRate,
 				CreatedAt:        u.CreatedAt,
 				UpdatedAt:        u.UpdatedAt,
 			},
-			&db.Teacher{
-				ID:       u.ID,
-				Bio:      u.Bio,
-				HourRate: u.HourRate,
-			},
-			topicsTaught,
 			spokenLangs,
+			topicsTaught,
 		))
 	}
 

@@ -4,25 +4,6 @@ name = nem
 version = v0.1.0
 
 
-#################### ADMIN ONLY ####################
-
-struct AdminCreateClassRequest
-    - userIDs: []string
-    - name: string
-    - topicTaughtId: int32
-    - timeSlotId: string
-
-
-service AdminServiceAPI
-    - AdminListUsers() => (users: []User)
-    - AdminListClasses() => (classes: []Class)
-    - AdminSetRole(uID: string, role: string)
-    - AdminCreateClass(req: AdminCreateClassRequest) => (class: Class)
-
-#################### ADMIN ONLY ####################
-
-
-
 #################### STRUCTS ####################
 
 struct User
@@ -48,7 +29,6 @@ struct SpokenLanguage
     - id: int32
     - language: string
     - proficiency: string
-
 
 struct CreateStudentRequest
     - firstName: string
@@ -92,7 +72,7 @@ struct Class
 struct ClassDetails
     - class: Class
     - users: []User
-    - teacher: User
+    - teacher: Teacher
 
 
 struct Message
@@ -146,7 +126,6 @@ service UserServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)
     - CreateStudent(req: CreateStudentRequest) 
     - CreateTeacher(req: CreateTeacherRequest)
-    - ChooseRole(role: string)
     - UpdatePreferedLanguage(lang: string)
     - UpdateAvatar(path: string, url: string)
     - DeleteAvatar()
