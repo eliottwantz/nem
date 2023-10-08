@@ -1,0 +1,77 @@
+{
+  "about": {
+    "title": "À propos"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "all-day": "Toute la journée"
+  },
+  "classes": {
+    "title": "Cours"
+  },
+  "contact": {
+    "title": "Contact"
+  },
+  "home": {
+    "getNemPass": "Obtenez votre pass NEM",
+    "slogan": "Notre éducation moderne",
+    "subtitle": "Améliorez et développez vos compétences",
+    "title": "NEM Pass, votre accès à une éducation sans frontières."
+  },
+  "learn": {
+    "bookLearn": "Prendre un cours",
+    "stepper": {
+      "buttonBack": "← Retour",
+      "buttonNext": "Suivant →",
+      "stepTerm": "Étape"
+    },
+    "title": "Apprendre",
+    "topic": "Sujet",
+    "language-teach": "Langue d'enseignement"
+  },
+  "loading": "Tamponnage de votre NEM Pass. \nAttachez vos ceintures de sécurité! \nNous préparons le décollage.",
+  "login": {
+    "email": "E-mail",
+    "login": "Se connecter",
+    "password": "Mot de passe",
+    "registerMsg": "Vous n'avez pas de compte ? Inscrivez-vous"
+  },
+  "nav": {
+    "about": "À propos",
+    "calendar": "Calendrier",
+    "classes": "Cours",
+    "contact": "Contact",
+    "currentClass": "Classe actuelle",
+    "home": "Accueil",
+    "learn": "Apprendre",
+    "login": "Se connecter",
+    "manage": "Gérer",
+    "teach": "Enseigner",
+    "users": "Utilisateurs"
+  },
+  "register": {
+    "email": "E-mail",
+    "firstName": "Prénom",
+    "lastName": "Nom de famille",
+    "loginMsg": "Vous avez déjà votre NEM Pass? Connectez-vous",
+    "password": "Mot de passe",
+    "register": "S'inscrire",
+    "role": "Choisissez un rôle",
+    "roles": {
+      "student": "Étudiant NEM",
+      "studentMessage": "Devenez un étudiant NEM maintenant.",
+      "teacher": "Agent NEM",
+      "teacherMessage": "Devenez un agent NEM maintenant."
+    },
+    "title": "Créez un compte et commencez à remplir votre NEM Pass !"
+  },
+  "setup-profile": {
+    "title": "Créez votre profile"
+  },
+  "close": "Fermer",
+  "day": "jour",
+  "list": "liste",
+  "month": "mois",
+  "today": "aujourd'hui",
+  "week": "semaine"
+}

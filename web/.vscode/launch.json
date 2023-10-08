@@ -1,0 +1,30 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+
+	"configurations": [
+		{
+			"name": "Launch Browser",
+			"request": "launch",
+			"type": "chrome",
+			"url": "http://localhost:5173",
+			"webRoot": "${workspaceFolder}/src"
+		},
+		{
+			"name": "SvelteKit server",
+			"request": "launch",
+			"runtimeArgs": ["dev", "--host"],
+			"runtimeExecutable": "pnpm",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "node"
+		}
+	],
+	"compounds": [
+		{
+			"name": "Both",
+			"configurations": ["Launch Browser", "SvelteKit server"]
+		}
+	]
+}
