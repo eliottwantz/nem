@@ -13,6 +13,88 @@ import (
 	"github.com/google/uuid"
 )
 
+const addSpokenLanguageToTeacher = `-- name: AddSpokenLanguageToTeacher :one
+
+INSERT INTO
+    "teacher_spoken_language" (
+        teacher_id,
+        spoken_language_id
+    )
+VALUES ($1, $2) RETURNING spoken_language_id, teacher_id
+`
+
+type AddSpokenLanguageToTeacherParams struct {
+	TeacherID        uuid.UUID
+	SpokenLanguageID int32
+}
+
+func (q *Queries) AddSpokenLanguageToTeacher(ctx context.Context, arg AddSpokenLanguageToTeacherParams) (*TeacherSpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, addSpokenLanguageToTeacher, arg.TeacherID, arg.SpokenLanguageID)
+	var i TeacherSpokenLanguage
+	err := row.Scan(&i.SpokenLanguageID, &i.TeacherID)
+	return &i, err
+}
+
+const createSpokenLanguage = `-- name: CreateSpokenLanguage :one
+
+INSERT INTO
+    "spoken_language" (language, proficiency)
+VALUES ($1, $2) RETURNING id, language, proficiency
+`
+
+type CreateSpokenLanguageParams struct {
+	Language    string
+	Proficiency string
+}
+
+func (q *Queries) CreateSpokenLanguage(ctx context.Context, arg CreateSpokenLanguageParams) (*SpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, createSpokenLanguage, arg.Language, arg.Proficiency)
+	var i SpokenLanguage
+	err := row.Scan(&i.ID, &i.Language, &i.Proficiency)
+	return &i, err
+}
+
+const createTeacher = `-- name: CreateTeacher :one
+
+INSERT INTO
+    "teacher" (id, bio, hour_rate)
+VALUES ($1, $2, $3) RETURNING id, bio, hour_rate
+`
+
+type CreateTeacherParams struct {
+	ID       uuid.UUID
+	Bio      string
+	HourRate int32
+}
+
+func (q *Queries) CreateTeacher(ctx context.Context, arg CreateTeacherParams) (*Teacher, error) {
+	row := q.db.QueryRowContext(ctx, createTeacher, arg.ID, arg.Bio, arg.HourRate)
+	var i Teacher
+	err := row.Scan(&i.ID, &i.Bio, &i.HourRate)
+	return &i, err
+}
+
+const findSpokenLanguage = `-- name: FindSpokenLanguage :one
+
+SELECT sl.id, sl.language, sl.proficiency
+FROM "spoken_language" sl
+WHERE
+    sl.language = $1
+    AND sl.proficiency = $2
+`
+
+type FindSpokenLanguageParams struct {
+	Language    string
+	Proficiency string
+}
+
+func (q *Queries) FindSpokenLanguage(ctx context.Context, arg FindSpokenLanguageParams) (*SpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, findSpokenLanguage, arg.Language, arg.Proficiency)
+	var i SpokenLanguage
+	err := row.Scan(&i.ID, &i.Language, &i.Proficiency)
+	return &i, err
+}
+
 const findTeacherByID = `-- name: FindTeacherByID :one
 
 SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
@@ -275,4 +357,23 @@ func (q *Queries) ListTeachersOfStudent(ctx context.Context, studentID uuid.UUID
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeSpokenLanguageFromTeacher = `-- name: RemoveSpokenLanguageFromTeacher :exec
+
+DELETE FROM
+    "teacher_spoken_language"
+WHERE
+    teacher_id = $1
+    AND spoken_language_id = $2
+`
+
+type RemoveSpokenLanguageFromTeacherParams struct {
+	TeacherID        uuid.UUID
+	SpokenLanguageID int32
+}
+
+func (q *Queries) RemoveSpokenLanguageFromTeacher(ctx context.Context, arg RemoveSpokenLanguageFromTeacherParams) error {
+	_, err := q.db.ExecContext(ctx, removeSpokenLanguageFromTeacher, arg.TeacherID, arg.SpokenLanguageID)
+	return err
 }

@@ -45,18 +45,31 @@ struct Teacher
     - topicsTaught: []TopicTaught
 
 struct SpokenLanguage
-    - id: string
+    - id: int32
     - language: string
     - proficiency: string
 
-struct CreateUserRequest
+
+struct CreateStudentRequest
     - firstName: string
     - lastName: string
+    - email: string
     - role: string
     - preferedLanguage: string
 
-struct CreateUserResponse
-    - user: User
+struct CreateTeacherRequest
+    - firstName: string
+    - lastName: string
+    - email: string
+    - role: string
+    - preferedLanguage: string
+    - bio: string
+    - hourRate: int32
+    - spokenLanguages: []CreateTeacherRequestSpokenLanguage
+
+struct CreateTeacherRequestSpokenLanguage
+    - language: string
+    - proficiency: string
 
 struct TopicTaught
     - id: int32
@@ -131,7 +144,8 @@ service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
     - FindTeacherByID(id: string) => (teacher: Teacher)
-    - Create(req: CreateUserRequest) => (user: User)
+    - CreateStudent(req: CreateStudentRequest) 
+    - CreateTeacher(req: CreateTeacherRequest)
     - ChooseRole(role: string)
     - UpdatePreferedLanguage(lang: string)
     - UpdateAvatar(path: string, url: string)
@@ -147,7 +161,7 @@ service StudentServiceAPI
 service TeacherServiceAPI
     - ListClasses() => (classes: []Class)
     - ListStudents() => (students: []User)
-    - ListTopicsTaught() => (TopicsTaught: []TopicTaught)
+    - ListTopicsTaught() => (topicsTaught: []TopicTaught)
     - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
     - ListAvailabilities() => (timeSlots: []TimeSlot)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)

@@ -100,7 +100,7 @@ type Message struct {
 }
 
 type SpokenLanguage struct {
-	ID          uuid.UUID
+	ID          int32
 	Language    string
 	Proficiency string
 }
@@ -117,7 +117,7 @@ type StudentsTeacher struct {
 }
 
 type Subscription struct {
-	ID    uuid.UUID
+	ID    int32
 	Name  string
 	Hours int32
 }
@@ -125,7 +125,7 @@ type Subscription struct {
 type SubscriptionStudent struct {
 	StudentID      uuid.UUID
 	TeacherID      uuid.UUID
-	SubscriptionID uuid.UUID
+	SubscriptionID int32
 }
 
 type Teacher struct {
@@ -135,7 +135,7 @@ type Teacher struct {
 }
 
 type TeacherSpokenLanguage struct {
-	SpokenLanguageID uuid.UUID
+	SpokenLanguageID int32
 	TeacherID        uuid.UUID
 }
 

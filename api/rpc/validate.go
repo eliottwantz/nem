@@ -1,14 +1,17 @@
 package rpc
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-func (r CreateUserRequest) Validate() error {
+func (r CreateStudentRequest) Validate() error {
 	return validation.ValidateStruct(&r,
 		validation.Field(&r.FirstName, validation.Required),
 		validation.Field(&r.LastName, validation.Required),
 		validation.Field(&r.PreferedLanguage, validation.Required),
+		validation.Field(&r.Role, validation.Required),
+		validation.Field(&r.Email, validation.Required, is.Email),
 	)
 }
 

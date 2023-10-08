@@ -25,14 +25,16 @@ CREATE Table
 
 CREATE TABLE
     "spoken_language" (
-        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "id" SERIAL PRIMARY KEY,
         "language" TEXT NOT NULL,
         "proficiency" TEXT NOT NULL
     );
 
+CREATE UNIQUE INDEX "language_proficiency_idx" ON "spoken_language" ("language", "proficiency");
+
 CREATE TABLE
     "teacher_spoken_language" (
-        "spoken_language_id" UUID NOT NULL REFERENCES "spoken_language"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "spoken_language_id" INT NOT NULL REFERENCES "spoken_language"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         PRIMARY KEY (
             "spoken_language_id",
@@ -69,7 +71,7 @@ CREATE TABLE
 
 CREATE TABLE
     "subscription" (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id SERIAL PRIMARY KEY,
         "name" TEXT NOT NULL,
         "hours" INT NOT NULL
     );
@@ -78,7 +80,7 @@ CREATE TABLE
     "subscription_student" (
         "student_id" UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        "subscription_id" UUID NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        "subscription_id" INT NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         PRIMARY KEY ("student_id", "teacher_id")
     );
 

@@ -38,7 +38,7 @@ func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLangua
 	ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
 	for _, dbSpokenLanguage := range dbSpokenLanguage {
 		ret = append(ret, &SpokenLanguage{
-			Id:          dbSpokenLanguage.ID.String(),
+			Id:          dbSpokenLanguage.ID,
 			Language:    dbSpokenLanguage.Language,
 			Proficiency: dbSpokenLanguage.Proficiency,
 		})
