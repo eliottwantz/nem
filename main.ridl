@@ -19,11 +19,20 @@ struct User
     - updatedAt: timestamp
 
 struct Teacher
-    - baseUser: User
+    - id: string
+    - email: string
+    - firstName: string
+    - lastName: string
+    - role: string
+    - preferedLanguage: string
+    - avatarFilePath: string
+    - avatarUrl: string
     - bio: string
     - hourRate: int32
     - spokenLanguages: []SpokenLanguage
     - topicsTaught: []TopicTaught
+    - createdAt: timestamp
+    - updatedAt: timestamp
 
 struct SpokenLanguage
     - id: int32

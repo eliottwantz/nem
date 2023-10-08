@@ -1,7 +1,6 @@
 import { PUBLIC_ENV, PUBLIC_GO_SERVER_HOST } from '$env/static/public'
 import type { Session } from '@supabase/supabase-js'
 import {
-	AdminServiceAPI,
 	ClassServiceAPI,
 	MessageServiceAPI,
 	StudentServiceAPI,
@@ -33,8 +32,6 @@ export const fetchers = {
 		new UserServiceAPI(apiEndpoint, doFetch(f, session)),
 	classService: (f: Fetch, session: Session) =>
 		new ClassServiceAPI(apiEndpoint, doFetch(f, session)),
-	adminService: (f: Fetch, session: Session) =>
-		new AdminServiceAPI(apiEndpoint, doFetch(f, session)),
 	teacherService: (f: Fetch, session: Session) =>
 		new TeacherServiceAPI(apiEndpoint, doFetch(f, session)),
 	studentService: (f: Fetch, session: Session) =>

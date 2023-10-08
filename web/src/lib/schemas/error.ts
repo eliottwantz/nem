@@ -1,1 +1,1 @@
-export type FormErrorMessage = { type: 'error' | 'success'; text: string }
+export type ServerMessage = { type: 'error' | 'success'; text: string }

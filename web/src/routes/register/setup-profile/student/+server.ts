@@ -1,5 +1,5 @@
 import { fetchers, safeFetch } from '$lib/api'
-import type { FormErrorMessage } from '$lib/schemas/error'
+import type { ServerMessage } from '$lib/schemas/error'
 import { createStudentSchema } from '$lib/schemas/profile'
 import { issuesToString } from '$lib/utils/zodError'
 import { json, redirect } from '@sveltejs/kit'
@@ -16,7 +16,7 @@ export async function POST({ request, fetch, locals: { session } }) {
 				{
 					type: 'error',
 					text: issuesToString(parseRes.error.issues)
-				} satisfies FormErrorMessage,
+				} satisfies ServerMessage,
 				{ status: 400 }
 			)
 		}
@@ -38,7 +38,7 @@ export async function POST({ request, fetch, locals: { session } }) {
 				{
 					type: 'error',
 					text: res.cause
-				} satisfies FormErrorMessage,
+				} satisfies ServerMessage,
 				{ status: res.error.status }
 			)
 		}
@@ -48,7 +48,7 @@ export async function POST({ request, fetch, locals: { session } }) {
 			{
 				type: 'error',
 				text: e instanceof Error ? e.message : 'An unknown error occurred'
-			} satisfies FormErrorMessage,
+			} satisfies ServerMessage,
 			{ status: 500 }
 		)
 	}

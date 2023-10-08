@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
 	import OauthLogin from '$lib/components/Oauth/OauthLogin.svelte'
-	import type { FormErrorMessage } from '$lib/schemas/error'
+	import type { ServerMessage } from '$lib/schemas/error'
 	import { loginSchema } from '$lib/schemas/login'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { t } from 'svelte-i18n'
@@ -29,7 +29,7 @@
 		errors,
 		enhance,
 		message
-	} = superForm<typeof loginSchema, FormErrorMessage>(data.form, {
+	} = superForm<typeof loginSchema, ServerMessage>(data.form, {
 		validators: loginSchema
 	})
 </script>

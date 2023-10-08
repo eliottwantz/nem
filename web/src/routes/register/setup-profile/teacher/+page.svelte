@@ -2,7 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation'
 	import Layout from '$lib/components/Layout.svelte'
 	import SpokenLanguageInput from '$lib/components/SpokenLanguageInput/SpokenLanguageInput.svelte'
-	import type { FormErrorMessage } from '$lib/schemas/error'
+	import type { ServerMessage } from '$lib/schemas/error'
 	import { createTeacherSchema } from '$lib/schemas/profile.js'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { locale, t } from 'svelte-i18n'
@@ -33,7 +33,7 @@
 			})
 			const data = await res.json()
 			if (res.status !== 201) {
-				const errMsg = data as FormErrorMessage
+				const errMsg = data as ServerMessage
 				toastStore.trigger({
 					message: errMsg.text,
 					background: 'bg-error-500'

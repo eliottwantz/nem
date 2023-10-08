@@ -1,5 +1,5 @@
 import { fetchers, safeFetch } from '$lib/api'
-import type { FormErrorMessage } from '$lib/schemas/error'
+import type { ServerMessage } from '$lib/schemas/error'
 import { registerSchema } from '$lib/schemas/register'
 import { AuthApiError, type Provider } from '@supabase/supabase-js'
 import { fail, redirect, type Actions } from '@sveltejs/kit'
@@ -17,7 +17,7 @@ export async function load({ locals: { session } }) {
 
 export const actions: Actions = {
 	email: async ({ request, locals: { supabase }, cookies, url }) => {
-		const form = await superValidate<typeof registerSchema, FormErrorMessage>(
+		const form = await superValidate<typeof registerSchema, ServerMessage>(
 			request,
 			registerSchema
 		)
@@ -56,13 +56,13 @@ export const actions: Actions = {
 			return {
 				text: 'No provider provided',
 				type: 'error'
-			} satisfies FormErrorMessage
+			} satisfies ServerMessage
 		}
 		if (!['google'].includes(provider)) {
 			return {
 				text: 'Invalid provider',
 				type: 'error'
-			} satisfies FormErrorMessage
+			} satisfies ServerMessage
 		}
 
 		const { data, error } = await supabase.auth.signInWithOAuth({

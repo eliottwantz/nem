@@ -1,4 +1,7 @@
 import { fetchers, safeFetch } from '$lib/api'
+import type { ServerMessage } from '$lib/schemas/error'
+import { newPasswordSchema } from '$lib/schemas/newPasswordSchema'
+import { issuesToString } from '$lib/utils/zodError'
 import { fail, redirect, type Actions } from '@sveltejs/kit'
 
 export async function load({ locals: { user } }) {
@@ -8,32 +11,54 @@ export async function load({ locals: { user } }) {
 }
 
 export const actions: Actions = {
-	updateAvatar: async (event) => {
-		const {
-			request,
-			fetch,
-			locals: { supabase, user, session }
-		} = event
+	changePass: async ({ request, locals: { supabase, user, session } }) => {
+		debugger
+		const formData = Object.fromEntries(await request.formData())
+
+		const parseRes = newPasswordSchema.safeParse(formData)
+		if (!parseRes.success) {
+			return fail(400, {
+				text: issuesToString(parseRes.error.issues),
+				type: 'error'
+			} satisfies ServerMessage)
+		}
+
+		const { error } = await supabase.auth.updateUser({
+			password: parseRes.data.newPassword
+		})
+		if (error) {
+			return fail(500, {
+				text: error.message,
+				type: 'error'
+			} satisfies ServerMessage)
+		}
+
+		return {
+			text: 'Password changed',
+			type: 'success'
+		} satisfies ServerMessage
+	},
+	updateAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
 		if (!user || !session) throw redirect(302, '/login')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
 		if (!avatar) {
 			return fail(400, {
-				message: 'No avatar selected',
-				success: false
-			})
+				text: 'No avatar selected',
+				type: 'error'
+			} satisfies ServerMessage)
 		}
 		if (!(avatar instanceof File)) {
 			return fail(400, {
-				message: 'Invalid avatar',
-				success: false
-			})
+				text: 'Invalid avatar',
+				type: 'error'
+			} satisfies ServerMessage)
 		} else {
 			if (avatar.size === 0) {
 				return fail(400, {
-					message: 'You must select an image',
-					success: false
-				})
+					text: 'You must select an image',
+					type: 'error'
+				} satisfies ServerMessage)
 			}
 			const fileExt = avatar.name.split('.').pop()
 			const filePath = `${user.id}/${user.id}__${Math.random()}.${fileExt}`
@@ -45,9 +70,9 @@ export const actions: Actions = {
 					.remove([user.avatarFilePath])
 				if (error) {
 					return fail(500, {
-						message: error.message,
-						success: false
-					})
+						text: error.message,
+						type: 'error'
+					} satisfies ServerMessage)
 				}
 			}
 
@@ -55,9 +80,9 @@ export const actions: Actions = {
 			const { error } = await supabase.storage.from('avatars').upload(filePath, avatar)
 			if (error) {
 				return fail(500, {
-					message: error.message,
-					success: false
-				})
+					text: error.message,
+					type: 'error'
+				} satisfies ServerMessage)
 			}
 
 			const {
@@ -70,22 +95,18 @@ export const actions: Actions = {
 			)
 			if (!res.ok) {
 				return fail(500, {
-					message: res.cause,
-					success: false
-				})
+					text: res.cause,
+					type: 'error'
+				} satisfies ServerMessage)
 			}
 
 			return {
-				success: true,
-				message: 'Avatar updated'
-			}
+				type: 'success',
+				text: 'Avatar updated'
+			} satisfies ServerMessage
 		}
 	},
-	deleteAvatar: async (event) => {
-		const {
-			locals: { supabase, session, user },
-			fetch
-		} = event
+	deleteAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
 		if (!session || !user) throw redirect(302, '/login')
 		try {
 			await Promise.all([
@@ -93,15 +114,15 @@ export const actions: Actions = {
 				fetchers.userService(fetch, session).deleteAvatar({ path: user.avatarFilePath })
 			])
 			return {
-				message: 'Avatar deleted',
-				success: true
-			}
+				text: 'Avatar deleted',
+				type: 'success'
+			} satisfies ServerMessage
 		} catch (error) {
 			console.log(error)
 			return {
-				message: (error as Error).message,
-				success: false
-			}
+				text: (error as Error).message,
+				type: 'error'
+			} satisfies ServerMessage
 		}
 	}
 }

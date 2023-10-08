@@ -1,4 +1,4 @@
-import type { FormErrorMessage } from '$lib/schemas/error'
+import type { ServerMessage } from '$lib/schemas/error'
 import { loginSchema } from '$lib/schemas/login'
 import { AuthApiError, type Provider } from '@supabase/supabase-js'
 import { fail, redirect } from '@sveltejs/kit'
@@ -15,7 +15,7 @@ export const load = async ({ locals: { session } }) => {
 
 export const actions = {
 	login: async ({ request, locals: { supabase } }) => {
-		const form = await superValidate<typeof loginSchema, FormErrorMessage>(request, loginSchema)
+		const form = await superValidate<typeof loginSchema, ServerMessage>(request, loginSchema)
 		console.log('POST login', form)
 
 		if (!form.valid) {

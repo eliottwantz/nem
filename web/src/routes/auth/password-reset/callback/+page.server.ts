@@ -1,37 +1,53 @@
 import { fail, redirect } from '@sveltejs/kit'
-import { newPasswordSchema } from '$lib/schemas/newPasswordSchema'
+import { resetPasswordSchema } from '$lib/schemas/newPasswordSchema'
 import { message, superValidate } from 'sveltekit-superforms/server'
-import type { FormErrorMessage } from '$lib/schemas/error'
+import type { ServerMessage } from '$lib/schemas/error'
+import { AuthApiError } from '@supabase/supabase-js'
 
 export async function load({ url, locals: { supabase } }) {
 	const code = url.searchParams.get('code')
 	if (!code) {
 		throw redirect(302, '/auth/password-reset?state=invalid-code')
 	}
-
-	const { error } = await supabase.auth.exchangeCodeForSession(code)
-	if (error) {
-		console.log(error)
+	try {
+		const { error } = await supabase.auth.exchangeCodeForSession(code)
+		if (error) {
+			console.log(error)
+			throw redirect(302, '/auth/password-reset?state=invalid-code')
+		}
+	} catch (error) {
 		throw redirect(302, '/auth/password-reset?state=invalid-code')
 	}
 
-	const form = await superValidate(newPasswordSchema)
+	const form = await superValidate(resetPasswordSchema)
 	return { form }
 }
 
 export const actions = {
-	default: async ({ request, url, locals: { supabase } }) => {
-		const form = await superValidate<typeof newPasswordSchema, FormErrorMessage>(
+	default: async ({ request, locals: { supabase } }) => {
+		const form = await superValidate<typeof resetPasswordSchema, ServerMessage>(
 			request,
-			newPasswordSchema
+			resetPasswordSchema
 		)
 		if (!form.valid) return fail(400, { form })
 
+		const handleError = (error: unknown) => {
+			console.log(error)
+			if (error instanceof AuthApiError) {
+				if (error.status !== 422)
+					return message(form, {
+						type: 'error',
+						text: error.message
+					})
+			} else {
+				return message(form, { type: 'error', text: 'An unknown error occurred' })
+			}
+		}
 		const { error } = await supabase.auth.updateUser({ password: form.data.password })
 		if (error) {
-			console.log(error)
-			return message(form, { type: 'error', text: 'An unknown error occurred' })
+			return handleError(error)
+		} else {
+			throw redirect(302, '/dashboard/profile')
 		}
-		throw redirect(302, '/dashboard/profile')
 	}
 }

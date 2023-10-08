@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit'
+import { redirect, type Actions } from '@sveltejs/kit'
 
 export async function load({ locals: { user } }) {
 	console.log('profile page.server load')

@@ -2,8 +2,8 @@
 </script>
 
 <div id="providers" class="flex flex-col space-y-2">
-	<form action="/login?/oauth&provider=google" method="post">
-		<button class="btn variant-outline-primary">
+	<form action="/login?/oauth&provider=google" method="get">
+		<button class="variant-outline-primary btn">
 			<span>
 				<svg
 					class="h-6 w-6"

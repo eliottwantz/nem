@@ -1,18 +1,27 @@
-import type { FormErrorMessage } from '$lib/schemas/error'
+import type { ServerMessage } from '$lib/schemas/error'
 import { forgotPasswordSchema } from '$lib/schemas/forgotPassword'
 import { fail, redirect } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 
-export async function load({ locals: { session } }) {
+export async function load({ locals: { session }, url }) {
 	if (session) throw redirect(302, '/dashboard/profile')
 
 	const form = await superValidate(forgotPasswordSchema)
-	return { form }
+
+	const state = url.searchParams.get('state')
+	if (state && state === 'invalid-code') {
+		return {
+			form,
+			invalidCode: true
+		}
+	}
+
+	return { form, invalidCode: false }
 }
 
 export const actions = {
 	default: async ({ request, locals: { supabase }, url }) => {
-		const form = await superValidate<typeof forgotPasswordSchema, FormErrorMessage>(
+		const form = await superValidate<typeof forgotPasswordSchema, ServerMessage>(
 			request,
 			forgotPasswordSchema
 		)
@@ -27,6 +36,9 @@ export const actions = {
 			return message(form, { type: 'error', text: 'An unknown error occurred' })
 		}
 
-		return message(form, { type: 'success', text: 'Your verification link was resent' })
+		return message(form, {
+			type: 'success',
+			text: 'Your password reset link has been sent. Check out your emails'
+		})
 	}
 }

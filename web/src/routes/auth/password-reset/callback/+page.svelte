@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
-	import { newPasswordSchema } from '$lib/schemas/newPasswordSchema'
+	import type { ServerMessage } from '$lib/schemas/error'
+	import { resetPasswordSchema } from '$lib/schemas/newPasswordSchema'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { superForm } from 'sveltekit-superforms/client'
 
@@ -9,9 +10,9 @@
 	const toastStore = getToastStore()
 	$: if ($message) {
 		toastStore.trigger({
-			message: $message,
-			background: 'bg-success-500',
-			autohide: false
+			message: $message.text,
+			background: $message.type === 'error' ? 'bg-error-500' : 'bg-success-500',
+			autohide: $message.type === 'success'
 		})
 	}
 
@@ -20,8 +21,8 @@
 		errors,
 		enhance,
 		message
-	} = superForm(data.form, {
-		validators: newPasswordSchema
+	} = superForm<typeof resetPasswordSchema, ServerMessage>(data.form, {
+		validators: resetPasswordSchema
 	})
 </script>
 

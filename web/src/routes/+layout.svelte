@@ -138,9 +138,7 @@
 
 	<svelte:fragment slot="sidebarLeft">
 		{#if $userStore}
-			{#if $userStore?.role === 'admin'}
-				<AdminSidebar />
-			{:else if $userStore?.role === 'teacher'}
+			{#if $userStore?.role === 'teacher'}
 				<TeacherSidebar />
 			{:else}
 				<StudentSidebar />

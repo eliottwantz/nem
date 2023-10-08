@@ -11,16 +11,11 @@
 	console.log('data', data)
 
 	const toastStore = getToastStore()
-	$: if (form && form.success) {
+	$: if (form) {
 		toastStore.trigger({
-			message: form.message,
-			background: 'bg-success-500'
-		})
-	}
-	$: if (form && !form.success) {
-		toastStore.trigger({
-			message: form.message,
-			background: 'bg-error-500'
+			message: form.text,
+			background: form.type === 'success' ? 'bg-success-500' : 'bg-error-500',
+			autohide: form.type === 'success'
 		})
 	}
 
@@ -36,6 +31,18 @@
 
 <Layout>
 	<h1 slot="title" class="h1">Edit Your Profile</h1>
+	<form method="post" class="mb-4 space-y-2" use:enhance action="?/changePass">
+		<label>
+			<span>New Password</span>
+			<input class="input" type="password" name="newPassword" />
+		</label>
+		<label>
+			<span>Confirm New Password</span>
+			<input class="input" type="password" name="newPasswordConfirm" />
+		</label>
+		<button class="variant-filled-surface btn">Change Password</button>
+	</form>
+
 	<form
 		class="space-y-2"
 		method="post"

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores'
 	import Layout from '$lib/components/Layout.svelte'
 
 	export let data
