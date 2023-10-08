@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidate, invalidateAll } from '$app/navigation'
 	import Layout from '$lib/components/Layout.svelte'
-	import SpokenLanguageInput from '$lib/components/SpokenLanguageInput/SpokenLanguageInput.svelte'
 	import type { FormErrorMessage } from '$lib/schemas/error'
 	import { createStudentSchema } from '$lib/schemas/profile.js'
 	import { getToastStore } from '@skeletonlabs/skeleton'
@@ -31,8 +30,8 @@
 				method: 'POST',
 				body: JSON.stringify($superF)
 			})
-			const data = await res.json()
 			if (res.status !== 201) {
+				const data = await res.json()
 				const errMsg = data as FormErrorMessage
 				toastStore.trigger({
 					message: errMsg.text,
@@ -40,7 +39,8 @@
 				})
 				return
 			}
-			return await goto('/dashboard/profile')
+			await goto('/dashboard/profile')
+			invalidateAll()
 		} catch (e) {
 			toastStore.trigger({
 				message: e instanceof Error ? e.message : 'Unknown error',

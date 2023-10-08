@@ -132,6 +132,11 @@ func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentReque
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+	}
+
 	return nil
 }
 

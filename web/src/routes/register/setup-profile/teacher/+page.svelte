@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidateAll } from '$app/navigation'
 	import Layout from '$lib/components/Layout.svelte'
-	import RoleCard from '$lib/components/RoleCard.svelte'
 	import SpokenLanguageInput from '$lib/components/SpokenLanguageInput/SpokenLanguageInput.svelte'
-	import StudentIcon from '$lib/icons/StudentIcon.svelte'
-	import TeacherIcon from '$lib/icons/TeacherIcon.svelte'
 	import type { FormErrorMessage } from '$lib/schemas/error'
 	import { createTeacherSchema } from '$lib/schemas/profile.js'
 	import { getToastStore } from '@skeletonlabs/skeleton'
@@ -43,7 +40,8 @@
 				})
 				return
 			}
-			return await goto('/dashboard/profile')
+			await goto('/dashboard/profile')
+			invalidateAll()
 		} catch (e) {
 			toastStore.trigger({
 				message: e instanceof Error ? e.message : 'Unknown error',

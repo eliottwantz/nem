@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Learn } from '$lib/api/api.gen'
 	import Layout from '$lib/components/Layout.svelte'
 	import SelectLearn from '$lib/components/SelectLearn.svelte'
 	import Arabic from '$lib/i18n/flags/Arabic.svelte'
