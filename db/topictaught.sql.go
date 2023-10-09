@@ -90,11 +90,10 @@ func (q *Queries) FindTopicTaughtLangTopic(ctx context.Context, arg FindTopicTau
 
 const listAvailableTopicTaught = `-- name: ListAvailableTopicTaught :many
 
-SELECT DISTINCT l.id, l.topic, l.language
-FROM "topic_taught" l
-    JOIN "teacher_topic_taught" uc ON l.id = uc.topic_taught_id
-    JOIN "user" u ON u.id = uc.teacher_id
-WHERE u.role = 'teacher'
+SELECT DISTINCT tt.id, tt.topic, tt.language
+FROM "topic_taught" tt
+    JOIN "teacher_topic_taught" ttt ON tt.id = ttt.topic_taught_id
+    JOIN "teacher" t ON ttt.teacher_id = t.id
 `
 
 func (q *Queries) ListAvailableTopicTaught(ctx context.Context) ([]*TopicTaught, error) {

@@ -97,7 +97,7 @@ func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
 			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 		}
 		ret = append(ret, rpc.FromDbTeacher(
-			&db.User{
+			&db.FindTeacherByIDRow{
 				ID:               u.ID,
 				Email:            u.Email,
 				FirstName:        u.FirstName,
@@ -105,17 +105,14 @@ func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
 				Role:             u.Role,
 				PreferedLanguage: u.PreferedLanguage,
 				AvatarFilePath:   u.AvatarFilePath,
+				Bio:              u.Bio,
+				HourRate:         u.HourRate,
 				AvatarUrl:        u.AvatarUrl,
 				CreatedAt:        u.CreatedAt,
 				UpdatedAt:        u.UpdatedAt,
 			},
-			&db.Teacher{
-				ID:       u.ID,
-				Bio:      u.Bio,
-				HourRate: u.HourRate,
-			},
-			topicsTaught,
 			spokenLangs,
+			topicsTaught,
 		))
 	}
 

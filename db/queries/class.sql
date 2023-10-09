@@ -30,7 +30,8 @@ WHERE t.id = $1;
 -- name: ListStudentsInClass :many
 
 SELECT u.*
-FROM "user" u
+FROM "student" s
+    JOIN "user" u ON s.id = u.id
     JOIN "student_class" sc ON u.id = sc.student_id
 WHERE sc.class_id = $1;
 

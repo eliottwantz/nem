@@ -4,25 +4,6 @@ name = nem
 version = v0.1.0
 
 
-#################### ADMIN ONLY ####################
-
-struct AdminCreateClassRequest
-    - userIDs: []string
-    - name: string
-    - topicTaughtId: int32
-    - timeSlotId: string
-
-
-service AdminServiceAPI
-    - AdminListUsers() => (users: []User)
-    - AdminListClasses() => (classes: []Class)
-    - AdminSetRole(uID: string, role: string)
-    - AdminCreateClass(req: AdminCreateClassRequest) => (class: Class)
-
-#################### ADMIN ONLY ####################
-
-
-
 #################### STRUCTS ####################
 
 struct User
@@ -38,25 +19,47 @@ struct User
     - updatedAt: timestamp
 
 struct Teacher
-    - baseUser: User
-    - bio: string
-    - hourRate: int32
-    - spokenLanguages: []SpokenLanguage
-    - topicsTaught: []TopicTaught
-
-struct SpokenLanguage
     - id: string
-    - language: string
-    - proficiency: string
-
-struct CreateUserRequest
+    - email: string
     - firstName: string
     - lastName: string
     - role: string
     - preferedLanguage: string
+    - avatarFilePath: string
+    - avatarUrl: string
+    - bio: string
+    - hourRate: int32
+    - topAgent: bool
+    - spokenLanguages: []SpokenLanguage
+    - topicsTaught: []TopicTaught
+    - createdAt: timestamp
+    - updatedAt: timestamp
 
-struct CreateUserResponse
-    - user: User
+struct SpokenLanguage
+    - id: int32
+    - language: string
+    - proficiency: string
+
+struct CreateStudentRequest
+    - firstName: string
+    - lastName: string
+    - email: string
+    - role: string
+    - preferedLanguage: string
+
+struct CreateTeacherRequest
+    - firstName: string
+    - lastName: string
+    - email: string
+    - role: string
+    - preferedLanguage: string
+    - bio: string
+    - hourRate: int32
+    - spokenLanguages: []CreateTeacherRequestSpokenLanguage
+
+struct CreateTeacherRequestSpokenLanguage
+    - language: string
+    - proficiency: string
 
 struct TopicTaught
     - id: int32
@@ -79,7 +82,7 @@ struct Class
 struct ClassDetails
     - class: Class
     - users: []User
-    - teacher: User
+    - teacher: Teacher
 
 
 struct Message
@@ -131,8 +134,8 @@ service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
     - FindTeacherByID(id: string) => (teacher: Teacher)
-    - Create(req: CreateUserRequest) => (user: User)
-    - ChooseRole(role: string)
+    - CreateStudent(req: CreateStudentRequest) 
+    - CreateTeacher(req: CreateTeacherRequest)
     - UpdatePreferedLanguage(lang: string)
     - UpdateAvatar(path: string, url: string)
     - DeleteAvatar()
@@ -147,7 +150,7 @@ service StudentServiceAPI
 service TeacherServiceAPI
     - ListClasses() => (classes: []Class)
     - ListStudents() => (students: []User)
-    - ListTopicsTaught() => (TopicsTaught: []TopicTaught)
+    - ListTopicsTaught() => (topicsTaught: []TopicTaught)
     - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
     - ListAvailabilities() => (timeSlots: []TimeSlot)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)

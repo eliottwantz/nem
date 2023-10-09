@@ -38,7 +38,7 @@ func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLangua
 	ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
 	for _, dbSpokenLanguage := range dbSpokenLanguage {
 		ret = append(ret, &SpokenLanguage{
-			Id:          dbSpokenLanguage.ID.String(),
+			Id:          dbSpokenLanguage.ID,
 			Language:    dbSpokenLanguage.Language,
 			Proficiency: dbSpokenLanguage.Proficiency,
 		})
@@ -58,12 +58,22 @@ func FromDbTopicsTaught(t []*db.TopicTaught) []*TopicTaught {
 	return ret
 }
 
-func FromDbTeacher(u *db.User, t *db.Teacher, tt []*db.TopicTaught, lang []*db.SpokenLanguage) *Teacher {
+func FromDbTeacher(t *db.FindTeacherByIDRow, lang []*db.SpokenLanguage, tt []*db.TopicTaught) *Teacher {
 	return &Teacher{
-		BaseUser:        FromDbUser(u),
-		Bio:             t.Bio,
-		HourRate:        t.HourRate,
-		SpokenLanguages: FromDBSpokenLanguage(lang),
-		TopicsTaught:    FromDbTopicsTaught(tt),
+		Id:               t.ID.String(),
+		Email:            t.Email,
+		FirstName:        t.FirstName,
+		LastName:         t.LastName,
+		Role:             string(t.Role),
+		PreferedLanguage: t.PreferedLanguage,
+		AvatarFilePath:   t.AvatarFilePath,
+		AvatarUrl:        t.AvatarUrl,
+		CreatedAt:        t.CreatedAt,
+		UpdatedAt:        t.UpdatedAt.Time,
+		Bio:              t.Bio,
+		HourRate:         t.HourRate,
+		TopAgent:         t.TopAgent,
+		SpokenLanguages:  FromDBSpokenLanguage(lang),
+		TopicsTaught:     FromDbTopicsTaught(tt),
 	}
 }

@@ -13,17 +13,109 @@ import (
 	"github.com/google/uuid"
 )
 
+const addSpokenLanguageToTeacher = `-- name: AddSpokenLanguageToTeacher :one
+
+INSERT INTO
+    "teacher_spoken_language" (
+        teacher_id,
+        spoken_language_id
+    )
+VALUES ($1, $2) RETURNING spoken_language_id, teacher_id
+`
+
+type AddSpokenLanguageToTeacherParams struct {
+	TeacherID        uuid.UUID
+	SpokenLanguageID int32
+}
+
+func (q *Queries) AddSpokenLanguageToTeacher(ctx context.Context, arg AddSpokenLanguageToTeacherParams) (*TeacherSpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, addSpokenLanguageToTeacher, arg.TeacherID, arg.SpokenLanguageID)
+	var i TeacherSpokenLanguage
+	err := row.Scan(&i.SpokenLanguageID, &i.TeacherID)
+	return &i, err
+}
+
+const createSpokenLanguage = `-- name: CreateSpokenLanguage :one
+
+INSERT INTO
+    "spoken_language" (language, proficiency)
+VALUES ($1, $2) RETURNING id, language, proficiency
+`
+
+type CreateSpokenLanguageParams struct {
+	Language    string
+	Proficiency string
+}
+
+func (q *Queries) CreateSpokenLanguage(ctx context.Context, arg CreateSpokenLanguageParams) (*SpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, createSpokenLanguage, arg.Language, arg.Proficiency)
+	var i SpokenLanguage
+	err := row.Scan(&i.ID, &i.Language, &i.Proficiency)
+	return &i, err
+}
+
+const createTeacher = `-- name: CreateTeacher :one
+
+INSERT INTO
+    "teacher" (id, bio, hour_rate)
+VALUES ($1, $2, $3) RETURNING id, bio, hour_rate, top_agent
+`
+
+type CreateTeacherParams struct {
+	ID       uuid.UUID
+	Bio      string
+	HourRate int32
+}
+
+func (q *Queries) CreateTeacher(ctx context.Context, arg CreateTeacherParams) (*Teacher, error) {
+	row := q.db.QueryRowContext(ctx, createTeacher, arg.ID, arg.Bio, arg.HourRate)
+	var i Teacher
+	err := row.Scan(
+		&i.ID,
+		&i.Bio,
+		&i.HourRate,
+		&i.TopAgent,
+	)
+	return &i, err
+}
+
+const findSpokenLanguage = `-- name: FindSpokenLanguage :one
+
+SELECT sl.id, sl.language, sl.proficiency
+FROM "spoken_language" sl
+WHERE
+    sl.language = $1
+    AND sl.proficiency = $2
+`
+
+type FindSpokenLanguageParams struct {
+	Language    string
+	Proficiency string
+}
+
+func (q *Queries) FindSpokenLanguage(ctx context.Context, arg FindSpokenLanguageParams) (*SpokenLanguage, error) {
+	row := q.db.QueryRowContext(ctx, findSpokenLanguage, arg.Language, arg.Proficiency)
+	var i SpokenLanguage
+	err := row.Scan(&i.ID, &i.Language, &i.Proficiency)
+	return &i, err
+}
+
 const findTeacherByID = `-- name: FindTeacherByID :one
 
-SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT
+    t.bio,
+    t.hour_rate,
+    t.top_agent,
+    u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "teacher" t
     JOIN "user" u ON t.id = u.id
-WHERE u.id = $1
+WHERE t.id = $1
 `
 
 type FindTeacherByIDRow struct {
 	Bio              string
 	HourRate         int32
+	TopAgent         bool
 	ID               uuid.UUID
 	Email            string
 	FirstName        string
@@ -42,6 +134,7 @@ func (q *Queries) FindTeacherByID(ctx context.Context, id uuid.UUID) (*FindTeach
 	err := row.Scan(
 		&i.Bio,
 		&i.HourRate,
+		&i.TopAgent,
 		&i.ID,
 		&i.Email,
 		&i.FirstName,
@@ -75,64 +168,6 @@ func (q *Queries) ListSpokenLanguagesOfTeacher(ctx context.Context, teacherID uu
 	for rows.Next() {
 		var i SpokenLanguage
 		if err := rows.Scan(&i.ID, &i.Language, &i.Proficiency); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTeachers = `-- name: ListTeachers :many
-
-SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
-FROM "teacher" t
-    JOIN "user" u ON sot.teacher_id = u.id
-`
-
-type ListTeachersRow struct {
-	Bio              string
-	HourRate         int32
-	ID               uuid.UUID
-	Email            string
-	FirstName        string
-	LastName         string
-	Role             Role
-	PreferedLanguage string
-	AvatarFilePath   string
-	AvatarUrl        string
-	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
-}
-
-func (q *Queries) ListTeachers(ctx context.Context) ([]*ListTeachersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*ListTeachersRow
-	for rows.Next() {
-		var i ListTeachersRow
-		if err := rows.Scan(
-			&i.Bio,
-			&i.HourRate,
-			&i.ID,
-			&i.Email,
-			&i.FirstName,
-			&i.LastName,
-			&i.Role,
-			&i.PreferedLanguage,
-			&i.AvatarFilePath,
-			&i.AvatarUrl,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -220,7 +255,7 @@ func (q *Queries) ListTeachersForTopicTaught(ctx context.Context, arg ListTeache
 const listTeachersOfStudent = `-- name: ListTeachersOfStudent :many
 
 SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
-FROM "students_teacher" sot
+FROM "students_of_teacher" sot
     JOIN "teacher" t ON sot.teacher_id = t.id
     JOIN "user" u ON sot.teacher_id = u.id
 WHERE sot.student_id = $1
@@ -275,4 +310,23 @@ func (q *Queries) ListTeachersOfStudent(ctx context.Context, studentID uuid.UUID
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeSpokenLanguageFromTeacher = `-- name: RemoveSpokenLanguageFromTeacher :exec
+
+DELETE FROM
+    "teacher_spoken_language"
+WHERE
+    teacher_id = $1
+    AND spoken_language_id = $2
+`
+
+type RemoveSpokenLanguageFromTeacherParams struct {
+	TeacherID        uuid.UUID
+	SpokenLanguageID int32
+}
+
+func (q *Queries) RemoveSpokenLanguageFromTeacher(ctx context.Context, arg RemoveSpokenLanguageFromTeacherParams) error {
+	_, err := q.db.ExecContext(ctx, removeSpokenLanguageFromTeacher, arg.TeacherID, arg.SpokenLanguageID)
+	return err
 }

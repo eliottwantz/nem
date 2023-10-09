@@ -1,25 +1,3 @@
--- name: ListUsers :many
-
-SELECT * FROM "user";
-
--- name: ListStudents :many
-
-SELECT * FROM "user" WHERE role = 'student';
-
--- name: ListStudentsOfTeacher :many
-
-SELECT u.*
-FROM "students_teacher" sot
-    JOIN "teacher" t ON sot.teacher_id = t.id
-    JOIN "user" u ON sot.student_id = u.id
-WHERE t.id = $1;
-
--- name: AddToListOfStudents :exec
-
-INSERT INTO
-    "students_teacher" (teacher_id, student_id)
-VALUES ($1, $2);
-
 -- name: FindUserByID :one
 
 SELECT * FROM "user" WHERE id = $1;
@@ -68,7 +46,3 @@ UPDATE "user" SET prefered_language = $1 WHERE id = $2;
 -- name: DeleteUser :exec
 
 DELETE FROM "user" WHERE id = $1;
-
--- name: SetUserRole :exec
-
-UPDATE "user" SET role = $1 WHERE id = $2;

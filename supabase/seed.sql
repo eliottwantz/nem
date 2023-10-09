@@ -292,6 +292,46 @@ values (
         'en'
     );
 
+INSERT INTO "student" (id)
+VALUES (
+        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid
+    ), (
+        '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid
+    );
+
+INSERT INTO
+    "teacher" (id, bio, hour_rate)
+VALUES (
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid,
+        'Je suis un professeur de français',
+        30
+    ), (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+        'I am an english teacher',
+        27
+    );
+
+INSERT INTO
+    "spoken_language" (language, proficiency)
+VALUES ('French', 'A1'), ('French', 'A2'), ('French', 'B1'), ('French', 'B2'), ('French', 'C1'), ('French', 'C2'), ('French', 'Native'), ('English', 'A1'), ('English', 'A2'), ('English', 'B1'), ('English', 'B2'), ('English', 'C1'), ('English', 'C2'), ('English', 'Native');
+
+INSERT INTO
+    "teacher_spoken_language" (
+        spoken_language_id,
+        teacher_id
+    )
+VALUES (
+        7,
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid
+    ), (
+        14,
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid
+    );
+
 insert into
     "public".topic_taught (language, topic)
 values ('English', 'English'), ('English', 'French'), ('French', 'English'), ('English', 'Arabic'), ('French', 'Maths');
+
+INSERT INTO
+    "subscription" (id, name, hours)
+VALUES (1, 'Explorer', 1), (2, 'Voyage', 2), (3, 'Enlighten', 3), (4, 'Master', 4);

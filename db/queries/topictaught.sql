@@ -27,11 +27,10 @@ WHERE t.teacher_id = $1;
 
 -- name: ListAvailableTopicTaught :many
 
-SELECT DISTINCT l.*
-FROM "topic_taught" l
-    JOIN "teacher_topic_taught" uc ON l.id = uc.topic_taught_id
-    JOIN "user" u ON u.id = uc.teacher_id
-WHERE u.role = 'teacher';
+SELECT DISTINCT tt.*
+FROM "topic_taught" tt
+    JOIN "teacher_topic_taught" ttt ON tt.id = ttt.topic_taught_id
+    JOIN "teacher" t ON ttt.teacher_id = t.id;
 
 -- name: CreateTopicTaught :one
 

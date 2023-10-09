@@ -317,7 +317,8 @@ func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID)
 const listStudentsInClass = `-- name: ListStudentsInClass :many
 
 SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
-FROM "user" u
+FROM "student" s
+    JOIN "user" u ON s.id = u.id
     JOIN "student_class" sc ON u.id = sc.student_id
 WHERE sc.class_id = $1
 `
