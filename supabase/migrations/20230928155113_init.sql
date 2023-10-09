@@ -25,7 +25,8 @@ CREATE TABLE
     "teacher" (
         id UUID PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
         "bio" TEXT NOT NULL,
-        "hour_rate" INT NOT NULL CONSTRAINT "hour_rate_check" CHECK (hour_rate > 0)
+        "hour_rate" INT NOT NULL CONSTRAINT "hour_rate_check" CHECK (hour_rate > 0),
+        "top_agent" BOOLEAN NOT NULL DEFAULT FALSE
     );
 
 CREATE TABLE

@@ -72,6 +72,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow, lang []*db.SpokenLanguage, tt []*db
 		UpdatedAt:        t.UpdatedAt.Time,
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
+		TopAgent:         t.TopAgent,
 		SpokenLanguages:  FromDBSpokenLanguage(lang),
 		TopicsTaught:     FromDbTopicsTaught(tt),
 	}

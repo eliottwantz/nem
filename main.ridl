@@ -29,6 +29,7 @@ struct Teacher
     - avatarUrl: string
     - bio: string
     - hourRate: int32
+    - topAgent: bool
     - spokenLanguages: []SpokenLanguage
     - topicsTaught: []TopicTaught
     - createdAt: timestamp

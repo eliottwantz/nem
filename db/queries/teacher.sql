@@ -14,7 +14,11 @@ WHERE
 
 -- name: FindTeacherByID :one
 
-SELECT t.bio, t.hour_rate, u.*
+SELECT
+    t.bio,
+    t.hour_rate,
+    t.top_agent,
+    u.*
 FROM "teacher" t
     JOIN "user" u ON t.id = u.id
 WHERE t.id = $1;

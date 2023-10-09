@@ -10,10 +10,10 @@
 <Avatar
 	{src}
 	{initials}
-	background="bg-secondary-500"
+	background="bg-primary-200"
 	{width}
 	{height}
 	rounded="rounded-full"
-	border="border-2 {src ? 'border-surface-800' : 'border-secondary-700-200-token'}"
+	border="border-2 {src ? 'border-primary-800' : 'border-primary-600'}"
 	class="{$$props.class} select-none"
 />

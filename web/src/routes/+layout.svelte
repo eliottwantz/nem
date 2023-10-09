@@ -3,7 +3,7 @@
 	import '../app.postcss'
 
 	import { browser } from '$app/environment'
-	import { invalidate } from '$app/navigation'
+	import { invalidate, onNavigate } from '$app/navigation'
 	import { ws } from '$lib/api/ws'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import { drawerStoreIds } from '$lib/components/Drawer'
@@ -11,7 +11,6 @@
 	import Locale from '$lib/components/Locale.svelte'
 	import { modalComponentRegistry } from '$lib/components/Modal'
 	import Navigation from '$lib/components/Navigation.svelte'
-	import AdminSidebar from '$lib/components/Sidebar/AdminSidebar.svelte'
 	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
 	import { dir } from '$lib/i18n'
@@ -28,7 +27,6 @@
 	} from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import { t } from 'svelte-i18n'
-	import { onNavigate } from '$app/navigation'
 
 	export let data
 	initializeStores()

@@ -58,7 +58,7 @@ const createTeacher = `-- name: CreateTeacher :one
 
 INSERT INTO
     "teacher" (id, bio, hour_rate)
-VALUES ($1, $2, $3) RETURNING id, bio, hour_rate
+VALUES ($1, $2, $3) RETURNING id, bio, hour_rate, top_agent
 `
 
 type CreateTeacherParams struct {
@@ -70,7 +70,12 @@ type CreateTeacherParams struct {
 func (q *Queries) CreateTeacher(ctx context.Context, arg CreateTeacherParams) (*Teacher, error) {
 	row := q.db.QueryRowContext(ctx, createTeacher, arg.ID, arg.Bio, arg.HourRate)
 	var i Teacher
-	err := row.Scan(&i.ID, &i.Bio, &i.HourRate)
+	err := row.Scan(
+		&i.ID,
+		&i.Bio,
+		&i.HourRate,
+		&i.TopAgent,
+	)
 	return &i, err
 }
 
@@ -97,7 +102,11 @@ func (q *Queries) FindSpokenLanguage(ctx context.Context, arg FindSpokenLanguage
 
 const findTeacherByID = `-- name: FindTeacherByID :one
 
-SELECT t.bio, t.hour_rate, u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
+SELECT
+    t.bio,
+    t.hour_rate,
+    t.top_agent,
+    u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.created_at, u.updated_at
 FROM "teacher" t
     JOIN "user" u ON t.id = u.id
 WHERE t.id = $1
@@ -106,6 +115,7 @@ WHERE t.id = $1
 type FindTeacherByIDRow struct {
 	Bio              string
 	HourRate         int32
+	TopAgent         bool
 	ID               uuid.UUID
 	Email            string
 	FirstName        string
@@ -124,6 +134,7 @@ func (q *Queries) FindTeacherByID(ctx context.Context, id uuid.UUID) (*FindTeach
 	err := row.Scan(
 		&i.Bio,
 		&i.HourRate,
+		&i.TopAgent,
 		&i.ID,
 		&i.Email,
 		&i.FirstName,

@@ -136,6 +136,7 @@ type Teacher struct {
 	ID       uuid.UUID
 	Bio      string
 	HourRate int32
+	TopAgent bool
 }
 
 type TeacherSpokenLanguage struct {
