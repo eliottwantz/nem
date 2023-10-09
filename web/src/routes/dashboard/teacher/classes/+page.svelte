@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import Layout from '$lib/components/Layout.svelte'
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 
 	export let data
 </script>

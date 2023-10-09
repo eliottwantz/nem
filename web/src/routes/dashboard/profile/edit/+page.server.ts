@@ -7,10 +7,12 @@ import { fail, redirect, type Actions } from '@sveltejs/kit'
 export async function load({ locals: { user } }) {
 	console.log('profile edit server load')
 	if (!user) throw redirect(302, '/login')
-	return { user }
+	return {
+		user
+	}
 }
 
-export const actions: Actions = {
+export const actions = {
 	changePass: async ({ request, locals: { supabase, user, session } }) => {
 		debugger
 		const formData = Object.fromEntries(await request.formData())

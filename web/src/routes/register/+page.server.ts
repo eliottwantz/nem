@@ -15,7 +15,7 @@ export async function load({ locals: { session } }) {
 	return { form }
 }
 
-export const actions: Actions = {
+export const actions = {
 	email: async ({ request, locals: { supabase }, cookies, url }) => {
 		const form = await superValidate<typeof registerSchema, ServerMessage>(
 			request,

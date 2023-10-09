@@ -8,8 +8,6 @@
 	export let data
 	export let form
 
-	console.log('data', data)
-
 	const toastStore = getToastStore()
 	$: if (form) {
 		toastStore.trigger({
