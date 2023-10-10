@@ -38,9 +38,12 @@
 <Layout>
 	<h1 class="h1" slot="title">Reset Your Password</h1>
 
-	<form class="space-y-4" method="post" use:enhance>
-		<p>Please enter your email ServerMessage will send you a link to reset your password.</p>
-		<div class="space-y-2">
+	<form class="flex flex-col items-center space-y-4" method="post" use:enhance>
+		<p>
+			Please enter your email address. We will send you a link to reset your password if it
+			exists.
+		</p>
+		<div class="w-full max-w-md space-y-2">
 			<label class="label">
 				<span>{$t('login.email')}</span>
 				<!-- svelte-ignore a11y-autofocus -->

@@ -74,7 +74,7 @@
 	</form>
 
 	<div class="flex flex-col items-center">
-		<a class="anchor" href="/auth/password-reset">Forgot password?</a>
+		<a class="anchor" href="/login/password-reset">Forgot password?</a>
 		<a class="anchor" href="/register">{$t('login.registerMsg')}</a>
 	</div>
 </Layout>

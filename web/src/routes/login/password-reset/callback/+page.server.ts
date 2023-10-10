@@ -7,16 +7,16 @@ import { AuthApiError } from '@supabase/supabase-js'
 export async function load({ url, locals: { supabase } }) {
 	const code = url.searchParams.get('code')
 	if (!code) {
-		throw redirect(302, '/auth/password-reset?state=invalid-code')
+		throw redirect(302, '/login/password-reset?state=invalid-code')
 	}
 	try {
 		const { error } = await supabase.auth.exchangeCodeForSession(code)
 		if (error) {
 			console.log(error)
-			throw redirect(302, '/auth/password-reset?state=invalid-code')
+			throw redirect(302, '/login/password-reset?state=invalid-code')
 		}
 	} catch (error) {
-		throw redirect(302, '/auth/password-reset?state=invalid-code')
+		throw redirect(302, '/login/password-reset?state=invalid-code')
 	}
 
 	const form = await superValidate(resetPasswordSchema)

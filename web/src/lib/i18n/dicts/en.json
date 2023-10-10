@@ -37,7 +37,8 @@
     "register": "Register",
     "spokenLanguages": "Spoken Languages",
     "bio": "Biography",
-    "hourRate": "Hour Rate"
+    "hourRate": "Hour Rate",
+    "proficiencyLevel": "Proficiency"
   },
   "login": {
     "email": "Email",

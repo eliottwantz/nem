@@ -1,8 +1,20 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
+	import { modalComponentRegistry } from '$lib/components/Modal'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
+	import { getModalStore } from '@skeletonlabs/skeleton'
 
 	export let data
+	console.log('DATA', data)
+
+	const modalStore = getModalStore()
+
+	async function scheduleClass() {
+		modalStore.trigger({
+			type: 'component',
+			component: modalComponentRegistry.takeClass
+		})
+	}
 </script>
 
 <Layout>
@@ -21,10 +33,9 @@
 					</p>
 				</div>
 				<div class="flex flex-col gap-2">
-					<a
-						href="/dashboard/student/learn?teacherId={data.teacher.id}"
-						class="variant-filled-primary btn">Schedule a class with this teacher</a
-					>
+					<button class="variant-filled-primary btn" on:click={scheduleClass}>
+						Schedule a class with this teacher
+					</button>
 					<button class="variant-ghost-surface btn"> Send a message </button>
 				</div>
 			</div>
