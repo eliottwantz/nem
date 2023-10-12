@@ -71,6 +71,7 @@
 
 <Modal zIndex="z-[9999]" components={modalComponentRegistry} />
 
+<div id="nem-rectangle-middle"></div>
 <AppShell slotSidebarLeft="lg:block hidden">
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
@@ -100,7 +101,7 @@
 					<a href="/">
 						<div class="flex items-center space-x-4">
 							<Logo />
-							<h1 class="h3 hidden items-center lg:flex">NEM</h1>
+							<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
 						</div>
 					</a>
 				</div>
@@ -110,7 +111,7 @@
 			<div class="hidden lg:block">
 				<Navigation horizontal />
 			</div>
-			<h1 class="text-center text-2xl lg:hidden">
+			<h1 id="nem" class="text-center text-2xl lg:hidden">
 				<a href="/">NEM</a>
 			</h1>
 			<svelte:fragment slot="trail">
@@ -149,9 +150,34 @@
 </AppShell>
 
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Gravitas+One&display=swap');
-
-	h1 {
+	#nem {
 		font-family: 'Gravitas One', cursive;
+	}
+	:global(*) {
+		font-family:
+			Roboto,
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			Roboto,
+			Oxygen,
+			Ubuntu,
+			Cantarell,
+			'Open Sans',
+			'Helvetica Neue',
+			sans-serif;
+	}
+
+	#nem-rectangle-middle {
+		position: fixed;
+		top: 0;
+		right: 50%;
+		left: 50%; /* Center horizontally */
+		transform: translateX(-50%); /* Center horizontally */
+		width: 2rem;
+		height: 100%;
+		background-color: #fbdd9005; /* Barely visible background color */
+		z-index: -1; /* Place it behind the content */
 	}
 </style>

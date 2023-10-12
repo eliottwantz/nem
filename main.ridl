@@ -124,6 +124,16 @@ struct CreateClassRequest
     - topicTaughtId: int32
     - timeSlotId: string
 
+struct ListTeachersFilters
+    - language: string
+    - topic: string
+    - topAgent: bool
+    - priceMin: int32
+    - priceMax: int32
+    - ratingMin: int32
+    - ratingMax: int32
+    - cursor: string
+
 
 #################### STRUCTS ####################
 
@@ -133,7 +143,6 @@ struct CreateClassRequest
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
-    - FindTeacherByID(id: string) => (teacher: Teacher)
     - CreateStudent(req: CreateStudentRequest) 
     - CreateTeacher(req: CreateTeacherRequest)
     - UpdatePreferedLanguage(lang: string)
@@ -148,11 +157,14 @@ service StudentServiceAPI
     - LeaveClass(classId: string)
 
 service TeacherServiceAPI
-    - ListClasses() => (classes: []Class)
-    - ListStudents() => (students: []User)
-    - ListTopicsTaught() => (topicsTaught: []TopicTaught)
+    - FindTeacherByID(id: string) => (teacher: Teacher)
+    - ListTeachers(filters: ListTeachersFilters) => (teachers: []Teacher)
+    - ListClasses(teacherId: string) => (classes: []Class)
+    - ListStudents(teacherId: string) => (students: []User)
+    - ListTopicsTaught(teacherId: string) => (topicsTaught: []TopicTaught)
+    - ListAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
+
     - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
-    - ListAvailabilities() => (timeSlots: []TimeSlot)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)

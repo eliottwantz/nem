@@ -75,19 +75,25 @@ func AllRoleValues() []Role {
 }
 
 type Class struct {
-	ID            uuid.UUID
-	Name          string
-	IsPrivate     bool
-	TopicTaughtID int32
-	TimeSlotID    uuid.UUID
-	HasStarted    bool
-	CreatedAt     time.Time
+	ID         uuid.UUID
+	Name       string
+	IsPrivate  bool
+	Language   string
+	Topic      string
+	TimeSlotID uuid.UUID
+	HasStarted bool
+	CreatedAt  time.Time
 }
 
 type HoursBank struct {
 	Hours     int32
 	StudentID uuid.UUID
 	TeacherID uuid.UUID
+}
+
+type Language struct {
+	ID       int32
+	Language string
 }
 
 type Message struct {
@@ -99,9 +105,17 @@ type Message struct {
 	UpdatedAt sql.NullTime
 }
 
+type Review struct {
+	ID        int32
+	Rating    int32
+	Comment   sql.NullString
+	TeacherID int32
+	StudentID int32
+}
+
 type SpokenLanguage struct {
 	ID          int32
-	Language    string
+	LanguageID  int32
 	Proficiency string
 }
 
@@ -139,14 +153,20 @@ type Teacher struct {
 	TopAgent bool
 }
 
+type TeacherRating struct {
+	ID        int32
+	Rating    string
+	TeacherID int32
+}
+
 type TeacherSpokenLanguage struct {
 	SpokenLanguageID int32
 	TeacherID        uuid.UUID
 }
 
-type TeacherTopicTaught struct {
-	TeacherID     uuid.UUID
-	TopicTaughtID int32
+type TeacherTopic struct {
+	TeacherID uuid.UUID
+	TopicID   int32
 }
 
 type TimeSlot struct {
@@ -156,10 +176,9 @@ type TimeSlot struct {
 	TeacherID uuid.UUID
 }
 
-type TopicTaught struct {
-	ID       int32
-	Topic    string
-	Language string
+type Topic struct {
+	ID    int32
+	Topic string
 }
 
 type User struct {

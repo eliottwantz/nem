@@ -28,8 +28,57 @@ func NewService(wsService *ws.Service) *Service {
 	}
 }
 
-func (s *Service) ListTopicsTaught(ctx context.Context) ([]*rpc.TopicTaught, error) {
-	res, err := db.Pg.ListTopicTaughtOfTeacher(ctx, httpmw.ContextUID(ctx))
+func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher, error) {
+	uID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty user id param"))
+	}
+	u, err := db.Pg.FindTeacherByID(ctx, uID)
+	if err != nil {
+		s.logger.Warn("could not find teacher", "err", err)
+		if err == sql.ErrNoRows {
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacher not found"))
+		}
+		return nil, rpc.ErrWebrpcInternalError
+	}
+	topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
+	if err != nil {
+		s.logger.Warn("could not find topic taught", "err", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+	spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
+	if err != nil {
+		s.logger.Warn("could not find spoken languages", "err", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return rpc.FromDbTeacher(
+		&db.FindTeacherByIDRow{
+			ID:               u.ID,
+			Email:            u.Email,
+			FirstName:        u.FirstName,
+			LastName:         u.LastName,
+			Role:             u.Role,
+			PreferedLanguage: u.PreferedLanguage,
+			AvatarFilePath:   u.AvatarFilePath,
+			TopAgent:         u.TopAgent,
+			Bio:              u.Bio,
+			HourRate:         u.HourRate,
+			AvatarUrl:        u.AvatarUrl,
+			CreatedAt:        u.CreatedAt,
+			UpdatedAt:        u.UpdatedAt,
+		},
+		spokenLangs,
+		topicsTaught,
+	), nil
+}
+
+func (s *Service) ListTopicsTaught(ctx context.Context, teacherId string) ([]*rpc.TopicTaught, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
+	}
+	res, err := db.Pg.ListTopicTaughtOfTeacher(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -46,8 +95,12 @@ func (s *Service) ListTopicsTaught(ctx context.Context) ([]*rpc.TopicTaught, err
 	return ret, nil
 }
 
-func (s *Service) ListStudents(ctx context.Context) ([]*rpc.User, error) {
-	res, err := db.Pg.ListStudentsOfTeacher(ctx, httpmw.ContextUID(ctx))
+func (s *Service) ListStudents(ctx context.Context, teacherId string) ([]*rpc.User, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
+	}
+	res, err := db.Pg.ListStudentsOfTeacher(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -115,8 +168,11 @@ func (s *Service) Teach(ctx context.Context, language string, topic string) (*rp
 	}, nil
 }
 
-func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
-	tID := httpmw.ContextUID(ctx)
+func (s *Service) ListClasses(ctx context.Context, teacherId string) ([]*rpc.Class, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
+	}
 	res, err := db.Pg.ListClassesOfTeacher(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -177,8 +233,12 @@ func (s *Service) EndClass(ctx context.Context, classId string) error {
 	return s.wsService.EndClass(class.ID)
 }
 
-func (s *Service) ListAvailabilities(ctx context.Context) ([]*rpc.TimeSlot, error) {
-	res, err := db.Pg.ListTimeSlots(ctx, httpmw.ContextUID(ctx))
+func (s *Service) ListAvailabilities(ctx context.Context, teacherId string) ([]*rpc.TimeSlot, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
+	}
+	res, err := db.Pg.ListTimeSlots(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func FindFullTeacher(ctx context.Context, q *Queries, id uuid.UUID) (*FindTeacherByIDRow, []*SpokenLanguage, []*TopicTaught, error) {
+func FindFullTeacher(ctx context.Context, q *Queries, id uuid.UUID) (*FindTeacherByIDRow, []*SpokenLanguage, []*Topic, error) {
 	teacher, err := q.FindTeacherByID(ctx, id)
 	if err != nil {
 		return nil, nil, nil, err

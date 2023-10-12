@@ -56,51 +56,6 @@ func (s *Service) FindUserByID(ctx context.Context, id string) (*rpc.User, error
 	return rpc.FromDbUser(u), nil
 }
 
-func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher, error) {
-	uID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty user id param"))
-	}
-	u, err := db.Pg.FindTeacherByID(ctx, uID)
-	if err != nil {
-		s.logger.Warn("could not find teacher", "err", err)
-		if err == sql.ErrNoRows {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
-		}
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrGet)
-	}
-	topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
-	if err != nil {
-		s.logger.Warn("could not find topic taught", "err", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
-	if err != nil {
-		s.logger.Warn("could not find spoken languages", "err", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	return rpc.FromDbTeacher(
-		&db.FindTeacherByIDRow{
-			ID:               u.ID,
-			Email:            u.Email,
-			FirstName:        u.FirstName,
-			LastName:         u.LastName,
-			Role:             u.Role,
-			PreferedLanguage: u.PreferedLanguage,
-			AvatarFilePath:   u.AvatarFilePath,
-			TopAgent:         u.TopAgent,
-			Bio:              u.Bio,
-			HourRate:         u.HourRate,
-			AvatarUrl:        u.AvatarUrl,
-			CreatedAt:        u.CreatedAt,
-			UpdatedAt:        u.UpdatedAt,
-		},
-		spokenLangs,
-		topicsTaught,
-	), nil
-}
-
 func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentRequest) error {
 	if !db.Role(req.Role).Valid() {
 		s.logger.Warn("invalid role", "role", req.Role)

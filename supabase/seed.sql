@@ -1,5 +1,4 @@
-INSERT INTO
-    auth.users (
+INSERT INTO auth.users (
         instance_id,
         id,
         aud,
@@ -64,7 +63,8 @@ VALUES (
         NULL,
         '',
         NULL
-    ), (
+    ),
+    (
         '00000000-0000-0000-0000-000000000000',
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240',
         'authenticated',
@@ -96,7 +96,8 @@ VALUES (
         NULL,
         '',
         NULL
-    ), (
+    ),
+    (
         '00000000-0000-0000-0000-000000000000',
         '9974eb35-ff48-43eb-a047-9af99abfd3d0',
         'authenticated',
@@ -128,7 +129,8 @@ VALUES (
         NULL,
         '',
         NULL
-    ), (
+    ),
+    (
         '00000000-0000-0000-0000-000000000000',
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde',
         'authenticated',
@@ -160,7 +162,8 @@ VALUES (
         NULL,
         '',
         NULL
-    ), (
+    ),
+    (
         '00000000-0000-0000-0000-000000000000',
         '54fa2b35-fd53-4aaa-8264-26bd738c90cc',
         'authenticated',
@@ -193,9 +196,7 @@ VALUES (
         '',
         NULL
     );
-
-INSERT INTO
-    auth.identities (
+INSERT INTO auth.identities (
         id,
         user_id,
         identity_data,
@@ -206,48 +207,50 @@ INSERT INTO
     )
 VALUES (
         '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b',
-        '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b':: uuid,
+        '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b'::uuid,
         '{"sub": "65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b","email":"admin@nem.com"}',
         'email',
         '2022-10-04 04:45:00.000+00',
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
-    ), (
+    ),
+    (
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240',
-        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid,
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
         '{"sub": "3fe7bbf2-713d-4baa-b2da-2bb7df701240","email":"teacher@nem.com"}',
         'email',
         '2022-10-04 04:45:00.000+00',
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
-    ), (
+    ),
+    (
         '9974eb35-ff48-43eb-a047-9af99abfd3d0',
-        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
         '{"sub": "9974eb35-ff48-43eb-a047-9af99abfd3d0","email":"teacher2@nem.com"}',
         'email',
         '2022-10-04 04:45:00.000+00',
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
-    ), (
+    ),
+    (
         'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde',
-        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid,
+        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde'::uuid,
         '{"sub": "d8264d2b-99ba-4e4c-a86f-f7eaad15ccde","email":"a@nem.com"}',
         'email',
         '2022-10-04 04:45:00.000+00',
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
-    ), (
+    ),
+    (
         '54fa2b35-fd53-4aaa-8264-26bd738c90cc',
-        '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid,
+        '54fa2b35-fd53-4aaa-8264-26bd738c90cc'::uuid,
         '{"sub": "54fa2b35-fd53-4aaa-8264-26bd738c90cc","email":"b@nem.com"}',
         'email',
         '2022-10-04 04:45:00.000+00',
         '2022-10-04 03:41:27.391146+00',
         '2022-10-04 03:41:27.39308+00'
     );
-
-insert into
-    "public"."user" (
+insert into "public"."user" (
         id,
         email,
         first_name,
@@ -256,82 +259,105 @@ insert into
         prefered_language
     )
 values (
-        '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b':: uuid,
+        '65ab38ef-d3a2-466f-9ee3-a3e0f5f0685b'::uuid,
         'admin@nem.com',
         'admin',
         'admin',
         'admin',
         'en'
-    ), (
-        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid,
+    ),
+    (
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
         'teacher@nem.com',
         'teacher',
         'teacher',
         'teacher',
         'en'
-    ), (
-        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+    ),
+    (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
         'teacher2@nem.com',
         'teacher',
         'teacher',
         'teacher',
         'en'
-    ), (
-        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid,
+    ),
+    (
+        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde'::uuid,
         'a@nem.com',
         'a',
         'a',
         'student',
         'en'
-    ), (
-        '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid,
+    ),
+    (
+        '54fa2b35-fd53-4aaa-8264-26bd738c90cc'::uuid,
         'b@nem.com',
         'b',
         'b',
         'student',
         'en'
     );
-
 INSERT INTO "student" (id)
 VALUES (
-        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde':: uuid
-    ), (
-        '54fa2b35-fd53-4aaa-8264-26bd738c90cc':: uuid
+        'd8264d2b-99ba-4e4c-a86f-f7eaad15ccde'::uuid
+    ),
+    (
+        '54fa2b35-fd53-4aaa-8264-26bd738c90cc'::uuid
     );
-
-INSERT INTO
-    "teacher" (id, bio, hour_rate)
+INSERT INTO "teacher" (id, bio, hour_rate)
 VALUES (
-        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid,
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
         'Je suis un professeur de français',
         30
-    ), (
-        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid,
+    ),
+    (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
         'I am an english teacher',
         27
     );
-
-INSERT INTO
-    "spoken_language" (language, proficiency)
-VALUES ('French', 'A1'), ('French', 'A2'), ('French', 'B1'), ('French', 'B2'), ('French', 'C1'), ('French', 'C2'), ('French', 'Native'), ('English', 'A1'), ('English', 'A2'), ('English', 'B1'), ('English', 'B2'), ('English', 'C1'), ('English', 'C2'), ('English', 'Native');
-
-INSERT INTO
-    "teacher_spoken_language" (
+INSERT INTO "language" (language)
+VALUES ('French'),
+    ('English');
+INSERT INTO "spoken_language" (language_id, proficiency)
+VALUES (1, 'A1'),
+    (1, 'A2'),
+    (1, 'B1'),
+    (1, 'B2'),
+    (1, 'C1'),
+    (1, 'C2'),
+    (1, 'Native'),
+    (2, 'A1'),
+    (2, 'A2'),
+    (2, 'B1'),
+    (2, 'B2'),
+    (2, 'C1'),
+    (2, 'C2'),
+    (2, 'Native');
+INSERT INTO "teacher_spoken_language" (
         spoken_language_id,
         teacher_id
     )
 VALUES (
         7,
-        '3fe7bbf2-713d-4baa-b2da-2bb7df701240':: uuid
-    ), (
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid
+    ),
+    (
         14,
-        '9974eb35-ff48-43eb-a047-9af99abfd3d0':: uuid
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid
     );
-
-insert into
-    "public".topic_taught (language, topic)
-values ('English', 'English'), ('English', 'French'), ('French', 'English'), ('English', 'Arabic'), ('French', 'Maths');
-
-INSERT INTO
-    "subscription" (id, name, hours)
-VALUES (1, 'Explorer', 1), (2, 'Voyage', 2), (3, 'Enlighten', 3), (4, 'Master', 4);
+INSERT INTO topics (topic)
+VALUES ('French'),
+    ('English'),
+    ('Math'),
+    ('Philosophy'),
+    ('Biology'),
+    ('Physics'),
+    ('Chemistry'),
+    ('History'),
+    ('Geography');
+INSERT INTO "subscription" (id, name, hours)
+VALUES (1, 'Explorer', 1),
+    (2, 'Voyage', 2),
+    (3, 'Enlighten', 3),
+    (4, 'Master', 4);

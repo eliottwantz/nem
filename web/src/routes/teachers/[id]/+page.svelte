@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
-	import { modalComponentRegistry } from '$lib/components/Modal'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
+	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
 	import { getModalStore } from '@skeletonlabs/skeleton'
 
 	export let data
@@ -12,7 +12,14 @@
 	async function scheduleClass() {
 		modalStore.trigger({
 			type: 'component',
-			component: modalComponentRegistry.takeClass
+			component: {
+				ref: TakeClass,
+				props: {
+					teacher: data.teacher,
+					classes: data.classes,
+					availabilities: data.availabilities
+				}
+			}
 		})
 	}
 </script>
@@ -67,7 +74,7 @@
 			<div class="flex flex-col gap-8">
 				<div class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-2 ring-surface-500">
 					<h4 class="h4 font-semibold">Bio</h4>
-					<p>{data.teacher.bio}</p>
+					<p class="whitespace-pre-line">{data.teacher.bio}</p>
 				</div>
 			</div>
 		</div>

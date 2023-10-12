@@ -246,4 +246,7 @@
 	:global(.ec-line) {
 		height: 50px;
 	}
+	:global(.ec-event:hover) {
+		cursor: pointer;
+	}
 </style>
