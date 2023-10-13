@@ -127,7 +127,6 @@ struct ListTeachersFilters
     - language: string
     - topic: string
     - topAgent: bool
-    - priceMin: int32
     - priceMax: int32
     - ratingMin: int32
     - ratingMax: int32
@@ -152,7 +151,7 @@ service UserServiceAPI
 
 service StudentServiceAPI
     - ListClasses() => (classes: []Class)
-    - ListTeachers() => (teachers: []Teacher)
+    - ListTeachersOfStudent() => (teachers: []Teacher)
     - JoinClass(classId: string)
     - LeaveClass(classId: string)
 
@@ -163,6 +162,7 @@ service TeacherServiceAPI
     - ListAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
 
     - Teach(topic: string)
+    - StopTeachingTopics(topics: []string)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)

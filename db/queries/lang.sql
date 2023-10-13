@@ -1,3 +1,6 @@
+-- name: ListLanguages :many
+SELECT *
+FROM "language";
 -- name: FindLanguage :one
 SELECT *
 FROM "language"

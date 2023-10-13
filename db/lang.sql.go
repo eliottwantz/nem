@@ -83,6 +83,34 @@ func (q *Queries) FindSpokenLanguage(ctx context.Context, arg FindSpokenLanguage
 	return &i, err
 }
 
+const listLanguages = `-- name: ListLanguages :many
+SELECT id, language
+FROM "language"
+`
+
+func (q *Queries) ListLanguages(ctx context.Context) ([]*Language, error) {
+	rows, err := q.db.QueryContext(ctx, listLanguages)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Language
+	for rows.Next() {
+		var i Language
+		if err := rows.Scan(&i.ID, &i.Language); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSpokenLanguagesOfTeacher = `-- name: ListSpokenLanguagesOfTeacher :many
 SELECT sl.id, sl.language_id, sl.proficiency
 FROM "teacher_spoken_language" tsl

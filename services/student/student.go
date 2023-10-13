@@ -80,7 +80,7 @@ func (s *Service) LeaveClass(ctx context.Context, classId string) error {
 	return s.wsService.LeaveClass(class.ID, httpmw.ContextUID(ctx))
 }
 
-func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
+func (s *Service) ListTeachersOfStudent(ctx context.Context) ([]*rpc.Teacher, error) {
 	res, err := db.Pg.ListTeachersOfStudent(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)

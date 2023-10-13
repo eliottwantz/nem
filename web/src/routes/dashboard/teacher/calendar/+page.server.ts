@@ -5,8 +5,14 @@ export async function load({ locals: { session }, fetch }) {
 	if (!session) throw redirect(302, '/login')
 
 	const streams = await Promise.all([
-		safeFetch(fetchers.teacherService(fetch, session).listClasses()),
-		safeFetch(fetchers.teacherService(fetch, session).listAvailabilities())
+		safeFetch(
+			fetchers.teacherService(fetch, session).listClasses({ teacherId: session.user.id })
+		),
+		safeFetch(
+			fetchers
+				.teacherService(fetch, session)
+				.listAvailabilities({ teacherId: session.user.id })
+		)
 	])
 	return {
 		success: streams[0].ok && streams[1].ok,

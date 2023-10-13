@@ -1,46 +1,80 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation'
+	import { page } from '$app/stores'
+	import { fetchers, safeFetch } from '$lib/api'
 	import Layout from '$lib/components/Layout.svelte'
 	import SelectTeach from '$lib/components/SelectTeach.svelte'
-	import Arabic from '$lib/i18n/flags/Arabic.svelte'
-	import English from '$lib/i18n/flags/English.svelte'
-	import French from '$lib/i18n/flags/French.svelte'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import type { ComponentType } from 'svelte'
+	import { Trash } from 'lucide-svelte'
 
 	export let data
-	export let form
+	console.log(data)
 
 	const toastStore = getToastStore()
-	$: if (form && form.success)
-		toastStore.trigger({ message: form.message, background: 'bg-success-500' })
-	$: if (form && !form.success)
-		toastStore.trigger({ message: form.message, background: 'bg-error-500' })
 
-	const flagsMap: Record<string, ComponentType> = {
-		French: French,
-		English: English,
-		Arabic: Arabic
+	$: copyTopicsTaught = JSON.parse(JSON.stringify(data.topicsTaught)) as string[]
+	let isEditing = false
+
+	async function saveEdits() {
+		isEditing = false
+		const diff = data.topics.filter((t) => !copyTopicsTaught.includes(t))
+		const res = await safeFetch(
+			fetchers.teacherService(fetch, $page.data.session).stopTeachingTopics({
+				topics: diff
+			})
+		)
+		if (!res.ok) {
+			toastStore.trigger({
+				message: res.cause,
+				background: 'bg-error-500'
+			})
+			return
+		}
+		console.log(data.topics)
+		console.log(copyTopicsTaught)
+		await invalidateAll()
+	}
+	function cancelEdits() {
+		copyTopicsTaught = JSON.parse(JSON.stringify(data.topicsTaught))
+		isEditing = false
+	}
+	function removeTopic(topic: string) {
+		copyTopicsTaught = copyTopicsTaught.filter((t) => t !== topic)
 	}
 </script>
 
 <Layout>
 	<h1 slot="title" class="h1">Teach</h1>
 
-	<section class="grid grid-cols-2 gap-4 lg:grid-cols-3">
-		{#each data.topicsTaught as teach}
-			<div class="card flex justify-center space-x-4 p-4">
-				<div class="flex flex-col items-center space-y-2">
-					<h3 class="h3">{teach.language}</h3>
-					<div class="w-12">
-						<svelte:component this={flagsMap[teach.language]} />
-					</div>
+	<div class="flex w-full flex-col gap-y-8">
+		<div class="flex gap-4">
+			<h2 class="h3">Topics you teach</h2>
+			{#if isEditing}
+				<button on:click={cancelEdits} class="variant-ghost btn"> Cancel </button>
+				<button on:click={saveEdits} class="variant-ghost-success btn"> Save </button>
+			{:else}
+				<button on:click={() => (isEditing = true)} class="variant-ghost btn">Edit</button>
+			{/if}
+		</div>
+		<section
+			class="flex w-full max-w-xl flex-wrap justify-evenly gap-4 lg:max-w-3xl xl:max-w-5xl"
+		>
+			{#each copyTopicsTaught as topic}
+				<div class="card relative inline-block p-1 sm:p-4">
+					{#if isEditing}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<span
+							on:click={() => removeTopic(topic)}
+							class="variant-filled-error badge-icon absolute -right-0 -top-0 z-10"
+						>
+							<Trash class="h-4 w-4" />
+						</span>
+					{/if}
+					<p class="h3">{topic}</p>
 				</div>
-				<div>
-					<h3 class="h3">{teach.topic}</h3>
-				</div>
-			</div>
-		{/each}
-	</section>
-
-	<SelectTeach languages={data.languages} topics={data.topics} topicsTaught={data.topicsTaught} />
+			{/each}
+		</section>
+		<SelectTeach topics={data.topics} topicsTaught={data.topicsTaught} />
+	</div>
 </Layout>

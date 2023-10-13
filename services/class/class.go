@@ -27,11 +27,31 @@ func NewService() *Service {
 }
 
 func (s *Service) ListLanguages(ctx context.Context) ([]string, error) {
-	return db.Languages, nil
+	res, err := db.Pg.ListLanguages(ctx)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]string, 0, len(res))
+	for _, l := range res {
+		ret = append(ret, l.Language)
+	}
+
+	return ret, nil
 }
 
 func (s *Service) ListTopics(ctx context.Context) ([]string, error) {
-	return db.Topics, nil
+	res, err := db.Pg.ListTopics(ctx)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]string, 0, len(res))
+	for _, t := range res {
+		ret = append(ret, t.Topic)
+	}
+
+	return ret, nil
 }
 
 func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.ClassDetails, error) {

@@ -349,7 +349,7 @@ VALUES (
 INSERT INTO topics (topic)
 VALUES ('French'),
     ('English'),
-    ('Math'),
+    ('Mathematics'),
     ('Philosophy'),
     ('Biology'),
     ('Physics'),

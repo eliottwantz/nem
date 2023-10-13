@@ -11,6 +11,7 @@ import (
 	"nem/api/rpc"
 	"nem/api/ws"
 	"nem/db"
+	"nem/utils"
 
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
@@ -167,6 +168,47 @@ func (s *Service) Teach(ctx context.Context, topic string) error {
 	err = tx.Commit()
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return nil
+}
+
+func (s *Service) StopTeachingTopics(ctx context.Context, topics []string) error {
+	if len(topics) == 0 {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty topics param"))
+	}
+
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		s.logger.Warn("could not start transaction", "err", err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+	}
+	defer tx.Rollback()
+
+	for _, topic := range topics {
+		dbTopic, err := tx.FindTopic(ctx, topic)
+		if err != nil {
+			s.logger.Warn("could not find topic", "err", err)
+			if err == sql.ErrNoRows {
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("topic not found"))
+			}
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("this topic does not exist"))
+		}
+
+		err = tx.RemoveTeacherFromTopics(ctx, db.RemoveTeacherFromTopicsParams{
+			TeacherID: httpmw.ContextUID(ctx),
+			TopicID:   dbTopic.ID,
+		})
+		if err != nil {
+			s.logger.Warn("could not remove teacher from topic", "err", err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("could not complete request"))
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		s.logger.Warn("could not commit transaction", "err", err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
 	return nil

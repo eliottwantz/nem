@@ -3,8 +3,11 @@ package rpc
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"nem/db"
+
+	"github.com/lib/pq"
 )
 
 func ResReq(ctx context.Context) (http.ResponseWriter, *http.Request) {
@@ -34,27 +37,45 @@ func FromDbUser(dbUser *db.User) *User {
 	}
 }
 
-// func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLanguage {
-// 	ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
-// 	for _, dbSpokenLanguage := range dbSpokenLanguage {
-// 		ret = append(ret, &SpokenLanguage{
-// 			Id:          dbSpokenLanguage.ID,
-// 			Language:    dbSpokenLanguage.Language,
-// 			Proficiency: dbSpokenLanguage.Proficiency,
-// 		})
-// 	}
-// 	return ret
-// }
-
-func FromDbTopicsTaught(t []*db.Topic) []*Topic {
-	ret := make([]*Topic, 0, len(t))
-	for _, tt := range t {
-		ret = append(ret, &Topic{
-			Id:    tt.ID,
-			Topic: tt.Topic,
+//	func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLanguage {
+//		ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
+//		for _, dbSpokenLanguage := range dbSpokenLanguage {
+//			ret = append(ret, &SpokenLanguage{
+//				Id:          dbSpokenLanguage.ID,
+//				Language:    dbSpokenLanguage.Language,
+//				Proficiency: dbSpokenLanguage.Proficiency,
+//			})
+//		}
+//		return ret
+//	}
+func pgRowToSpokenLang(e interface{}) []*SpokenLanguage {
+	ba := pq.ByteaArray{}
+	err := ba.Scan(e)
+	if err != nil {
+		return []*SpokenLanguage{}
+	}
+	// We have sa in the form of an array of tuples (language, proficiency)
+	sa := pq.StringArray{}
+	ret := make([]*SpokenLanguage, 0, len(sa))
+	for _, b := range ba {
+		s := string(b)
+		trimed := s[1 : len(s)-1] // remove parentheses
+		spl := strings.Split(trimed, ",")
+		ret = append(ret, &SpokenLanguage{
+			Language:    spl[0],
+			Proficiency: spl[1],
 		})
 	}
 	return ret
+}
+
+func pgArrayToStringArray(e interface{}) []string {
+	sa := pq.StringArray{}
+	err := sa.Scan(e)
+	if err != nil {
+		return []string{}
+	}
+	return sa
 }
 
 func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
@@ -72,7 +93,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
 		TopAgent:         t.TopAgent,
-		SpokenLanguages:  t.SpokenLanguages.([]*SpokenLanguage),
-		TopicsTaught:     t.TopicsTaught.([]string),
+		SpokenLanguages:  pgRowToSpokenLang(t.SpokenLanguages),
+		TopicsTaught:     pgArrayToStringArray(t.TopicsTaught),
 	}
 }

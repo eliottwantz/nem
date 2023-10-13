@@ -14,10 +14,7 @@ SELECT "user".*,
         WHERE "teacher_spoken_language"."teacher_id" = "teacher"."id"
     ) AS "spoken_languages",
     ARRAY(
-        SELECT ROW(
-                "topics"."id",
-                "topics"."topic"
-            )
+        SELECT "topics"."topic"
         FROM teacher_topic
             JOIN "topics" ON "topics"."id" = teacher_topic."topic_id"
         WHERE teacher_topic."teacher_id" = "teacher"."id"
@@ -41,10 +38,7 @@ SELECT "user".*,
         WHERE "teacher_spoken_language"."teacher_id" = "teacher"."id"
     ) AS "spoken_languages",
     ARRAY(
-        SELECT ROW(
-                "topics"."id",
-                "topics"."topic"
-            )
+        SELECT "topics"."topic"
         FROM teacher_topic
             JOIN "topics" ON "topics"."id" = teacher_topic."topic_id"
         WHERE teacher_topic."teacher_id" = "teacher"."id"
@@ -68,10 +62,7 @@ SELECT "user".*,
         WHERE "teacher_spoken_language"."teacher_id" = "teacher"."id"
     ) AS "spoken_languages",
     ARRAY(
-        SELECT ROW(
-                "topics"."id",
-                "topics"."topic"
-            )
+        SELECT "topics"."topic"
         FROM teacher_topic
             JOIN "topics" ON "topics"."id" = teacher_topic."topic_id"
         WHERE teacher_topic."teacher_id" = "teacher"."id"
