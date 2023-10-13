@@ -22,7 +22,7 @@
 	<!-- Show only mobile -->
 	<div class="card flex flex-col gap-y-4 p-2 shadow-md sm:p-4 md:hidden md:flex-row">
 		<div class="flex items-center gap-3">
-			<div class="relative inline-block">
+			<a href="/teachers/{teacher.id}" class="relative inline-block">
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -34,15 +34,15 @@
 					src={teacher.avatarUrl}
 					initials={getInitials(teacher.firstName, teacher.lastName)}
 				/>
-			</div>
-			<div>
+			</a>
+			<a href="/teachers/{teacher.id}">
 				<p class="font-semibold sm:text-lg">
 					{getPublicName(teacher.firstName, teacher.lastName)}
 				</p>
 				{#if teacher.topAgent}
 					<span class="font-bold text-primary-600"> TopAgent </span>
 				{/if}
-			</div>
+			</a>
 			<div class="flex items-center justify-around gap-4 sm:text-lg">
 				<div>
 					<span>Reviews</span>
@@ -163,7 +163,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="card flex flex-col items-center gap-4 p-1 shadow-md sm:p-4 md:flex-row">
+	<div class="card p-1 text-sm shadow-md md:flex-row">
 		<div class="flex items-center gap-3">
 			<Avatar
 				width="w-28"
@@ -171,7 +171,7 @@
 				src={teacher.avatarUrl}
 				initials={getInitials(teacher.firstName, teacher.lastName)}
 			/>
-			<div class="flex flex-col justify-evenly">
+			<div class="flex flex-col">
 				<div class="flex items-center gap-2">
 					<p class=" text-lg font-semibold">
 						{getPublicName(teacher.firstName, teacher.lastName)}
@@ -182,7 +182,7 @@
 				</div>
 				<div class="flex">
 					<span class="pr-2 font-semibold">Speaks:</span>
-					<div class="flex gap-2">
+					<div class=" flex flex-wrap gap-2">
 						{#each teacher.spokenLanguages as spokenL}
 							<div>
 								<span>{spokenL.language}</span>
