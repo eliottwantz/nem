@@ -109,8 +109,8 @@ type Review struct {
 	ID        int32
 	Rating    int32
 	Comment   sql.NullString
-	TeacherID int32
-	StudentID int32
+	TeacherID uuid.UUID
+	StudentID uuid.UUID
 }
 
 type SpokenLanguage struct {
@@ -156,7 +156,7 @@ type Teacher struct {
 type TeacherRating struct {
 	ID        int32
 	Rating    string
-	TeacherID int32
+	TeacherID uuid.UUID
 }
 
 type TeacherSpokenLanguage struct {

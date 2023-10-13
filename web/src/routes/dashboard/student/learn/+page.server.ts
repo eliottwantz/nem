@@ -3,17 +3,9 @@ import { fail, redirect } from '@sveltejs/kit'
 
 export async function load({ fetch, locals: { session }, url, depends }) {
 	if (!session) throw redirect(302, '/login')
-	let learnPromise = safeFetch(fetchers.classService(fetch, session).listAvailableLearns())
-
-	const teacherId = url.searchParams.get('teacherId')
-	if (teacherId) {
-		learnPromise = safeFetch(
-			fetchers.classService(fetch, session).listLearnsOfTeacher({ teacherId })
-		)
-	}
 
 	const res = await Promise.all([
-		learnPromise,
+		safeFetch(fetchers.teacherService(fetch, session).listAvailableLearns()),
 		safeFetch(fetchers.studentService(fetch, session).listLearns()),
 		teacherId
 			? safeFetch(fetchers.userService(fetch, session).findUserByID({ id: teacherId }))

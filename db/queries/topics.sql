@@ -1,10 +1,10 @@
 -- name: ListTopics :many
 SELECT *
 FROM "topics";
--- name: FindTopics :one
+-- name: FindTopic :one
 SELECT *
-FROM "topics"
-WHERE id = $1;
+FROM "topics" t
+WHERE t.topic = $1;
 -- name: ListTopicsWhereTopicsIs :many
 SELECT *
 FROM "topics"

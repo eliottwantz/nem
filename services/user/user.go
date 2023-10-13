@@ -56,6 +56,36 @@ func (s *Service) FindUserByID(ctx context.Context, id string) (*rpc.User, error
 	return rpc.FromDbUser(u), nil
 }
 
+func (s *Service) ListTeachers(ctx context.Context, filters *rpc.ListTeachersFilters) ([]*rpc.Teacher, error) {
+	teachers, err := db.Pg.ListTeachers(ctx)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+	}
+
+	ret := make([]*rpc.Teacher, 0, len(teachers))
+	for _, t := range teachers {
+		ret = append(ret, rpc.FromDbTeacher(&db.FindTeacherByIDRow{
+			ID:               t.ID,
+			Email:            t.Email,
+			FirstName:        t.FirstName,
+			LastName:         t.LastName,
+			Role:             t.Role,
+			PreferedLanguage: t.PreferedLanguage,
+			AvatarFilePath:   t.AvatarFilePath,
+			AvatarUrl:        t.AvatarUrl,
+			CreatedAt:        t.CreatedAt,
+			UpdatedAt:        t.UpdatedAt,
+			Bio:              t.Bio,
+			HourRate:         t.HourRate,
+			TopAgent:         t.TopAgent,
+			SpokenLanguages:  t.SpokenLanguages,
+			TopicsTaught:     t.TopicsTaught,
+		}))
+	}
+
+	return ret, nil
+}
+
 func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentRequest) error {
 	if !db.Role(req.Role).Valid() {
 		s.logger.Warn("invalid role", "role", req.Role)
@@ -150,9 +180,14 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 		})
 		if err != nil {
 			if err == sql.ErrNoRows {
+				langDB, err := tx.FindLanguage(ctx, lang.Language)
+				if err != nil {
+					s.logger.Warn("error finding language", "err", err)
+					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("Language not supported"))
+				}
 				// Create it
 				exists, err = tx.CreateSpokenLanguage(ctx, db.CreateSpokenLanguageParams{
-					Language:    lang.Language,
+					LanguageID:  langDB.ID,
 					Proficiency: lang.Proficiency,
 				})
 				if err != nil {

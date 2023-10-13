@@ -42,7 +42,5 @@ export const actions = {
 				message: res.cause
 			})
 		}
-
-		console.log(res.data.topicTaught)
 	}
 }

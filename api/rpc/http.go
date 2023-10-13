@@ -34,31 +34,30 @@ func FromDbUser(dbUser *db.User) *User {
 	}
 }
 
-func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLanguage {
-	ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
-	for _, dbSpokenLanguage := range dbSpokenLanguage {
-		ret = append(ret, &SpokenLanguage{
-			Id:          dbSpokenLanguage.ID,
-			Language:    dbSpokenLanguage.Language,
-			Proficiency: dbSpokenLanguage.Proficiency,
-		})
-	}
-	return ret
-}
+// func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLanguage {
+// 	ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
+// 	for _, dbSpokenLanguage := range dbSpokenLanguage {
+// 		ret = append(ret, &SpokenLanguage{
+// 			Id:          dbSpokenLanguage.ID,
+// 			Language:    dbSpokenLanguage.Language,
+// 			Proficiency: dbSpokenLanguage.Proficiency,
+// 		})
+// 	}
+// 	return ret
+// }
 
-func FromDbTopicsTaught(t []*db.TopicTaught) []*TopicTaught {
-	ret := make([]*TopicTaught, 0, len(t))
+func FromDbTopicsTaught(t []*db.Topic) []*Topic {
+	ret := make([]*Topic, 0, len(t))
 	for _, tt := range t {
-		ret = append(ret, &TopicTaught{
-			Id:       tt.ID,
-			Topic:    tt.Topic,
-			Language: tt.Language,
+		ret = append(ret, &Topic{
+			Id:    tt.ID,
+			Topic: tt.Topic,
 		})
 	}
 	return ret
 }
 
-func FromDbTeacher(t *db.FindTeacherByIDRow, lang []*db.SpokenLanguage, tt []*db.TopicTaught) *Teacher {
+func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 	return &Teacher{
 		Id:               t.ID.String(),
 		Email:            t.Email,
@@ -73,7 +72,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow, lang []*db.SpokenLanguage, tt []*db
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
 		TopAgent:         t.TopAgent,
-		SpokenLanguages:  FromDBSpokenLanguage(lang),
-		TopicsTaught:     FromDbTopicsTaught(tt),
+		SpokenLanguages:  t.SpokenLanguages.([]*SpokenLanguage),
+		TopicsTaught:     t.TopicsTaught.([]string),
 	}
 }

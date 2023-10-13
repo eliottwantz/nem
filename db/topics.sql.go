@@ -27,14 +27,14 @@ func (q *Queries) AddTeacherToTopics(ctx context.Context, arg AddTeacherToTopics
 	return err
 }
 
-const findTopics = `-- name: FindTopics :one
+const findTopic = `-- name: FindTopic :one
 SELECT id, topic
-FROM "topics"
-WHERE id = $1
+FROM "topics" t
+WHERE t.topic = $1
 `
 
-func (q *Queries) FindTopics(ctx context.Context, id int32) (*Topic, error) {
-	row := q.db.QueryRowContext(ctx, findTopics, id)
+func (q *Queries) FindTopic(ctx context.Context, topic string) (*Topic, error) {
+	row := q.db.QueryRowContext(ctx, findTopic, topic)
 	var i Topic
 	err := row.Scan(&i.ID, &i.Topic)
 	return &i, err

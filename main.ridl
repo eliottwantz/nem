@@ -31,12 +31,11 @@ struct Teacher
     - hourRate: int32
     - topAgent: bool
     - spokenLanguages: []SpokenLanguage
-    - topicsTaught: []TopicTaught
+    - topicsTaught: []string
     - createdAt: timestamp
     - updatedAt: timestamp
 
 struct SpokenLanguage
-    - id: int32
     - language: string
     - proficiency: string
 
@@ -61,9 +60,8 @@ struct CreateTeacherRequestSpokenLanguage
     - language: string
     - proficiency: string
 
-struct TopicTaught
+struct Topic
     - id: int32
-    - language: string
     - topic: string
 
 
@@ -121,7 +119,8 @@ struct TimeSlot
 struct CreateClassRequest
     - name: string
     - isPrivate: bool
-    - topicTaughtId: int32
+    - language: string
+    - topic: string
     - timeSlotId: string
 
 struct ListTeachersFilters
@@ -143,6 +142,7 @@ struct ListTeachersFilters
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
+    - ListTeachers(filters: ListTeachersFilters) => (teachers: []Teacher)
     - CreateStudent(req: CreateStudentRequest) 
     - CreateTeacher(req: CreateTeacherRequest)
     - UpdatePreferedLanguage(lang: string)
@@ -158,27 +158,21 @@ service StudentServiceAPI
 
 service TeacherServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)
-    - ListTeachers(filters: ListTeachersFilters) => (teachers: []Teacher)
     - ListClasses(teacherId: string) => (classes: []Class)
     - ListStudents(teacherId: string) => (students: []User)
-    - ListTopicsTaught(teacherId: string) => (topicsTaught: []TopicTaught)
     - ListAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
 
-    - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
+    - Teach(topic: string)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)
-    - CancelClass(classId: string) => (usersInClass: []User, teacher: User)
     - StartClass(classId: string)
     - EndClass(classId: string)
+    - CancelClass(classId: string) => (usersInClass: []User, teacher: User)
 
 service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
-    - ListAvailableTopicsTaught() => (topicsTaught: []TopicTaught)
-    - ListTeachersForTopicTaught(lang: string, topic: string) => (teachers: []Teacher)
-    - ListTopicsTaughtOfTeacher(teacherId: string) => (topicsTaught: []TopicTaught)
-    - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)

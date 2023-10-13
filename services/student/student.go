@@ -88,32 +88,23 @@ func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
 
 	ret := make([]*rpc.Teacher, 0, len(res))
 	for _, u := range res {
-		topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		ret = append(ret, rpc.FromDbTeacher(
-			&db.FindTeacherByIDRow{
-				ID:               u.ID,
-				Email:            u.Email,
-				FirstName:        u.FirstName,
-				LastName:         u.LastName,
-				Role:             u.Role,
-				PreferedLanguage: u.PreferedLanguage,
-				AvatarFilePath:   u.AvatarFilePath,
-				Bio:              u.Bio,
-				HourRate:         u.HourRate,
-				AvatarUrl:        u.AvatarUrl,
-				CreatedAt:        u.CreatedAt,
-				UpdatedAt:        u.UpdatedAt,
-			},
-			spokenLangs,
-			topicsTaught,
-		))
+		ret = append(ret, rpc.FromDbTeacher(&db.FindTeacherByIDRow{
+			ID:               u.ID,
+			Email:            u.Email,
+			FirstName:        u.FirstName,
+			LastName:         u.LastName,
+			Role:             db.Role(u.Role),
+			PreferedLanguage: u.PreferedLanguage,
+			AvatarFilePath:   u.AvatarFilePath,
+			AvatarUrl:        u.AvatarUrl,
+			CreatedAt:        u.CreatedAt,
+			UpdatedAt:        u.UpdatedAt,
+			Bio:              u.Bio,
+			HourRate:         u.HourRate,
+			TopAgent:         u.TopAgent,
+			SpokenLanguages:  u.SpokenLanguages,
+			TopicsTaught:     u.TopicsTaught,
+		}))
 	}
 
 	return ret, nil
