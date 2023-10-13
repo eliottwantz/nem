@@ -10,6 +10,7 @@
 	import { t } from 'svelte-i18n'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
+	import TeachIcon from '$lib/icons/TeachIcon.svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -28,15 +29,15 @@
 			<ul>
 				<li>
 					<a
-						href="/dashboard/student/learn"
-						class="flex {$page.url.pathname === '/dashboard/student/learn'
+						href="/teachers"
+						class="flex {$page.url.pathname === '/teachers'
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
-						<LearnIcon />
+						<TeachIcon />
 						<span>
-							{$t('nav.learn')}
+							{$t('nav.teachers')}
 						</span>
 					</a>
 				</li>
@@ -89,7 +90,7 @@
 		</nav>
 	</div>
 
-	<hr class="border-surface-token divider border-t" />
+	<hr class="border-surface-token divider border-t lg:hidden" />
 	<h2 class="pl-9 text-2xl font-semibold lg:hidden">Navigation</h2>
 	<div class="flex flex-col pl-10 lg:hidden lg:pl-0">
 		<Navigation horizontal={false} />

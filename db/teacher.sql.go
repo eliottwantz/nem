@@ -42,6 +42,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -60,6 +61,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
     ) AS "topics_taught"
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 WHERE teacher.id = $1
 `
 
@@ -77,6 +79,7 @@ type FindTeacherByIDRow struct {
 	Bio              string
 	HourRate         int32
 	TopAgent         bool
+	Rating           sql.NullString
 	SpokenLanguages  interface{}
 	TopicsTaught     interface{}
 }
@@ -98,6 +101,7 @@ func (q *Queries) FindTeacherByID(ctx context.Context, id uuid.UUID) (*FindTeach
 		&i.Bio,
 		&i.HourRate,
 		&i.TopAgent,
+		&i.Rating,
 		&i.SpokenLanguages,
 		&i.TopicsTaught,
 	)
@@ -109,6 +113,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -127,6 +132,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
     ) AS "topics_taught"
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 LIMIT 7
 `
 
@@ -144,6 +150,7 @@ type ListTeachersRow struct {
 	Bio              string
 	HourRate         int32
 	TopAgent         bool
+	Rating           sql.NullString
 	SpokenLanguages  interface{}
 	TopicsTaught     interface{}
 }
@@ -171,6 +178,7 @@ func (q *Queries) ListTeachers(ctx context.Context) ([]*ListTeachersRow, error) 
 			&i.Bio,
 			&i.HourRate,
 			&i.TopAgent,
+			&i.Rating,
 			&i.SpokenLanguages,
 			&i.TopicsTaught,
 		); err != nil {
@@ -192,6 +200,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -211,6 +220,7 @@ SELECT "user".id, "user".email, "user".first_name, "user".last_name, "user".role
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
     JOIN "students_of_teacher" ON "students_of_teacher"."teacher_id" = "teacher"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 WHERE "students_of_teacher"."student_id" = $1
 `
 
@@ -228,6 +238,7 @@ type ListTeachersOfStudentRow struct {
 	Bio              string
 	HourRate         int32
 	TopAgent         bool
+	Rating           sql.NullString
 	SpokenLanguages  interface{}
 	TopicsTaught     interface{}
 }
@@ -255,6 +266,7 @@ func (q *Queries) ListTeachersOfStudent(ctx context.Context, studentID uuid.UUID
 			&i.Bio,
 			&i.HourRate,
 			&i.TopAgent,
+			&i.Rating,
 			&i.SpokenLanguages,
 			&i.TopicsTaught,
 		); err != nil {

@@ -269,16 +269,16 @@ values (
     (
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
         'teacher@nem.com',
-        'teacher',
-        'teacher',
+        'Eliott',
+        'Teaches',
         'teacher',
         'en'
     ),
     (
         '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
         'teacher2@nem.com',
-        'teacher',
-        'teacher',
+        'Mark',
+        'Roberts',
         'teacher',
         'en'
     ),
@@ -308,7 +308,11 @@ VALUES (
 INSERT INTO "teacher" (id, bio, hour_rate)
 VALUES (
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
-        'Je suis un professeur de français',
+        'Bienvenue à mes cours de langue en ligne ! Je suis passionné(e) par l''enseignement des langues et je suis ravi(e) de vous aider à atteindre vos objectifs linguistiques. Avec une expérience de plusieurs années dans l''enseignement des langues, je suis là pour rendre votre voyage d''apprentissage agréable et efficace.
+
+Mes cours sont conçus pour être interactifs, engageants et adaptés à vos besoins spécifiques. Que vous souhaitiez améliorer votre conversation, renforcer vos compétences en grammaire ou préparer un examen, nous travaillerons ensemble pour atteindre vos objectifs.
+
+En tant qu''instructeur, je m''engage à créer un environnement d''apprentissage positif et inclusif où vous vous sentirez à l''aise pour pratiquer et progresser. Rejoignez-moi dans cette aventure linguistique et découvrez la beauté et la richesse d''une nouvelle langue. Ensemble, nous allons explorer de nouveaux horizons linguistiques !',
         30
     ),
     (

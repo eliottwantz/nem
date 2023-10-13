@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"nem/db"
@@ -79,6 +80,15 @@ func pgArrayToStringArray(e interface{}) []string {
 }
 
 func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
+	var rating int32 = 0
+	if t.Rating.Valid {
+		r, err := strconv.Atoi(t.Rating.String)
+		if err != nil {
+			rating = 0
+		} else {
+			rating = int32(r)
+		}
+	}
 	return &Teacher{
 		Id:               t.ID.String(),
 		Email:            t.Email,
@@ -93,6 +103,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
 		TopAgent:         t.TopAgent,
+		Rating:           rating,
 		SpokenLanguages:  pgRowToSpokenLang(t.SpokenLanguages),
 		TopicsTaught:     pgArrayToStringArray(t.TopicsTaught),
 	}

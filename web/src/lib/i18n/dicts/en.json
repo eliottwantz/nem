@@ -1,82 +1,82 @@
 {
-  "loading": "Stamping your NEM Pass. Fasten your seatbelts! We're preparing for takeoff.",
-  "nav": {
-    "home": "Home",
-    "about": "About",
-    "contact": "Contact",
-    "login": "Login",
-    "calendar": "Calendar",
-    "learn": "Learn",
-    "teach": "Teach",
-    "manage": "Manage",
-    "users": "Users",
-    "classes": "Classes",
-    "currentClass": "Current class",
-    "myteachers": "My teachers"
-  },
-  "home": {
-    "slogan": "Our Modern Education",
-    "title": "NEM Pass, your access to an education without borders.",
-    "subtitle": "Improve and develop your skills",
-    "getNemPass": "Get your NEM Pass"
-  },
-  "register": {
-    "title": "Create an account and start filling your NEM Pass!",
-    "role": "Choose a role",
-    "roles": {
-      "student": "NEM Student",
-      "teacher": "NEM Agent",
-      "teacherMessage": "Become a NEM Agent now.",
-      "studentMessage": "Become a NEM Student now."
-    },
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "email": "Email",
-    "password": "Password",
-    "loginMsg": "Already have your NEM Pass? Login",
-    "register": "Register",
-    "spokenLanguages": "Spoken Languages",
-    "bio": "Biography",
-    "hourRate": "Hour Rate",
-    "proficiencyLevel": "Proficiency"
-  },
-  "login": {
-    "email": "Email",
-    "password": "Password",
-    "registerMsg": "Don't have an account? Sign up",
-    "login": "Login"
-  },
-  "about": {
-    "title": "About"
-  },
-  "contact": {
-    "title": "Contact"
-  },
-  "learn": {
-    "topic": "Topic",
-    "title": "Learn",
-    "stepper": {
-      "stepTerm": "Step",
-      "buttonBack": "← Back",
-      "buttonNext": "Next →"
-    },
-    "bookLearn": "Take a course",
-    "language-teach": "Teaching language"
-  },
-  "calendar": {
-    "title": "Calendar",
-    "all-day": "All Day"
-  },
-  "classes": {
-    "title": "Classes"
-  },
-  "setup-profile": {
-    "title": "Create your profile"
-  },
-  "close": "Close",
-  "month": "month",
-  "list": "list",
-  "day": "day",
-  "week": "week",
-  "today": "today"
+	"loading": "Stamping your NEM Pass. Fasten your seatbelts! We're preparing for takeoff.",
+	"nav": {
+		"home": "Home",
+		"about": "About",
+		"contact": "Contact",
+		"login": "Login",
+		"calendar": "Calendar",
+		"teachers": "Teachers",
+		"teach": "Teach",
+		"manage": "Manage",
+		"users": "Users",
+		"classes": "Classes",
+		"currentClass": "Current class",
+		"myteachers": "My teachers"
+	},
+	"home": {
+		"slogan": "Our Modern Education",
+		"title": "NEM Pass, your access to an education without borders.",
+		"subtitle": "Improve and develop your skills",
+		"getNemPass": "Get your NEM Pass"
+	},
+	"register": {
+		"title": "Create an account and start filling your NEM Pass!",
+		"role": "Choose a role",
+		"roles": {
+			"student": "NEM Student",
+			"teacher": "NEM Agent",
+			"teacherMessage": "Become a NEM Agent now.",
+			"studentMessage": "Become a NEM Student now."
+		},
+		"firstName": "First Name",
+		"lastName": "Last Name",
+		"email": "Email",
+		"password": "Password",
+		"loginMsg": "Already have your NEM Pass? Login",
+		"register": "Register",
+		"spokenLanguages": "Spoken Languages",
+		"bio": "Biography",
+		"hourRate": "Hour Rate",
+		"proficiencyLevel": "Proficiency"
+	},
+	"login": {
+		"email": "Email",
+		"password": "Password",
+		"registerMsg": "Don't have an account? Sign up",
+		"login": "Login"
+	},
+	"about": {
+		"title": "About"
+	},
+	"contact": {
+		"title": "Contact"
+	},
+	"learn": {
+		"topic": "Topic",
+		"title": "Learn",
+		"stepper": {
+			"stepTerm": "Step",
+			"buttonBack": "← Back",
+			"buttonNext": "Next →"
+		},
+		"bookLearn": "Take a course",
+		"language-teach": "Teaching language"
+	},
+	"calendar": {
+		"title": "Calendar",
+		"all-day": "All Day"
+	},
+	"classes": {
+		"title": "Classes"
+	},
+	"setup-profile": {
+		"title": "Create your profile"
+	},
+	"close": "Close",
+	"month": "month",
+	"list": "list",
+	"day": "day",
+	"week": "week",
+	"today": "today"
 }

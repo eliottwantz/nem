@@ -30,6 +30,7 @@ struct Teacher
     - bio: string
     - hourRate: int32
     - topAgent: bool
+    - rating: int32
     - spokenLanguages: []SpokenLanguage
     - topicsTaught: []string
     - createdAt: timestamp

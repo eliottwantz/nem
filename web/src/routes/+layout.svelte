@@ -111,8 +111,8 @@
 			<div class="hidden lg:block">
 				<Navigation horizontal />
 			</div>
-			<h1 id="nem" class="text-center text-2xl lg:hidden">
-				<a href="/">NEM</a>
+			<h1 class="text-center text-2xl lg:hidden">
+				<a id="nem" href="/">NEM</a>
 			</h1>
 			<svelte:fragment slot="trail">
 				<div class="hidden lg:block">

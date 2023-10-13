@@ -62,10 +62,8 @@
 					<div>
 						<h4 class="h4 mb-2 font-semibold">Teaches</h4>
 						<div class="flex flex-col gap-2">
-							{#each Array.from(new Set(data.teacher.topicsTaught.map((t) => t.language))) as teachingLang}
-								{#each data.teacher.topicsTaught.filter((t) => t.language === teachingLang) as topic}
-									<p>{topic.topic} in {topic.language}</p>
-								{/each}
+							{#each data.teacher.topicsTaught as topic}
+								<p>{topic}</p>
 							{/each}
 						</div>
 					</div>

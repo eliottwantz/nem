@@ -3,6 +3,7 @@ SELECT "user".*,
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -21,12 +22,14 @@ SELECT "user".*,
     ) AS "topics_taught"
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 LIMIT 7;
 -- name: FindTeacherByID :one
 SELECT "user".*,
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -45,12 +48,14 @@ SELECT "user".*,
     ) AS "topics_taught"
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 WHERE teacher.id = $1;
 -- name: ListTeachersOfStudent :many
 SELECT "user".*,
     "teacher"."bio",
     "teacher"."hour_rate",
     "teacher"."top_agent",
+    "teacher_ratings"."rating",
     ARRAY(
         SELECT ROW(
                 "language"."language",
@@ -70,6 +75,7 @@ SELECT "user".*,
 FROM "user"
     JOIN "teacher" ON "teacher"."id" = "user"."id"
     JOIN "students_of_teacher" ON "students_of_teacher"."teacher_id" = "teacher"."id"
+    LEFT JOIN "teacher_ratings" ON "teacher_ratings"."teacher_id" = "teacher"."id"
 WHERE "students_of_teacher"."student_id" = $1;
 -- name: CreateTeacher :one
 INSERT INTO "teacher" (id, bio, hour_rate)
