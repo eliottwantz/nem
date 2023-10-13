@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidate, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
@@ -40,11 +40,6 @@
 	$: console.log('selectedIsPrivate', selectedIsPrivate)
 	$: console.log('selectedTimeSlot', selectedEvent)
 	$: topics = teacher.topicsTaught
-		.filter((t) => {
-			if (!selectedLanguage) return true
-			return t.language === selectedLanguage
-		})
-		.map((learn) => learn.topic)
 	$: console.log('topics', topics)
 	$: events = availabilities
 		.filter((a) => !classes.map((c) => c.startAt).includes(a.startAt))
@@ -67,37 +62,6 @@
 			backgroundColor: '#01c4a9'
 		}
 		cal.updateEvent(event)
-		// modalStore.trigger({
-		// 	type: 'confirm',
-		// 	title: 'Select time slot',
-		// 	body: 'Are you sure you want to select this time slot?',
-		// 	response: (confirmed: boolean) => {
-		// 		if (!confirmed) {
-		// 			if (selectedEvent) {
-		// 				const event: CalendarEvent = {
-		// 					...selectedEvent.event,
-		// 					backgroundColor: '#fbdc90'
-		// 				}
-		// 				cal.updateEvent(event)
-		// 			}
-		// 			selectedEvent = undefined
-		// 		} else {
-		// 			if (selectedEvent) {
-		// 				const event: CalendarEvent = {
-		// 					...selectedEvent.event,
-		// 					backgroundColor: '#fbdc90'
-		// 				}
-		// 				cal.updateEvent(event)
-		// 			}
-		// 			selectedEvent = info
-		// 			const event: CalendarEvent = {
-		// 				...info.event,
-		// 				backgroundColor: '#01c4a9'
-		// 			}
-		// 			cal.updateEvent(event)
-		// 		}
-		// 	}
-		// })
 	}
 
 	async function orderLearn() {
@@ -114,9 +78,8 @@
 			fetchers.classService(fetch, $page.data.session).createOrJoinClass({
 				req: {
 					isPrivate: selectedIsPrivate,
-					topicTaughtId: teacher.topicsTaught.find(
-						(l) => l.language === selectedLanguage && l.topic === selectedTopic
-					)!.id,
+					language: selectedLanguage,
+					topic: selectedTopic,
 					name: `${selectedLanguage} - ${selectedTopic}`,
 					timeSlotId: selectedEvent.event.id
 				}
@@ -131,6 +94,8 @@
 		}
 
 		await goto('/dashboard/student/classes')
+		await invalidateAll()
+		modalStore.close()
 	}
 </script>
 
@@ -146,7 +111,7 @@
 		<Step locked={lockedLanguage}>
 			<svelte:fragment slot="header">{$t('learn.language-teach')}</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each new Set(teacher.topicsTaught.map((t) => t.language)) as language}
+				{#each new Set(teacher.spokenLanguages.map((l) => l.language)) as language}
 					<ListBoxItem bind:group={selectedLanguage} name={language} value={language}>
 						{language}
 					</ListBoxItem>
