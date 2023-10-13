@@ -4,7 +4,7 @@ SELECT cl.*,
     ts.start_at,
     ts.end_at
 FROM "class" cl
-    JOIN "time_slots" ts ON cl.time_slot_id = id
+    JOIN "time_slots" ts ON cl.time_slot_id = ts.id
 WHERE cl.id = $1
 ORDER BY cl.created_at ASC;
 -- name: FindClassByTimeslot :one

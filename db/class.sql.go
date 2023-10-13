@@ -85,7 +85,7 @@ SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl
     ts.start_at,
     ts.end_at
 FROM "class" cl
-    JOIN "time_slots" ts ON cl.time_slot_id = id
+    JOIN "time_slots" ts ON cl.time_slot_id = ts.id
 WHERE cl.id = $1
 ORDER BY cl.created_at ASC
 `

@@ -149,7 +149,7 @@
 	<slot />
 </AppShell>
 
-<style>
+<style type="postcss">
 	#nem {
 		font-family: 'Gravitas One', cursive;
 	}

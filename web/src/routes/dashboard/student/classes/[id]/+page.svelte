@@ -6,11 +6,10 @@
 	import Countdown from '$lib/components/Countdown/Countdown.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
-	import { getInitials } from '$lib/utils/initials'
+	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import { locale } from 'svelte-i18n'
-	import { tweened, type Tweened } from 'svelte/motion'
 
 	export let data
 
@@ -46,32 +45,6 @@
 	}
 	$: console.log('showTimer', showTimer)
 
-	// let remainingTime = 0
-	// $: console.log('remainingTime', remainingTime)
-	// $: {
-	// 	console.log('evaluating')
-	// 	const sixHoursBeforeClass = new Date(start.getTime() - 6 * 60 * 60 * 1000)
-	// 	console.log('sixHoursBeforeClass', sixHoursBeforeClass)
-	// 	const fourHoursBeforeClass = new Date(start.getTime() - 4 * 60 * 60 * 1000)
-	// 	console.log('fourHoursBeforeClass', fourHoursBeforeClass)
-	// 	console.log('currentTime', currentTime)
-
-	// 	if (currentTime >= sixHoursBeforeClass && currentTime < fourHoursBeforeClass) {
-	// 		remainingTime = fourHoursBeforeClass.getTime() - currentTime.getTime()
-	// 	} else {
-	// 		remainingTime = 0
-	// 	}
-	// }
-
-	// function formatTime(ms: number) {
-	// 	const totalSeconds = Math.floor(ms / 1000)
-	// 	const hours = Math.floor(totalSeconds / 3600)
-	// 	const minutes = Math.floor((totalSeconds % 3600) / 60)
-	// 	const seconds = Math.floor(totalSeconds % 60)
-
-	// 	return `${hours} hours, ${minutes} minutes, ${seconds} seconds`
-	// }
-
 	$: canSignalNotPresentTeacher = currentTime >= new Date(start.getTime() + 10 * 60 * 1000) // Only available if it's 10 minutes after the start time
 
 	$: canCancelClassWithRefund = currentTime < new Date(start.getTime() - 4 * 60 * 60 * 1000) // Can only cancel a class for free four hours before start
@@ -106,12 +79,7 @@
 	}
 
 	async function cancelClass() {
-		// if (!canCancelClass) {
-		// 	console.log('Class has started')
-		// 	return
-		// }
 		console.log('cancel class')
-		return
 		modalStore.trigger({
 			type: 'confirm',
 			title: 'Cancel Class',
@@ -137,16 +105,17 @@
 
 <Layout>
 	<h1 class="h1" slot="title">Class: {data.classDetails.class.name}</h1>
-	<p class="text-xl">
-		<span>{start.toLocaleDateString(_locale)}</span>
-		{start.toLocaleTimeString(_locale)} - {end.toLocaleTimeString(_locale)}
-		<span></span>
+	<p>
+		<span class="text-xl">{start.toLocaleDateString(_locale)}</span>
+		<span class="text-xl">
+			{start.toLocaleTimeString(_locale)} - {end.toLocaleTimeString(_locale)}
+		</span>
 	</p>
 
 	<br />
 
 	{#if new Date() < new Date(end)}
-		<div class="flex gap-2">
+		<div class="flex flex-col gap-2 sm:flex-row">
 			<button
 				class="variant-filled-primary btn"
 				disabled={!data.classDetails.class.hasStarted}
@@ -176,37 +145,56 @@
 		<p class="text-xl font-semibold">Class has ended</p>
 	{/if}
 
+	<br />
+
 	<div class="card w-full max-w-lg space-y-4 p-4">
 		<h3 class="h3 mb-2">Teacher</h3>
-		<a href="/dashboard/users/{data.classDetails.teacher.id}">
-			<li class="flex items-center gap-2 p-2 rounded-token hover:bg-primary-300">
+		<div class="flex gap-x-2">
+			<a href="/teachers/{data.classDetails.teacher.id}" class="relative inline-block">
+				{#if data.classDetails.teacher.topAgent}
+					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
+						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
+					</span>
+				{/if}
 				<Avatar
+					width="w-8 sm:w-12"
+					height="h-8 sm:h-12"
 					src={data.classDetails.teacher.avatarUrl}
 					initials={getInitials(
 						data.classDetails.teacher.firstName,
 						data.classDetails.teacher.lastName
 					)}
 				/>
-				<span class="flex-auto"
-					>{data.classDetails.teacher.firstName +
-						' ' +
-						data.classDetails.teacher.lastName}</span
-				>
-			</li>
-		</a>
+			</a>
+			<a href="/teachers/{data.classDetails.teacher.id}">
+				<p class="font-semibold sm:text-lg">
+					{getPublicName(
+						data.classDetails.teacher.firstName,
+						data.classDetails.teacher.lastName
+					)}
+				</p>
+				{#if data.classDetails.teacher.topAgent}
+					<span class="font-bold text-primary-600"> TopAgent </span>
+				{/if}
+			</a>
+		</div>
 		<h3 class="h3">Students</h3>
-		{#each data.classDetails.users as user}
-			<ul class="list space-y-4">
-				<a href="/users/{user.id}">
-					<li class="flex items-center gap-2 p-2 hover:bg-primary-300">
+		<ul class="list grid grid-cols-2">
+			{#each data.classDetails.users as user}
+				<li>
+					<a class="flex items-center gap-2 p-2" href="/users/{user.id}">
 						<Avatar
+							width="w-8 sm:w-12"
+							height="h-8 sm:h-12"
 							src={user.avatarUrl}
 							initials={getInitials(user.firstName, user.lastName)}
 						/>
-						<span class="flex-auto">{user.firstName + ' ' + user.lastName}</span>
-					</li>
-				</a>
-			</ul>
-		{/each}
+						<p class="font-semibold sm:text-lg">
+							{getPublicName(user.firstName, user.lastName)}
+						</p>
+					</a>
+				</li>
+			{/each}
+		</ul>
 	</div>
 </Layout>

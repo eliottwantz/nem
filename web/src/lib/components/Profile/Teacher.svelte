@@ -60,7 +60,7 @@
 		</div>
 		<div class="flex">
 			<span class="pr-2 font-semibold">Speaks:</span>
-			<div class="flex gap-2">
+			<div class="flex flex-wrap gap-2">
 				{#each teacher.spokenLanguages as spokenL}
 					<div>
 						<span>{spokenL.language}</span>
@@ -130,7 +130,7 @@
 			<div class="grid flex-1 grid-cols-3">
 				<div>
 					<span class="pr-2 font-semibold">Speaks</span>
-					<div class="flex gap-2">
+					<div class="flex flex-wrap gap-2">
 						{#each teacher.spokenLanguages as spokenL}
 							<div>
 								<span>{spokenL.language}</span>

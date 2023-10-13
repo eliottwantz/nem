@@ -5,7 +5,7 @@
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
-	import { getInitials } from '$lib/utils/initials'
+	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { locale } from 'svelte-i18n'
 
@@ -127,20 +127,26 @@
 		<p class="text-xl font-semibold">Class has ended</p>
 	{/if}
 
+	<br />
+
 	<div class="card w-full max-w-sm p-4">
 		<h3 class="h3 mb-1">Students: {data.classDetails.users.length}</h3>
-		{#each data.classDetails.users as user}
-			<ul class=" list space-y-4">
-				<a href="/dashboard/users/{user.id}">
-					<li class="flex items-center gap-2 p-2 hover:bg-primary-300">
+		<ul class="list grid grid-cols-2">
+			{#each data.classDetails.users as user}
+				<li>
+					<a class="flex items-center gap-2 p-2" href="/users/{user.id}">
 						<Avatar
+							width="w-8 sm:w-12"
+							height="h-8 sm:h-12"
 							src={user.avatarUrl}
 							initials={getInitials(user.firstName, user.lastName)}
 						/>
-						<span class="flex-auto">{user.firstName + ' ' + user.lastName}</span>
-					</li>
-				</a>
-			</ul>
-		{/each}
+						<p class="font-semibold sm:text-lg">
+							{getPublicName(user.firstName, user.lastName)}
+						</p>
+					</a>
+				</li>
+			{/each}
+		</ul>
 	</div>
 </Layout>
