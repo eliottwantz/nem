@@ -14,8 +14,7 @@ export async function handle({ event, resolve }) {
 		event
 	})
 
-	let lang = event.request.headers.get('accept-language')?.split(',')[0]
-	if (!lang) lang = defaultLocale
+	let lang = defaultLocale
 
 	const {
 		data: { session }

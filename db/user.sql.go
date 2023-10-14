@@ -12,9 +12,7 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-
-INSERT INTO
-    "user" (
+INSERT INTO "user" (
         id,
         email,
         first_name,
@@ -22,7 +20,8 @@ INSERT INTO
         role,
         prefered_language
     )
-VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -60,11 +59,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 }
 
 const deleteAvatar = `-- name: DeleteAvatar :exec
-
 UPDATE "user"
-SET
-    avatar_file_path = NULL,
-    avatar_url = NULL
+SET avatar_file_path = '',
+    avatar_url = ''
 WHERE id = $1
 `
 
@@ -74,8 +71,8 @@ func (q *Queries) DeleteAvatar(ctx context.Context, id uuid.UUID) error {
 }
 
 const deleteUser = `-- name: DeleteUser :exec
-
-DELETE FROM "user" WHERE id = $1
+DELETE FROM "user"
+WHERE id = $1
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
@@ -84,8 +81,9 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const findUserByID = `-- name: FindUserByID :one
-
-SELECT id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at FROM "user" WHERE id = $1
+SELECT id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
+FROM "user"
+WHERE id = $1
 `
 
 func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (*User, error) {
@@ -107,10 +105,8 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 }
 
 const updateAvatar = `-- name: UpdateAvatar :exec
-
 UPDATE "user"
-SET
-    avatar_file_path = $1,
+SET avatar_file_path = $1,
     avatar_url = $2
 WHERE id = $3
 `
@@ -127,12 +123,11 @@ func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) erro
 }
 
 const updateUserNames = `-- name: UpdateUserNames :one
-
 UPDATE "user"
-SET
-    first_name = $1,
+SET first_name = $1,
     last_name = $2
-WHERE id = $3 RETURNING id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
+WHERE id = $3
+RETURNING id, email, first_name, last_name, role, prefered_language, avatar_file_path, avatar_url, created_at, updated_at
 `
 
 type UpdateUserNamesParams struct {
@@ -160,8 +155,9 @@ func (q *Queries) UpdateUserNames(ctx context.Context, arg UpdateUserNamesParams
 }
 
 const updateUserPreferedLanguage = `-- name: UpdateUserPreferedLanguage :exec
-
-UPDATE "user" SET prefered_language = $1 WHERE id = $2
+UPDATE "user"
+SET prefered_language = $1
+WHERE id = $2
 `
 
 type UpdateUserPreferedLanguageParams struct {

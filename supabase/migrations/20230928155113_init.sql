@@ -127,7 +127,7 @@ CREATE TABLE "messages" (
 -- Get all messages in a conversation
 CREATE INDEX "idx_messages_conversation_id" ON "messages"("conversation_id");
 -- Index for listing the message by sent_at
-CREATE INDEX "idx_messages_send_at" ON "messages"("send_at");
+CREATE INDEX "idx_messages_send_at" ON "messages"("sent_at");
 CREATE TABLE "users_conversations" (
     "user_id" UUID NOT NULL,
     "conversation_id" BIGINT NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE "users_conversations" (
     FOREIGN KEY ("conversation_id") REFERENCES "conversations" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 -- Get all conversations for a user
-CREATE INDEX "idx_user_conversations_user_id" ON "user_conversations"("user_id");
+CREATE INDEX "idx_users_conversations_user_id" ON "users_conversations"("user_id");
 CREATE TABLE "users_messages" (
     "recipient_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     "message_id" BIGINT NOT NULL REFERENCES "messages" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
