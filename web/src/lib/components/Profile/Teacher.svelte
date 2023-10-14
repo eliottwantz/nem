@@ -58,8 +58,8 @@
 				</p>
 			</div>
 		</div>
-		<div class="flex">
-			<span class="pr-2 font-semibold">Speaks:</span>
+		<div class="flex items-baseline">
+			<span class="pr-2 font-semibold">Speaks</span>
 			<div class="flex flex-wrap gap-2">
 				{#each teacher.spokenLanguages as spokenL}
 					<div>
@@ -71,8 +71,8 @@
 				{/each}
 			</div>
 		</div>
-		<div class="flex">
-			<span class="pr-2 font-semibold">Teaches:</span>
+		<div class="flex items-baseline">
+			<span class="pr-2 font-semibold">Teaches</span>
 			<div class="flex flex-wrap gap-2">
 				{#each teacher.topicsTaught as topic}
 					<div>
@@ -81,8 +81,8 @@
 				{/each}
 			</div>
 		</div>
-		<div class="flex">
-			<span class="pr-2 font-semibold">Bio:</span>
+		<div class="flex items-baseline">
+			<span class="pr-2 font-semibold">Bio</span>
 			<p class="line-clamp-3 whitespace-pre-line">{teacher.bio}</p>
 		</div>
 	</div>
@@ -163,7 +163,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="card p-1 text-sm shadow-md md:flex-row">
+	<div class="md:flex-row">
 		<div class="flex items-center gap-3">
 			<Avatar
 				width="w-28"
@@ -180,18 +180,15 @@
 						<img class="h-5 w-5" src="/topagent.png" alt="TopAgent" />
 					{/if}
 				</div>
-				<div class="flex">
-					<span class="pr-2 font-semibold">Speaks:</span>
-					<div class=" flex flex-wrap gap-2">
-						{#each teacher.spokenLanguages as spokenL}
-							<div>
-								<span>{spokenL.language}</span>
-								<span class="{badgeColor(spokenL.proficiency)} badge"
-									>{spokenL.proficiency}</span
-								>
-							</div>
-						{/each}
-					</div>
+				<div class=" flex flex-wrap gap-2">
+					{#each teacher.spokenLanguages as spokenL}
+						<div>
+							<span>{spokenL.language}</span>
+							<span class="{badgeColor(spokenL.proficiency)} badge"
+								>{spokenL.proficiency}</span
+							>
+						</div>
+					{/each}
 				</div>
 			</div>
 		</div>

@@ -3,12 +3,13 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
-	import { getModalStore } from '@skeletonlabs/skeleton'
+	import { Tab, TabGroup, getModalStore } from '@skeletonlabs/skeleton'
 
 	export let data
-	console.log('DATA', data)
 
 	const modalStore = getModalStore()
+
+	let tabSet: number = 0
 
 	async function scheduleClass() {
 		modalStore.trigger({
@@ -38,7 +39,7 @@
 </script>
 
 <Layout>
-	<div class="flex flex-col gap-8 p-10">
+	<div class="flex w-full flex-col gap-8 p-10">
 		<div class="flex flex-col items-center justify-around gap-4 md:flex-row">
 			<Profile teacher={data.teacher} />
 			<div class="flex flex-col gap-4">
@@ -62,34 +63,43 @@
 				</div>
 			</div>
 		</div>
-		<div class="flex flex-col gap-8 md:grid md:grid-cols-2">
-			<div class="flex flex-col gap-8">
-				<div class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-1 ring-surface-500">
-					{#if data.teacher.topAgent}
-						<div class="flex items-center gap-2">
-							<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
-							<p>
-								This teacher is a NEM
-								<span class="font-bold text-primary-600"> TopAgent </span>
-							</p>
+
+		<div>
+			<TabGroup>
+				<Tab bind:group={tabSet} name="Teaches" value={0}>Teaches</Tab>
+				<Tab bind:group={tabSet} name="Bio" value={1}>Bio</Tab>
+				<!-- Tab Panels --->
+				<svelte:fragment slot="panel">
+					{#if tabSet === 0}
+						<div
+							class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-1 ring-surface-500"
+						>
+							{#if data.teacher.topAgent}
+								<div class="flex items-center gap-2">
+									<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
+									<p>
+										This teacher is a NEM
+										<span class="font-bold text-primary-600"> TopAgent </span>
+									</p>
+								</div>
+							{/if}
+							<div class="flex flex-col gap-2">
+								{#each data.teacher.topicsTaught as topic}
+									<p>{topic}</p>
+								{/each}
+							</div>
+						</div>
+					{:else if tabSet === 1}
+						<div class="flex flex-col gap-8">
+							<div
+								class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-2 ring-surface-500"
+							>
+								<p class="whitespace-pre-line">{data.teacher.bio}</p>
+							</div>
 						</div>
 					{/if}
-					<div>
-						<h4 class="h4 mb-2 font-semibold">Teaches</h4>
-						<div class="flex flex-col gap-2">
-							{#each data.teacher.topicsTaught as topic}
-								<p>{topic}</p>
-							{/each}
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="flex flex-col gap-8">
-				<div class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-2 ring-surface-500">
-					<h4 class="h4 font-semibold">Bio</h4>
-					<p class="whitespace-pre-line">{data.teacher.bio}</p>
-				</div>
-			</div>
+				</svelte:fragment>
+			</TabGroup>
 		</div>
 	</div>
 </Layout>
