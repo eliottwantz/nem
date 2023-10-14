@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ClassDetails } from '$lib/api/api.gen'
 	import { chatStore } from '$lib/stores/chatStore'
 	import { userStore } from '$lib/stores/user'
 	import { stringToLocalTime } from '$lib/utils/datetime'
@@ -8,7 +7,7 @@
 	import Avatar from '../Avatar.svelte'
 	import Prompt from './Prompt.svelte'
 
-	export let currentClassDetails: ClassDetails
+	export let roomId: string
 
 	let elemChat: HTMLElement
 
@@ -122,5 +121,5 @@
 	{/if}
 
 	<!-- Prompt -->
-	<Prompt currentRoom={currentClassDetails.class.id} />
+	<Prompt {roomId} />
 </div>

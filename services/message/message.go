@@ -34,7 +34,7 @@ func (s *Service) SendMessage(ctx context.Context, message *rpc.Message) error {
 
 	msg, err := db.Pg.CreateMessage(ctx, db.CreateMessageParams{
 		UserID:  u.ID,
-		ClassID: uuid.MustParse(message.ClassId),
+		ClassID: uuid.MustParse(message.RoomId),
 		Text:    message.Text,
 	})
 	if err != nil {

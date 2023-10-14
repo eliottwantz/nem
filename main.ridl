@@ -86,14 +86,14 @@ struct ClassDetails
 
 struct Message
     - text: string
-    - classId: string
+    - roomId: string
 
 struct MessageResponse
     - id: string
     - text: string
     - createdAt: timestamp
     - updatedAt: timestamp
-    - classId: string
+    - roomId: string
     - user: User
 
 struct TimesRequest

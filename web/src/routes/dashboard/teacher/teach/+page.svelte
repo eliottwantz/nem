@@ -57,16 +57,16 @@
 			{/if}
 		</div>
 		<section
-			class="flex w-full max-w-xl flex-wrap justify-evenly gap-4 lg:max-w-3xl xl:max-w-5xl"
+			class="m-auto flex w-full max-w-xl flex-wrap justify-center gap-4 lg:max-w-3xl xl:max-w-5xl"
 		>
 			{#each copyTopicsTaught as topic}
-				<div class="card relative inline-block p-1 sm:p-4">
+				<div class="card relative inline-block p-1 sm:p-2">
 					{#if isEditing}
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<span
 							on:click={() => removeTopic(topic)}
-							class="variant-filled-error badge-icon absolute -right-0 -top-0 z-10"
+							class="variant-filled-error badge-icon absolute -right-0 -top-1 z-10"
 						>
 							<Trash class="h-4 w-4" />
 						</span>

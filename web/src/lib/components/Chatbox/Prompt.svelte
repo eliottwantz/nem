@@ -7,7 +7,7 @@
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { page } from '$app/stores'
 
-	export let currentRoom: string
+	export let roomId: string
 	const toastStore = getToastStore()
 
 	const maxChars = 1000
@@ -27,7 +27,7 @@
 		isSubmiting = true
 		ws.send({
 			action: 'stopTyping',
-			roomId: currentRoom,
+			roomId: roomId,
 			data: $userStore?.firstName
 		})
 		currentlyTyping = false
@@ -35,7 +35,7 @@
 		const res = await safeFetch(
 			fetchers.messageService(fetch, $page.data.session!).sendMessage({
 				message: {
-					classId: currentRoom,
+					classId: roomId,
 					text: prompt.trim()
 				}
 			})
@@ -59,14 +59,14 @@
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',
-				roomId: currentRoom,
+				roomId: roomId,
 				data: $userStore?.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
-				roomId: currentRoom,
+				roomId: roomId,
 				data: $userStore?.firstName
 			})
 			currentlyTyping = false

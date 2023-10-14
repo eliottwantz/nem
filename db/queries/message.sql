@@ -1,21 +1,16 @@
 -- name: ListMessages :many
-
-SELECT * FROM "message";
-
+SELECT *
+FROM "message";
 -- name: CreateMessage :one
-
-INSERT INTO
-    "message" ("user_id", "class_id", "text")
-VALUES ($1, $2, $3) RETURNING *;
-
+INSERT INTO "message" ("user_id", "room_id", "text")
+VALUES ($1, $2, $3)
+RETURNING *;
 -- name: UpdateMessage :one
-
 UPDATE "message"
-SET
-    "text" = $1,
+SET "text" = $1,
     "updated_at" = $2
-WHERE "id" = $3 RETURNING *;
-
+WHERE "id" = $3
+RETURNING *;
 -- name: DeleteMessage :exec
-
-DELETE FROM "message" WHERE "id" = $1;
+DELETE FROM "message"
+WHERE "id" = $1;

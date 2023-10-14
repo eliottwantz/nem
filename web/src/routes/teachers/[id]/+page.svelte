@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Chatbox from '$lib/components/Chatbox/Chatbox.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
@@ -18,6 +19,18 @@
 					teacher: data.teacher,
 					classes: data.classes,
 					availabilities: data.availabilities
+				}
+			}
+		})
+	}
+
+	function openChat() {
+		modalStore.trigger({
+			type: 'component',
+			component: {
+				ref: Chatbox,
+				props: {
+					// roomId: data.teacher.id
 				}
 			}
 		})
@@ -43,7 +56,9 @@
 					<button class="variant-filled-primary btn" on:click={scheduleClass}>
 						Schedule a class with this teacher
 					</button>
-					<button class="variant-ghost-surface btn"> Send a message </button>
+					<button class="variant-ghost-surface btn" on:click={openChat}>
+						Send a message
+					</button>
 				</div>
 			</div>
 		</div>

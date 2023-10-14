@@ -28,7 +28,6 @@
 		"@sveltejs/adapter-vercel": "^3.0.3",
 		"@sveltejs/kit": "^1.25.1",
 		"@tailwindcss/forms": "^0.5.6",
-		"@tailwindcss/line-clamp": "^0.4.4",
 		"@tailwindcss/typography": "^0.5.10",
 		"@types/node": "^20.8.0",
 		"@types/nodemailer": "^6.4.11",
