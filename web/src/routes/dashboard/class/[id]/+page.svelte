@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { PUBLIC_LIVEKIT_WS_URL } from '$env/static/public'
 	import { fetchers, safeFetch } from '$lib/api'
@@ -20,10 +20,8 @@
 	import { userStore } from '$lib/stores/user'
 	import { getDrawerStore, getToastStore } from '@skeletonlabs/skeleton'
 	import {
-		LocalAudioTrack,
 		LocalParticipant,
 		LocalTrackPublication,
-		LocalVideoTrack,
 		Participant,
 		RemoteAudioTrack,
 		RemoteParticipant,
@@ -35,7 +33,6 @@
 		Track,
 		TrackPublication,
 		createLocalAudioTrack,
-		createLocalTracks,
 		createLocalVideoTrack
 	} from 'livekit-client'
 	import { onDestroy, onMount } from 'svelte'
@@ -50,7 +47,6 @@
 	let devices: MediaDeviceInfo[] = []
 	let audioDevices: MediaDeviceInfo[] = []
 	let videoDevices: MediaDeviceInfo[] = []
-	let logs: string[] = []
 	let participants = 1
 	$: console.log('participants:', participants)
 	$: console.log('TRACKS REMOTE;', $currentLiveKitRoom.remoteMediaTracks)
@@ -80,7 +76,6 @@
 				dynacast: true
 			})
 			currentRoom.prepareConnection(PUBLIC_LIVEKIT_WS_URL, $currentLiveKitRoom.connectToken)
-			logs = [...logs, 'prepared room']
 			currentLiveKitRoom.update((r) => ({ ...r, room: currentRoom }))
 		}
 		devices = await Room.getLocalDevices()
@@ -97,21 +92,6 @@
 			audioDevice: audioDevices[0]
 		}))
 
-		// if (!$currentLiveKitRoom.videoTrack && !$currentLiveKitRoom.audioTrack) {
-		// 	const tracks = await createLocalTracks()
-		// 	tracks.forEach(async (t) => {
-		// 		if (t instanceof LocalVideoTrack) {
-		// 			// await t.mute()
-		// 			console.log('video track', t)
-		// 			currentLiveKitRoom.update((r) => ({ ...r, videoTrack: t, videoEnabled: true }))
-		// 		} else if (t instanceof LocalAudioTrack) {
-		// 			// await t.mute()
-		// 			console.log('audio track', t)
-		// 			currentLiveKitRoom.update((r) => ({ ...r, audioTrack: t, audioEnabled: true }))
-		// 		}
-		// 	})
-		// }
-
 		unsub = latestWSPayload.subscribe((p) => {
 			if (p.action === 'classEnded') {
 				if (data.user.role === 'student') {
@@ -121,6 +101,7 @@
 					})
 				}
 				goto(data.disconnectUrl)
+				invalidateAll()
 			}
 		})
 	})
@@ -177,12 +158,10 @@
 			currentLiveKitRoom.update((r) => ({ ...r, connected: true }))
 		} catch (error) {
 			console.log(error)
-			if (error instanceof Error) logs = [...logs, error.message]
 			location.href = data.disconnectUrl
 			return
 		}
 		console.log('connected to room', $currentLiveKitRoom.room.name)
-		logs = [...logs, 'connected to room']
 		if ($currentLiveKitRoom.room.numParticipants > 0)
 			participants = $currentLiveKitRoom.room.numParticipants
 		if (!$currentLiveKitRoom.videoEnabled && !$currentLiveKitRoom.audioEnabled) {
@@ -192,11 +171,8 @@
 		for (const t of tracks) {
 			if (!t) continue
 			console.log('publising track:', t)
-			logs = [...logs, `publising track ${t.kind}`]
 			await $currentLiveKitRoom.room.localParticipant.publishTrack(t)
-			logs = [...logs, `published track ${t.kind}`]
 		}
-		logs = [...logs, 'published tracks']
 		console.log('tracks published')
 	}
 
@@ -206,7 +182,6 @@
 		participant: RemoteParticipant
 	) {
 		console.log('track subscribed')
-		logs = [...logs, `got track ${track.kind}`]
 		if (track.kind === Track.Kind.Video) {
 			console.log('added video track to map')
 			$currentLiveKitRoom.remoteMediaTracks = {
@@ -226,7 +201,6 @@
 				}
 			}
 		}
-		logs = [...logs, `attached track`]
 	}
 
 	function handleTrackUnsubscribed(
@@ -403,7 +377,8 @@
 		drawerStore.open({
 			id: drawerStoreIds.chat,
 			meta: {
-				classDetails: data.classDetails
+				conversationId: data.classDetails.class.conversationId,
+				recepientId: undefined
 			},
 			position: 'right'
 		})
@@ -574,8 +549,3 @@
 		</div>
 	</div>
 {/if}
-
-<p>Logs</p>
-{#each logs as log}
-	<p>{log}</p>
-{/each}

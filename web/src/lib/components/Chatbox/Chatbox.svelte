@@ -2,12 +2,13 @@
 	import { chatStore } from '$lib/stores/chatStore'
 	import { userStore } from '$lib/stores/user'
 	import { stringToLocalTime } from '$lib/utils/datetime'
-	import { getInitials } from '$lib/utils/initials'
+	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { onMount } from 'svelte'
 	import Avatar from '../Avatar.svelte'
 	import Prompt from './Prompt.svelte'
 
-	export let roomId: string
+	export let conversationId: number
+	export let recepientId: string | undefined // undefined if group chat
 
 	let elemChat: HTMLElement
 
@@ -40,14 +41,14 @@
 	<!-- Conversation -->
 	<section bind:this={elemChat} class="space-y-4 overflow-y-auto sm:p-4">
 		{#each $chatStore.messages as msg}
-			{#if msg.user.id !== $userStore?.id}
+			{#if msg.sender.id !== $userStore?.id}
 				<!-- Got message from someone else -->
 				<div id="message">
 					<div id="outer" class="flex">
 						<div id="avatar" class="self-end">
 							<Avatar
-								initials={getInitials(msg.user.firstName, msg.user.lastName)}
-								src={msg.user.avatarUrl}
+								initials={getInitials(msg.sender.firstName, msg.sender.lastName)}
+								src={msg.sender.avatarUrl}
 								width="w-8"
 							/>
 						</div>
@@ -56,11 +57,13 @@
 								id="bubble"
 								class="wrap-bal card variant-filled-surface max-w-[75%] break-words px-2"
 							>
-								<header class="flex items-center justify-between">
-									<p class="font-bold">{msg.user.firstName}</p>
-									<small class="opacity-50"
-										>{stringToLocalTime(msg.createdAt)}</small
-									>
+								<header class="flex items-center justify-between gap-x-1">
+									<p class="font-bold">
+										{getPublicName(msg.sender.firstName, msg.sender.lastName)}
+									</p>
+									<small class="opacity-50">
+										{stringToLocalTime(msg.sentAt)}
+									</small>
 								</header>
 								<p>{msg.text}</p>
 							</div>
@@ -88,9 +91,7 @@
 								class="wrap-bal card variant-filled-primary max-w-[75%] break-words px-2"
 							>
 								<header class="flex items-center justify-between">
-									<p class="font-bold">{msg.user.firstName}</p>
-									<small class="opacity-50"
-										>{stringToLocalTime(msg.createdAt)}</small
+									<small class="opacity-50">{stringToLocalTime(msg.sentAt)}</small
 									>
 								</header>
 								<p>{msg.text}</p>
@@ -121,5 +122,5 @@
 	{/if}
 
 	<!-- Prompt -->
-	<Prompt {roomId} />
+	<Prompt {conversationId} {recepientId} />
 </div>

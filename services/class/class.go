@@ -60,28 +60,17 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	tx, err := db.Pg.NewTx(ctx)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	defer tx.Rollback()
-
-	dbClass, err := tx.FindClass(ctx, cID)
+	dbClass, err := db.Pg.FindClass(ctx, cID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	dbUsers, err := tx.ListStudentsInClass(ctx, cID)
+	dbUsers, err := db.Pg.ListStudentsInClass(ctx, cID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	teacher, err := tx.FindTeacherByID(ctx, dbClass.TeacherID)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	err = tx.Commit()
+	teacher, err := db.Pg.FindTeacherByID(ctx, dbClass.TeacherID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -93,16 +82,17 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 
 	return &rpc.ClassDetails{
 		Class: &rpc.Class{
-			Id:         dbClass.ID.String(),
-			Name:       dbClass.Name,
-			Language:   dbClass.Language,
-			HasStarted: dbClass.HasStarted,
-			Topic:      dbClass.Topic,
-			TeacherId:  dbClass.TeacherID.String(),
-			IsPrivate:  dbClass.IsPrivate,
-			StartAt:    dbClass.StartAt,
-			EndAt:      dbClass.EndAt,
-			CreatedAt:  dbClass.CreatedAt,
+			Id:             dbClass.ID.String(),
+			Name:           dbClass.Name,
+			Language:       dbClass.Language,
+			HasStarted:     dbClass.HasStarted,
+			Topic:          dbClass.Topic,
+			ConversationId: dbClass.ConversationID,
+			TeacherId:      dbClass.TeacherID.String(),
+			IsPrivate:      dbClass.IsPrivate,
+			StartAt:        dbClass.StartAt,
+			EndAt:          dbClass.EndAt,
+			CreatedAt:      dbClass.CreatedAt,
 		},
 		Users:   rpcUsers,
 		Teacher: rpc.FromDbTeacher(teacher),
@@ -187,16 +177,17 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 			}
 			return &rpc.Class{
-				Id:         exists.ID.String(),
-				TeacherId:  timeSlot.TeacherID.String(),
-				IsPrivate:  exists.IsPrivate,
-				HasStarted: exists.HasStarted,
-				Name:       exists.Name,
-				Language:   exists.Language,
-				Topic:      exists.Topic,
-				StartAt:    timeSlot.StartAt,
-				EndAt:      timeSlot.EndAt,
-				CreatedAt:  exists.CreatedAt,
+				Id:             exists.ID.String(),
+				TeacherId:      timeSlot.TeacherID.String(),
+				IsPrivate:      exists.IsPrivate,
+				HasStarted:     exists.HasStarted,
+				Name:           exists.Name,
+				Language:       exists.Language,
+				ConversationId: exists.ConversationID,
+				Topic:          exists.Topic,
+				StartAt:        timeSlot.StartAt,
+				EndAt:          timeSlot.EndAt,
+				CreatedAt:      exists.CreatedAt,
 			}, nil
 		} else if err != sql.ErrNoRows {
 			s.logger.Warn("failed to find class by timeslot", "error", err)
@@ -247,15 +238,16 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 
 	return &rpc.Class{
-		Id:         dbClass.ID.String(),
-		TeacherId:  timeSlot.TeacherID.String(),
-		IsPrivate:  dbClass.IsPrivate,
-		HasStarted: dbClass.HasStarted,
-		Name:       dbClass.Name,
-		Language:   dbClass.Language,
-		Topic:      dbClass.Topic,
-		StartAt:    timeSlot.StartAt,
-		EndAt:      timeSlot.EndAt,
-		CreatedAt:  dbClass.CreatedAt,
+		Id:             dbClass.ID.String(),
+		TeacherId:      timeSlot.TeacherID.String(),
+		IsPrivate:      dbClass.IsPrivate,
+		HasStarted:     dbClass.HasStarted,
+		Name:           dbClass.Name,
+		Language:       dbClass.Language,
+		Topic:          dbClass.Topic,
+		ConversationId: dbClass.ConversationID,
+		StartAt:        timeSlot.StartAt,
+		EndAt:          timeSlot.EndAt,
+		CreatedAt:      dbClass.CreatedAt,
 	}, nil
 }

@@ -69,6 +69,7 @@ struct Topic
 struct Class
     - id: string
     - teacherId: string
+    - conversationId: int64
     - isPrivate: bool
     - name: string
     - hasStarted: bool

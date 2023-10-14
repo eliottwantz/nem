@@ -34,16 +34,17 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:         c.ID.String(),
-			Name:       c.Name,
-			HasStarted: c.HasStarted,
-			TeacherId:  c.TeacherID.String(),
-			IsPrivate:  c.IsPrivate,
-			Language:   c.Language,
-			Topic:      c.Topic,
-			StartAt:    c.StartAt,
-			EndAt:      c.EndAt,
-			CreatedAt:  c.CreatedAt,
+			Id:             c.ID.String(),
+			Name:           c.Name,
+			HasStarted:     c.HasStarted,
+			TeacherId:      c.TeacherID.String(),
+			IsPrivate:      c.IsPrivate,
+			Language:       c.Language,
+			ConversationId: c.ConversationID,
+			Topic:          c.Topic,
+			StartAt:        c.StartAt,
+			EndAt:          c.EndAt,
+			CreatedAt:      c.CreatedAt,
 		})
 	}
 	return ret, nil

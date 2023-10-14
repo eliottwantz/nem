@@ -8,7 +8,7 @@ import type { MessageResponse } from '../api.gen'
 
 type SendPayload = {
 	action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
-	roomId: string
+	roomId: number
 	data: any
 }
 

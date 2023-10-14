@@ -60,7 +60,7 @@
 					return
 				}
 
-				await goto(`/class/${data.classDetails.class.id}`)
+				await goto(`/dashboard/class/${data.classDetails.class.id}`)
 			}
 		})
 	}
