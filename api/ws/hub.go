@@ -95,13 +95,13 @@ func (h *Hub) Run() {
 //
 // The function takes in the message to be sent as a byte array and the ID of the room.
 // It finds the room with the given ID and publishes the message to all clients in that room.
-func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId uuid.UUID) {
+func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId int64) {
 	if room, err := h.findRoomById(roomId); err == nil {
 		room.broadcast <- msg
 	}
 }
 
-func (h *Hub) findRoomById(id uuid.UUID) (*Room, error) {
+func (h *Hub) findRoomById(id int64) (*Room, error) {
 	for room := range h.rooms {
 		if room.id == id {
 			return room, nil
@@ -121,7 +121,7 @@ func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
 	return nil, errors.New("ws client not found")
 }
 
-func (h *Hub) createRoom(id uuid.UUID) *Room {
+func (h *Hub) createRoom(id int64) *Room {
 	room := NewRoom(id, h.redisClient)
 	go room.Run()
 	h.rooms[room] = struct{}{}

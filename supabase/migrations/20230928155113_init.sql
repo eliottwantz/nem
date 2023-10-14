@@ -111,34 +111,35 @@ AFTER
 INSERT ON reviews FOR EACH ROW EXECUTE FUNCTION update_teacher_rating();
 CREATE TABLE "conversations" (
     "id" BIGSERIAL PRIMARY KEY,
-    "type" TEXT NOT NULL,
+    "is_group" BOOLEAN NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE TABLE "messages" (
     "id" BIGSERIAL PRIMARY KEY,
-    "conversation_id" INTEGER NOT NULL,
     "sender_id" UUID NOT NULL,
+    "conversation_id" BIGINT NOT NULL,
     "text" TEXT NOT NULL,
-    "send_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-    "notified_at" TIMESTAMPTZ DEFAULT NULL,
+    "sent_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "updated_at" TIMESTAMPTZ DEFAULT NULL,
-    FOREIGN KEY (conversation_id) REFERENCES "conversations"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (sender_id) REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (sender_id) REFERENCES "user"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES "conversations"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+-- Get all messages in a conversation
+CREATE INDEX "idx_messages_conversation_id" ON "messages"("conversation_id");
+-- Index for listing the message by sent_at
+CREATE INDEX "idx_messages_send_at" ON "messages"("send_at");
 CREATE TABLE "users_conversations" (
     "user_id" UUID NOT NULL,
-    "conversation_id" UUID NOT NULL,
+    "conversation_id" BIGINT NOT NULL,
     PRIMARY KEY ("user_id", "conversation_id"),
     FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY ("conversation_id") REFERENCES "conversations" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 -- Get all conversations for a user
 CREATE INDEX "idx_user_conversations_user_id" ON "user_conversations"("user_id");
--- Get all messages in a conversation
-CREATE INDEX "idx_messages_conversation_id" ON "messages"("conversation_id");
 CREATE TABLE "users_messages" (
     "recipient_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    "message_id" BIGINT NOT NULL REFERENCES "message" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    "message_id" BIGINT NOT NULL REFERENCES "messages" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     "is_read" BOOLEAN NOT NULL DEFAULT false,
     PRIMARY KEY ("recipient_id", "message_id")
 );
@@ -148,7 +149,7 @@ CREATE TABLE "class" (
     "is_private" BOOLEAN NOT NULL,
     "language" TEXT NOT NULL,
     "topic" TEXT NOT NULL,
-    "message_room_id" UUID NOT NULL REFERENCES "message_rooms" ("id") ON DELETE RESTRICT,
+    "conversation_id" BIGINT NOT NULL REFERENCES "conversations" ("id") ON DELETE RESTRICT,
     "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT,
     "has_started" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()

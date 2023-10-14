@@ -75,14 +75,21 @@ func AllRoleValues() []Role {
 }
 
 type Class struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+}
+
+type Conversation struct {
+	ID        int64
+	IsGroup   bool
+	CreatedAt time.Time
 }
 
 type HoursBank struct {
@@ -97,12 +104,12 @@ type Language struct {
 }
 
 type Message struct {
-	ID        uuid.UUID
-	Text      string
-	UserID    uuid.UUID
-	ClassID   uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt sql.NullTime
+	ID             int64
+	SenderID       uuid.UUID
+	ConversationID int64
+	Text           string
+	SentAt         time.Time
+	UpdatedAt      sql.NullTime
 }
 
 type Review struct {
@@ -192,4 +199,15 @@ type User struct {
 	AvatarUrl        string
 	CreatedAt        time.Time
 	UpdatedAt        sql.NullTime
+}
+
+type UsersConversation struct {
+	UserID         uuid.UUID
+	ConversationID int64
+}
+
+type UsersMessage struct {
+	RecipientID uuid.UUID
+	MessageID   int64
+	IsRead      bool
 }

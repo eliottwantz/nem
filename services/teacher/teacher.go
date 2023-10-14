@@ -398,7 +398,7 @@ func (s *Service) StartClass(ctx context.Context, classId string) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	return s.wsService.StartClass(class.ID, httpmw.ContextUID(ctx))
+	return s.wsService.StartClass(class.ConversationID, httpmw.ContextUID(ctx))
 }
 
 func (s *Service) EndClass(ctx context.Context, classId string) error {
@@ -414,7 +414,7 @@ func (s *Service) EndClass(ctx context.Context, classId string) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
 
-	return s.wsService.EndClass(class.ID)
+	return s.wsService.EndClass(class.ConversationID)
 }
 
 func (s *Service) CancelClass(ctx context.Context, classId string) ([]*rpc.User, *rpc.User, error) {

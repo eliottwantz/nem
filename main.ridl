@@ -84,17 +84,17 @@ struct ClassDetails
     - teacher: Teacher
 
 
-struct Message
+struct SentMessage
     - text: string
-    - roomId: string
+    - conversationId: int64
 
 struct MessageResponse
-    - id: string
+    - id: int64
     - text: string
-    - createdAt: timestamp
+    - sentAt: timestamp
     - updatedAt: timestamp
-    - roomId: string
-    - user: User
+    - conversationId: int64
+    - sender: User
 
 struct TimesRequest
     - startAt: timestamp
@@ -179,7 +179,8 @@ service ClassServiceAPI
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
-    - SendMessage(message: Message)
+    - SendMessageToUser(recepientId: string, message: SentMessage)
+    - SendMessageToClass(message: SentMessage)
 
 
 #################### SERVICES ####################

@@ -123,6 +123,7 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 }
 
 func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassRequest) (*rpc.Class, error) {
+	ErrorCreateJoinClass := errors.New("failed to create or join class")
 	err := req.Validate()
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
@@ -130,7 +131,8 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to start transaction", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 	defer tx.Rollback()
 
@@ -141,23 +143,26 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	timeSlot, err := tx.FindTimeSlot(ctx, tID)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to find time slot", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	uID := httpmw.ContextUID(ctx)
-
 	{
 		exists, err := tx.FindClassByTimeslot(ctx, timeSlot.ID)
 		if err == nil {
 			// Add user to this class if there if less than 4 students in the class and not private
 			users, err := tx.ListStudentsInClass(ctx, exists.ID)
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to list students in class", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 			}
 			if len(users) >= 4 {
+				s.logger.Warn("class is full", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is full"))
 			}
 			if exists.IsPrivate {
+				s.logger.Warn("class is private", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is private"))
 			}
 			err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
@@ -165,11 +170,21 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				StudentID: uID,
 			})
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to add student to class", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
+			}
+			err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
+				UserID:         uID,
+				ConversationID: exists.ConversationID,
+			})
+			if err != nil {
+				s.logger.Warn("failed to add user to conversation", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 			}
 			err = tx.Commit()
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to commit transaction", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 			}
 			return &rpc.Class{
 				Id:         exists.ID.String(),
@@ -184,19 +199,36 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				CreatedAt:  exists.CreatedAt,
 			}, nil
 		} else if err != sql.ErrNoRows {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			s.logger.Warn("failed to find class by timeslot", "error", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 		}
 	}
 
-	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
-		Name:       req.Name,
-		Language:   req.Language,
-		Topic:      req.Topic,
-		TimeSlotID: tID,
-		IsPrivate:  req.IsPrivate,
+	convo, err := tx.CreateConversation(ctx, true)
+	if err != nil {
+		s.logger.Warn("failed to create conversation", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
+	}
+	err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
+		UserID:         uID,
+		ConversationID: convo.ID,
 	})
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to add user to conversation", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
+	}
+
+	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
+		Name:           req.Name,
+		Language:       req.Language,
+		Topic:          req.Topic,
+		TimeSlotID:     tID,
+		ConversationID: convo.ID,
+		IsPrivate:      req.IsPrivate,
+	})
+	if err != nil {
+		s.logger.Warn("failed to create class", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
@@ -204,12 +236,14 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		StudentID: uID,
 	})
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to add student to class", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to commit transaction", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
 	return &rpc.Class{

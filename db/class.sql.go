@@ -33,18 +33,20 @@ INSERT INTO "class" (
         is_private,
         language,
         topic,
+        conversation_id,
         time_slot_id
     )
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, is_private, language, topic, time_slot_id, has_started, created_at
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, name, is_private, language, topic, conversation_id, time_slot_id, has_started, created_at
 `
 
 type CreateClassParams struct {
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
 }
 
 func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Class, error) {
@@ -53,6 +55,7 @@ func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Clas
 		arg.IsPrivate,
 		arg.Language,
 		arg.Topic,
+		arg.ConversationID,
 		arg.TimeSlotID,
 	)
 	var i Class
@@ -62,6 +65,7 @@ func (q *Queries) CreateClass(ctx context.Context, arg CreateClassParams) (*Clas
 		&i.IsPrivate,
 		&i.Language,
 		&i.Topic,
+		&i.ConversationID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -80,7 +84,7 @@ func (q *Queries) DeleteClass(ctx context.Context, id uuid.UUID) error {
 }
 
 const findClass = `-- name: FindClass :one
-SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
+SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.conversation_id, cl.time_slot_id, cl.has_started, cl.created_at,
     ts.teacher_id,
     ts.start_at,
     ts.end_at
@@ -91,17 +95,18 @@ ORDER BY cl.created_at ASC
 `
 
 type FindClassRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+	TeacherID      uuid.UUID
+	StartAt        time.Time
+	EndAt          time.Time
 }
 
 func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, error) {
@@ -113,6 +118,7 @@ func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, e
 		&i.IsPrivate,
 		&i.Language,
 		&i.Topic,
+		&i.ConversationID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -124,7 +130,7 @@ func (q *Queries) FindClass(ctx context.Context, id uuid.UUID) (*FindClassRow, e
 }
 
 const findClassByTimeslot = `-- name: FindClassByTimeslot :one
-SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
+SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.conversation_id, cl.time_slot_id, cl.has_started, cl.created_at,
     t.teacher_id,
     t.start_at,
     t.end_at
@@ -134,17 +140,18 @@ WHERE t.id = $1
 `
 
 type FindClassByTimeslotRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+	TeacherID      uuid.UUID
+	StartAt        time.Time
+	EndAt          time.Time
 }
 
 func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindClassByTimeslotRow, error) {
@@ -156,6 +163,7 @@ func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindC
 		&i.IsPrivate,
 		&i.Language,
 		&i.Topic,
+		&i.ConversationID,
 		&i.TimeSlotID,
 		&i.HasStarted,
 		&i.CreatedAt,
@@ -167,7 +175,7 @@ func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindC
 }
 
 const listClassesOfStudent = `-- name: ListClassesOfStudent :many
-SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
+SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.conversation_id, cl.time_slot_id, cl.has_started, cl.created_at,
     t.teacher_id,
     t.start_at,
     t.end_at
@@ -179,17 +187,18 @@ ORDER BY sc.created_at ASC
 `
 
 type ListClassesOfStudentRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+	TeacherID      uuid.UUID
+	StartAt        time.Time
+	EndAt          time.Time
 }
 
 func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID) ([]*ListClassesOfStudentRow, error) {
@@ -207,6 +216,7 @@ func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID)
 			&i.IsPrivate,
 			&i.Language,
 			&i.Topic,
+			&i.ConversationID,
 			&i.TimeSlotID,
 			&i.HasStarted,
 			&i.CreatedAt,
@@ -228,7 +238,7 @@ func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID)
 }
 
 const listClassesOfTeacher = `-- name: ListClassesOfTeacher :many
-SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
+SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.conversation_id, cl.time_slot_id, cl.has_started, cl.created_at,
     t.teacher_id,
     t.start_at,
     t.end_at
@@ -239,17 +249,18 @@ ORDER BY t.start_at ASC
 `
 
 type ListClassesOfTeacherRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	ConversationID int64
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+	TeacherID      uuid.UUID
+	StartAt        time.Time
+	EndAt          time.Time
 }
 
 func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID) ([]*ListClassesOfTeacherRow, error) {
@@ -267,6 +278,7 @@ func (q *Queries) ListClassesOfTeacher(ctx context.Context, teacherID uuid.UUID)
 			&i.IsPrivate,
 			&i.Language,
 			&i.Topic,
+			&i.ConversationID,
 			&i.TimeSlotID,
 			&i.HasStarted,
 			&i.CreatedAt,

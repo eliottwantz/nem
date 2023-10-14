@@ -62,7 +62,7 @@ func (s *Service) JoinClass(ctx context.Context, classId string) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
 
-	return s.wsService.JoinClass(class.ID, httpmw.ContextUID(ctx))
+	return s.wsService.JoinClass(class.ConversationID, httpmw.ContextUID(ctx))
 }
 
 func (s *Service) LeaveClass(ctx context.Context, classId string) error {
@@ -77,7 +77,7 @@ func (s *Service) LeaveClass(ctx context.Context, classId string) error {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
 	}
 
-	return s.wsService.LeaveClass(class.ID, httpmw.ContextUID(ctx))
+	return s.wsService.LeaveClass(class.ConversationID, httpmw.ContextUID(ctx))
 }
 
 func (s *Service) ListTeachersOfStudent(ctx context.Context) ([]*rpc.Teacher, error) {

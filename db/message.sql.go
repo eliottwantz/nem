@@ -7,55 +7,137 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
 
-const createMessage = `-- name: CreateMessage :one
+const addUserToConversation = `-- name: AddUserToConversation :exec
+INSERT INTO "users_conversations" (user_id, conversation_id)
+VALUES ($1, $2)
+`
 
-INSERT INTO
-    "message" ("user_id", "class_id", "text")
-VALUES ($1, $2, $3) RETURNING id, text, user_id, class_id, created_at, updated_at
+type AddUserToConversationParams struct {
+	UserID         uuid.UUID
+	ConversationID int64
+}
+
+func (q *Queries) AddUserToConversation(ctx context.Context, arg AddUserToConversationParams) error {
+	_, err := q.db.ExecContext(ctx, addUserToConversation, arg.UserID, arg.ConversationID)
+	return err
+}
+
+const createConversation = `-- name: CreateConversation :one
+INSERT INTO "conversations" ("is_group")
+VALUES ($1)
+RETURNING id, is_group, created_at
+`
+
+func (q *Queries) CreateConversation(ctx context.Context, isGroup bool) (*Conversation, error) {
+	row := q.db.QueryRowContext(ctx, createConversation, isGroup)
+	var i Conversation
+	err := row.Scan(&i.ID, &i.IsGroup, &i.CreatedAt)
+	return &i, err
+}
+
+const createMessage = `-- name: CreateMessage :one
+INSERT INTO "messages" (sender_id, conversation_id, text)
+VALUES ($1, $2, $3)
+RETURNING id, sender_id, conversation_id, text, sent_at, updated_at
 `
 
 type CreateMessageParams struct {
-	UserID  uuid.UUID
-	ClassID uuid.UUID
-	Text    string
+	SenderID       uuid.UUID
+	ConversationID int64
+	Text           string
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (*Message, error) {
-	row := q.db.QueryRowContext(ctx, createMessage, arg.UserID, arg.ClassID, arg.Text)
+	row := q.db.QueryRowContext(ctx, createMessage, arg.SenderID, arg.ConversationID, arg.Text)
 	var i Message
 	err := row.Scan(
 		&i.ID,
+		&i.SenderID,
+		&i.ConversationID,
 		&i.Text,
-		&i.UserID,
-		&i.ClassID,
-		&i.CreatedAt,
+		&i.SentAt,
 		&i.UpdatedAt,
 	)
 	return &i, err
 }
 
 const deleteMessage = `-- name: DeleteMessage :exec
-
-DELETE FROM "message" WHERE "id" = $1
+DELETE FROM "messages"
+WHERE "id" = $1
 `
 
-func (q *Queries) DeleteMessage(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteMessage(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteMessage, id)
 	return err
 }
 
-const listMessages = `-- name: ListMessages :many
-
-SELECT id, text, user_id, class_id, created_at, updated_at FROM "message"
+const findConversation = `-- name: FindConversation :one
+SELECT id, is_group, created_at
+FROM "conversations"
+WHERE "id" = $1
 `
 
-func (q *Queries) ListMessages(ctx context.Context) ([]*Message, error) {
-	rows, err := q.db.QueryContext(ctx, listMessages)
+func (q *Queries) FindConversation(ctx context.Context, id int64) (*Conversation, error) {
+	row := q.db.QueryRowContext(ctx, findConversation, id)
+	var i Conversation
+	err := row.Scan(&i.ID, &i.IsGroup, &i.CreatedAt)
+	return &i, err
+}
+
+const listConversationsOfUser = `-- name: ListConversationsOfUser :many
+SELECT c.id, c.is_group, c.created_at
+FROM "conversations" c
+    JOIN "messages" m ON c.id = m.conversation_id
+    JOIN "users_conversations" uc ON c.id = uc.conversation_id
+WHERE uc.user_id = $1
+GROUP BY c.id
+ORDER BY MAX(m.sent_at) DESC
+`
+
+func (q *Queries) ListConversationsOfUser(ctx context.Context, userID uuid.UUID) ([]*Conversation, error) {
+	rows, err := q.db.QueryContext(ctx, listConversationsOfUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Conversation
+	for rows.Next() {
+		var i Conversation
+		if err := rows.Scan(&i.ID, &i.IsGroup, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMessagesOfConversation = `-- name: ListMessagesOfConversation :many
+SELECT id, sender_id, conversation_id, text, sent_at, updated_at
+FROM "messages"
+WHERE "conversation_id" = $1
+    AND "sent_at" < $2
+ORDER BY "sent_at" DESC
+LIMIT 20
+`
+
+type ListMessagesOfConversationParams struct {
+	ConversationID int64
+	SentAt         time.Time
+}
+
+func (q *Queries) ListMessagesOfConversation(ctx context.Context, arg ListMessagesOfConversationParams) ([]*Message, error) {
+	rows, err := q.db.QueryContext(ctx, listMessagesOfConversation, arg.ConversationID, arg.SentAt)
 	if err != nil {
 		return nil, err
 	}
@@ -65,10 +147,10 @@ func (q *Queries) ListMessages(ctx context.Context) ([]*Message, error) {
 		var i Message
 		if err := rows.Scan(
 			&i.ID,
+			&i.SenderID,
+			&i.ConversationID,
 			&i.Text,
-			&i.UserID,
-			&i.ClassID,
-			&i.CreatedAt,
+			&i.SentAt,
 			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
@@ -85,29 +167,27 @@ func (q *Queries) ListMessages(ctx context.Context) ([]*Message, error) {
 }
 
 const updateMessage = `-- name: UpdateMessage :one
-
-UPDATE "message"
-SET
-    "text" = $1,
-    "updated_at" = $2
-WHERE "id" = $3 RETURNING id, text, user_id, class_id, created_at, updated_at
+UPDATE "messages"
+SET "text" = $1,
+    "updated_at" = now()
+WHERE "id" = $2
+RETURNING id, sender_id, conversation_id, text, sent_at, updated_at
 `
 
 type UpdateMessageParams struct {
-	Text      string
-	UpdatedAt sql.NullTime
-	ID        uuid.UUID
+	Text string
+	ID   int64
 }
 
 func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (*Message, error) {
-	row := q.db.QueryRowContext(ctx, updateMessage, arg.Text, arg.UpdatedAt, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateMessage, arg.Text, arg.ID)
 	var i Message
 	err := row.Scan(
 		&i.ID,
+		&i.SenderID,
+		&i.ConversationID,
 		&i.Text,
-		&i.UserID,
-		&i.ClassID,
-		&i.CreatedAt,
+		&i.SentAt,
 		&i.UpdatedAt,
 	)
 	return &i, err
