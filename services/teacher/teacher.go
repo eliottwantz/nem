@@ -123,6 +123,9 @@ func (s *Service) ListAvailabilities(ctx context.Context, teacherId string) ([]*
 		if t.NumUsers >= 4 {
 			continue
 		}
+		if t.IsPrivate.Valid && t.IsPrivate.Bool {
+			continue
+		}
 		if t.StartAt.Before(now) || t.EndAt.Before(now) {
 			continue
 		}

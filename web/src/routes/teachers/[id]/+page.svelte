@@ -7,6 +7,10 @@
 
 	export let data
 
+	console.log(data.availabilities)
+	console.log(data.classes)
+	console.log(data.teacher)
+
 	const modalStore = getModalStore()
 
 	let tabSet: number = 0

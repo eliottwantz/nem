@@ -7,20 +7,20 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 const addTimeSlot = `-- name: AddTimeSlot :one
-
-INSERT INTO
-    "time_slots" (
+INSERT INTO "time_slots" (
         "teacher_id",
         "start_at",
         "end_at"
     )
-VALUES ($1, $2, $3) RETURNING id, start_at, end_at, teacher_id
+VALUES ($1, $2, $3)
+RETURNING id, start_at, end_at, teacher_id
 `
 
 type AddTimeSlotParams struct {
@@ -42,10 +42,8 @@ func (q *Queries) AddTimeSlot(ctx context.Context, arg AddTimeSlotParams) (*Time
 }
 
 const deleteTimeSlot = `-- name: DeleteTimeSlot :exec
-
 DELETE FROM "time_slots"
-WHERE
-    "id" = $1
+WHERE "id" = $1
     AND "teacher_id" = $2
 `
 
@@ -60,8 +58,9 @@ func (q *Queries) DeleteTimeSlot(ctx context.Context, arg DeleteTimeSlotParams) 
 }
 
 const findTimeSlot = `-- name: FindTimeSlot :one
-
-SELECT id, start_at, end_at, teacher_id FROM "time_slots" WHERE "id" = $1
+SELECT id, start_at, end_at, teacher_id
+FROM "time_slots"
+WHERE "id" = $1
 `
 
 func (q *Queries) FindTimeSlot(ctx context.Context, id uuid.UUID) (*TimeSlot, error) {
@@ -77,11 +76,9 @@ func (q *Queries) FindTimeSlot(ctx context.Context, id uuid.UUID) (*TimeSlot, er
 }
 
 const findTimeSlotsTimeRange = `-- name: FindTimeSlotsTimeRange :many
-
 SELECT id, start_at, end_at, teacher_id
 FROM "time_slots"
-WHERE
-    "teacher_id" = $1
+WHERE "teacher_id" = $1
     AND "start_at" >= $2
     AND "end_at" <= $3
 `
@@ -121,16 +118,16 @@ func (q *Queries) FindTimeSlotsTimeRange(ctx context.Context, arg FindTimeSlotsT
 }
 
 const listTeachersAvailableTimeSlots = `-- name: ListTeachersAvailableTimeSlots :many
-
-SELECT
-    ts.id, ts.start_at, ts.end_at, ts.teacher_id,
+SELECT ts.id, ts.start_at, ts.end_at, ts.teacher_id,
     c."id" AS class_id,
+    c.is_private,
     COUNT(sc."student_id") AS num_users
 FROM "time_slots" ts
     LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
     LEFT JOIN "student_class" sc ON c."id" = sc."class_id"
 WHERE ts."teacher_id" = $1
-GROUP BY ts."id", c."id"
+GROUP BY ts."id",
+    c."id"
 `
 
 type ListTeachersAvailableTimeSlotsRow struct {
@@ -139,6 +136,7 @@ type ListTeachersAvailableTimeSlotsRow struct {
 	EndAt     time.Time
 	TeacherID uuid.UUID
 	ClassID   uuid.NullUUID
+	IsPrivate sql.NullBool
 	NumUsers  int64
 }
 
@@ -157,6 +155,7 @@ func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID 
 			&i.EndAt,
 			&i.TeacherID,
 			&i.ClassID,
+			&i.IsPrivate,
 			&i.NumUsers,
 		); err != nil {
 			return nil, err
@@ -173,8 +172,9 @@ func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID 
 }
 
 const listTimeSlots = `-- name: ListTimeSlots :many
-
-SELECT id, start_at, end_at, teacher_id FROM "time_slots" WHERE "teacher_id" = $1
+SELECT id, start_at, end_at, teacher_id
+FROM "time_slots"
+WHERE "teacher_id" = $1
 `
 
 func (q *Queries) ListTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*TimeSlot, error) {
@@ -206,14 +206,12 @@ func (q *Queries) ListTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*Ti
 }
 
 const updateTimeSlot = `-- name: UpdateTimeSlot :one
-
 UPDATE "time_slots"
-SET
-    "start_at" = $1,
+SET "start_at" = $1,
     "end_at" = $2
-WHERE
-    "id" = $3
-    AND "teacher_id" = $4 RETURNING id, start_at, end_at, teacher_id
+WHERE "id" = $3
+    AND "teacher_id" = $4
+RETURNING id, start_at, end_at, teacher_id
 `
 
 type UpdateTimeSlotParams struct {

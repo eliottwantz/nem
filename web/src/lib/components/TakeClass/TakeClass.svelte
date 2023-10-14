@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidate, invalidateAll } from '$app/navigation'
+	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
@@ -42,7 +42,11 @@
 	$: topics = teacher.topicsTaught
 	$: console.log('topics', topics)
 	$: events = availabilities
-		.filter((a) => !classes.map((c) => c.startAt).includes(a.startAt))
+		.filter((a) => {
+			const matchClass = classes.find((c) => c.startAt === a.startAt && c.endAt === a.endAt)
+			if (!matchClass) return true
+			return matchClass.language === selectedLanguage && matchClass.topic === selectedTopic
+		})
 		.map((a) => availabilityToCalendarEntryOneHourBlock(a))
 		.reduce((a, b) => [...a, ...b], [] as CalendarEvent[])
 	$: console.log('events', events)
@@ -64,7 +68,7 @@
 		cal.updateEvent(event)
 	}
 
-	async function orderLearn() {
+	async function scheduleClass() {
 		if (
 			!selectedLanguage ||
 			!selectedTopic ||
@@ -106,7 +110,7 @@
 		buttonBackLabel={$t('learn.stepper.buttonBack')}
 		buttonNextLabel={$t('learn.stepper.buttonNext')}
 		buttonCompleteLabel={$t('learn.bookLearn')}
-		on:complete={orderLearn}
+		on:complete={scheduleClass}
 	>
 		<Step locked={lockedLanguage}>
 			<svelte:fragment slot="header">{$t('learn.language-teach')}</svelte:fragment>
@@ -123,7 +127,7 @@
 				{$t('learn.topic')}
 			</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each topics as topic}
+				{#each topics.filter((t) => t !== selectedLanguage) as topic}
 					<ListBoxItem bind:group={selectedTopic} name={topic} value={topic}>
 						{topic}
 					</ListBoxItem>
