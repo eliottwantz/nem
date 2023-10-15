@@ -17,8 +17,6 @@ export async function load({ params, fetch, locals: { session, user } }) {
 		throw error(res[0].error.status, 'User not found')
 	}
 
-	debugger
-
 	return {
 		teacher: res[0].data.teacher,
 		availabilities: res[1].ok ? res[1].data.timeSlots : [],

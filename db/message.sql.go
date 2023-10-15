@@ -89,6 +89,27 @@ func (q *Queries) FindConversation(ctx context.Context, id int64) (*Conversation
 	return &i, err
 }
 
+const findConversationBetweenUsers = `-- name: FindConversationBetweenUsers :one
+SELECT c.id, c.is_group, c.created_at
+FROM conversations c
+    JOIN users_conversations uc1 ON c.id = uc1.conversation_id
+    JOIN users_conversations uc2 ON c.id = uc2.conversation_id
+WHERE uc1.user_id = $1
+    AND uc2.user_id = $2
+`
+
+type FindConversationBetweenUsersParams struct {
+	UserID   uuid.UUID
+	UserID_2 uuid.UUID
+}
+
+func (q *Queries) FindConversationBetweenUsers(ctx context.Context, arg FindConversationBetweenUsersParams) (*Conversation, error) {
+	row := q.db.QueryRowContext(ctx, findConversationBetweenUsers, arg.UserID, arg.UserID_2)
+	var i Conversation
+	err := row.Scan(&i.ID, &i.IsGroup, &i.CreatedAt)
+	return &i, err
+}
+
 const listConversationsOfUser = `-- name: ListConversationsOfUser :many
 SELECT c.id, c.is_group, c.created_at
 FROM "conversations" c
@@ -156,6 +177,36 @@ func (q *Queries) ListMessagesOfConversation(ctx context.Context, arg ListMessag
 			return nil, err
 		}
 		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserIDsInConversation = `-- name: ListUserIDsInConversation :many
+SELECT u.id
+FROM "user" u
+    JOIN "users_conversations" uc ON u.id = uc.user_id
+WHERE uc.conversation_id = $1
+`
+
+func (q *Queries) ListUserIDsInConversation(ctx context.Context, conversationID int64) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, listUserIDsInConversation, conversationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

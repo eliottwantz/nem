@@ -382,7 +382,6 @@
 			},
 			position: 'right'
 		})
-		chatStore.resetUnreadMessages()
 	}
 </script>
 

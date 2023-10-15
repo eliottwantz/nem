@@ -26,7 +26,7 @@
 	{:else if $drawerStore.id === drawerStoreIds.chat}
 		<Chatbox
 			conversationId={$drawerStore.meta.conversationId}
-			recepientId={$drawerStore.meta.recepientId}
+			recepient={$drawerStore.meta.recepient}
 		/>
 	{/if}
 </Drawer>

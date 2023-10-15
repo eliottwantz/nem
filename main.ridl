@@ -180,7 +180,8 @@ service ClassServiceAPI
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
-    - SendMessageToUser(recepientId: string, message: SentMessage)
+    - CreateOneToOneConversation(recepientId: string) => (conversationId: int64)
+    - SendMessageToUser(message: SentMessage)
     - SendMessageToClass(message: SentMessage)
 
 

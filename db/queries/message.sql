@@ -9,6 +9,13 @@ LIMIT 20;
 SELECT *
 FROM "conversations"
 WHERE "id" = $1;
+-- name: FindConversationBetweenUsers :one
+SELECT c.*
+FROM conversations c
+    JOIN users_conversations uc1 ON c.id = uc1.conversation_id
+    JOIN users_conversations uc2 ON c.id = uc2.conversation_id
+WHERE uc1.user_id = $1
+    AND uc2.user_id = $2;
 -- name: ListConversationsOfUser :many
 SELECT c.*
 FROM "conversations" c
@@ -17,6 +24,11 @@ FROM "conversations" c
 WHERE uc.user_id = $1
 GROUP BY c.id
 ORDER BY MAX(m.sent_at) DESC;
+-- name: ListUserIDsInConversation :many
+SELECT u.id
+FROM "user" u
+    JOIN "users_conversations" uc ON u.id = uc.user_id
+WHERE uc.conversation_id = $1;
 -- name: CreateConversation :one
 INSERT INTO "conversations" ("is_group")
 VALUES ($1)

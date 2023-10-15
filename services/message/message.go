@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"nem/api/httpmw"
@@ -29,14 +28,56 @@ func NewService(wsService *ws.Service) *Service {
 	}
 }
 
-func (s *Service) SendMessageToUser(ctx context.Context, recepientId string, message *rpc.SentMessage) error {
-	s.logger.Info("one-to-one message received")
+func (s *Service) CreateOneToOneConversation(ctx context.Context, recepientId string) (int64, error) {
+	s.logger.Info("creating one-to-one conversation")
 
 	recepientID, err := uuid.Parse(recepientId)
 	if err != nil {
 		s.logger.Warn("failed to parse recepient id", "error", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty recepient id param"))
+		return 0, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty recepient id param"))
 	}
+
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		s.logger.Warn("failed to start transaction", "error", err)
+		return 0, utils.ErrInternalServer
+	}
+	defer tx.Rollback()
+
+	sender, err := tx.FindUserByID(ctx, httpmw.ContextUID(ctx))
+	if err != nil {
+		return 0, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	// Create the conversation
+	convo, err := tx.CreateConversation(ctx, false) // one-to-one convo
+	if err != nil {
+		s.logger.Warn("failed to create conversation", "error", err)
+		return 0, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
+	}
+	// Add both users to the conversation
+	for _, uID := range []uuid.UUID{sender.ID, recepientID} {
+		err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
+			UserID:         uID,
+			ConversationID: convo.ID,
+		})
+		if err != nil {
+			s.logger.Warn("failed to add user to conversation", "error", err)
+			return 0, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		s.logger.Warn("failed to commit transaction", "error", err)
+		return 0, utils.ErrInternalServer
+	}
+
+	return convo.ID, nil
+}
+
+func (s *Service) SendMessageToUser(ctx context.Context, message *rpc.SentMessage) error {
+	s.logger.Info("one-to-one message received")
 
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
@@ -52,27 +93,7 @@ func (s *Service) SendMessageToUser(ctx context.Context, recepientId string, mes
 	convo, err := tx.FindConversation(ctx, message.ConversationId)
 	if err != nil {
 		s.logger.Warn("failed to find conversation", "error", err)
-		if err == sql.ErrNoRows {
-			// Create the conversation
-			convo, err = tx.CreateConversation(ctx, false) // one-to-one convo
-			if err != nil {
-				s.logger.Warn("failed to create conversation", "error", err)
-				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
-			}
-			// Add both users to the conversation
-			for _, uID := range []uuid.UUID{sender.ID, recepientID} {
-				err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
-					UserID:         uID,
-					ConversationID: convo.ID,
-				})
-				if err != nil {
-					s.logger.Warn("failed to add user to conversation", "error", err)
-					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
-				}
-			}
-		} else {
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
-		}
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
 	}
 
 	msg, err := tx.CreateMessage(ctx, db.CreateMessageParams{

@@ -6,11 +6,12 @@
 	import { userStore } from '$lib/stores/user'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { page } from '$app/stores'
+	import type { User } from '$lib/api/api.gen'
 
-	export let conversationId: number
-	export let recepientId: string | undefined
+	export let conversationId: number | undefined // undefined if no conversation exists yet
+	export let recepient: User | undefined // undefined if group chat
+
 	const toastStore = getToastStore()
-
 	const maxChars = 1000
 
 	let prompt = ''
@@ -26,6 +27,23 @@
 	async function handleSubmit() {
 		if (!prompt || !prompt.trim()) return
 		isSubmiting = true
+
+		if (!conversationId) {
+			const res = await safeFetch(
+				fetchers.messageService(fetch, $page.data.session).createOneToOneConversation({
+					recepientId: recepient!.id
+				})
+			)
+			if (!res.ok) {
+				toastStore.trigger({
+					message: res.cause,
+					background: 'bg-error-500'
+				})
+				return
+			}
+			conversationId = res.data.conversationId
+		}
+
 		ws.send({
 			action: 'stopTyping',
 			roomId: conversationId,
@@ -33,14 +51,13 @@
 		})
 		currentlyTyping = false
 
-		const res = recepientId
+		const res = recepient
 			? await safeFetch(
 					fetchers.messageService(fetch, $page.data.session!).sendMessageToUser({
 						message: {
 							conversationId: conversationId,
 							text: prompt.trim()
-						},
-						recepientId
+						}
 					})
 			  )
 			: await safeFetch(
@@ -67,6 +84,7 @@
 	}
 
 	function handleOnInput(): void {
+		if (!conversationId) return
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',

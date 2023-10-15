@@ -6,14 +6,17 @@
 	import { onMount } from 'svelte'
 	import Avatar from '../Avatar.svelte'
 	import Prompt from './Prompt.svelte'
+	import Profile from '../Profile/User.svelte'
+	import type { User } from '$lib/api/api.gen'
 
-	export let conversationId: number
-	export let recepientId: string | undefined // undefined if group chat
+	export let conversationId: number | undefined // undefined if no conversation exists yet
+	export let recepient: User | undefined // undefined if group chat
 
 	let elemChat: HTMLElement
 
 	onMount(() => {
 		scrollChatBottom()
+		chatStore.resetUnreadMessages()
 	})
 	$: console.log($chatStore.messages)
 	$: if ($chatStore.messages.length > 0) scrollChatBottom()
@@ -37,9 +40,14 @@
 	}
 </script>
 
-<div class="grid h-full grid-rows-[1fr_auto] p-2">
+<div class="flex h-full flex-col p-2">
+	{#if recepient}
+		<div class="sm:p-4">
+			<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+		</div>
+	{/if}
 	<!-- Conversation -->
-	<section bind:this={elemChat} class="space-y-4 overflow-y-auto sm:p-4">
+	<section bind:this={elemChat} class="flex-1 space-y-4 overflow-y-auto sm:p-4">
 		{#each $chatStore.messages as msg}
 			{#if msg.sender.id !== $userStore?.id}
 				<!-- Got message from someone else -->
@@ -122,5 +130,5 @@
 	{/if}
 
 	<!-- Prompt -->
-	<Prompt {conversationId} {recepientId} />
+	<Prompt {conversationId} {recepient} />
 </div>

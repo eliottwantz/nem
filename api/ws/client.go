@@ -44,7 +44,7 @@ func newClient(id uuid.UUID, conn *websocket.Conn, hub *Hub) *Client {
 
 func (c *Client) readPump() {
 	defer func() {
-		c.disconnect()
+		c.hub.unregister <- c
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
 
@@ -107,15 +107,6 @@ func (c *Client) writePump() {
 			}
 		}
 	}
-}
-
-func (c *Client) disconnect() {
-	c.hub.unregister <- c
-	for room := range c.rooms {
-		room.unregister <- c
-	}
-	close(c.send)
-	_ = c.conn.Close()
 }
 
 func (c *Client) handleNewMessage(raw []byte) {

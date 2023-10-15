@@ -1,17 +1,14 @@
 <script lang="ts">
-	import Chatbox from '$lib/components/Chatbox/Chatbox.svelte'
+	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
-	import { Tab, TabGroup, getModalStore } from '@skeletonlabs/skeleton'
+	import { Tab, TabGroup, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton'
 
 	export let data
 
-	console.log(data.availabilities)
-	console.log(data.classes)
-	console.log(data.teacher)
-
 	const modalStore = getModalStore()
+	const drawerStore = getDrawerStore()
 
 	let tabSet: number = 0
 
@@ -29,15 +26,22 @@
 		})
 	}
 
-	function openChat() {
-		modalStore.trigger({
-			type: 'component',
-			component: {
-				ref: Chatbox,
-				props: {
-					// roomId: data.teacher.id
-				}
-			}
+	async function openChat() {
+		// modalStore.trigger({
+		// 	type: 'component',
+		// 	component: {
+		// 		ref: Chatbox,
+		// 		props: {
+		// 			recepientId: data.teacher.id
+		// 		}
+		// 	}
+		// })
+		drawerStore.open({
+			id: drawerStoreIds.chat,
+			meta: {
+				recepient: data.teacher
+			},
+			position: 'right'
 		})
 	}
 </script>
