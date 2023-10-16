@@ -9,7 +9,7 @@ CREATE TABLE "user" (
     "avatar_file_path" TEXT NOT NULL DEFAULT '',
     "avatar_url" TEXT NOT NULL DEFAULT '',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-    "updated_at" TIMESTAMPTZ
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX "role_idx" ON "user" USING BTREE ("role");
 CREATE TABLE "student" (
@@ -111,7 +111,7 @@ AFTER
 INSERT ON reviews FOR EACH ROW EXECUTE FUNCTION update_teacher_rating();
 CREATE TABLE "conversations" (
     "id" BIGSERIAL PRIMARY KEY,
-    "is_group" BOOLEAN NOT NULL,
+    "is_class_chat" BOOLEAN NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE TABLE "messages" (

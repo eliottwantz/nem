@@ -1,27 +1,38 @@
-import type { MessageResponse } from '$lib/api/api.gen'
+import type { Message } from '$lib/api/api.gen'
 import { writable } from 'svelte/store'
 
 type ChatState = {
-	messages: MessageResponse[]
+	conversationId: number
+	messages: Message[]
 	unreadMessages: number
 	peopleTyping: string[]
+	isMore: boolean
 }
 
-const { subscribe, update } = writable<ChatState>({
+const { subscribe, update, set } = writable<ChatState>({
+	conversationId: 0,
 	messages: [],
 	peopleTyping: [],
-	unreadMessages: 0
+	unreadMessages: 0,
+	isMore: true
 })
 export const chatStore = {
 	subscribe,
-	addMessage: (message: MessageResponse) => {
+	set,
+	addNewMessage(message: Message) {
 		update((state) => {
 			state.messages = [...state.messages, message]
 			state.unreadMessages = state.unreadMessages + 1
 			return state
 		})
 	},
-	removeMessage: (message: MessageResponse) => {
+	addOldMessages(messages: Message[]) {
+		update((state) => {
+			state.messages = [...messages.reverse(), ...state.messages]
+			return state
+		})
+	},
+	removeMessage: (message: Message) => {
 		update((state) => {
 			state.messages = [...state.messages.filter((m) => m.id !== message.id)]
 			return state
@@ -63,5 +74,15 @@ export const chatStore = {
 			state.unreadMessages = 0
 			return state
 		})
+	},
+	get oldestMessage() {
+		let value: Message | undefined
+		subscribe((state) => (value = state.messages[0]))()
+		return value
+	},
+	get latestMessage() {
+		let value: Message | undefined
+		subscribe((state) => (value = state.messages[state.messages.length - 1]))()
+		return value
 	}
 }

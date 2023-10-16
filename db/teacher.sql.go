@@ -75,7 +75,7 @@ type FindTeacherByIDRow struct {
 	AvatarFilePath   string
 	AvatarUrl        string
 	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
+	UpdatedAt        time.Time
 	Bio              string
 	HourRate         int32
 	TopAgent         bool
@@ -146,7 +146,7 @@ type ListTeachersRow struct {
 	AvatarFilePath   string
 	AvatarUrl        string
 	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
+	UpdatedAt        time.Time
 	Bio              string
 	HourRate         int32
 	TopAgent         bool
@@ -234,7 +234,7 @@ type ListTeachersOfStudentRow struct {
 	AvatarFilePath   string
 	AvatarUrl        string
 	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
+	UpdatedAt        time.Time
 	Bio              string
 	HourRate         int32
 	TopAgent         bool

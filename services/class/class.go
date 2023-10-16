@@ -200,13 +200,16 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		s.logger.Warn("failed to create conversation", "error", err)
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
-	err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
-		UserID:         uID,
-		ConversationID: convo.ID,
-	})
-	if err != nil {
-		s.logger.Warn("failed to add user to conversation", "error", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
+
+	for _, u := range []uuid.UUID{uID, timeSlot.TeacherID} {
+		err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
+			UserID:         u,
+			ConversationID: convo.ID,
+		})
+		if err != nil {
+			s.logger.Warn("failed to add user to conversation", "error", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
+		}
 	}
 
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{

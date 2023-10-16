@@ -1,15 +1,29 @@
 -- name: ListMessagesOfConversation :many
-SELECT *
-FROM "messages"
-WHERE "conversation_id" = $1
-    AND "sent_at" < $2
-ORDER BY "sent_at" DESC
+SELECT m.*,
+    u.*
+FROM "messages" m
+    JOIN "user" u ON m.sender_id = u.id
+WHERE m."conversation_id" = $1
+ORDER BY m."sent_at" DESC
+LIMIT 20;
+-- name: ListMessagesOfConversationWithCursor :many
+SELECT m.*,
+    u.*
+FROM "messages" m
+    JOIN "user" u ON m.sender_id = u.id
+WHERE m."conversation_id" = $1
+    AND m."sent_at" < $2
+ORDER BY m."sent_at" DESC
 LIMIT 20;
 -- name: FindConversation :one
-SELECT *
-FROM "conversations"
-WHERE "id" = $1;
--- name: FindConversationBetweenUsers :one
+SELECT c.*,
+    array_agg(DISTINCT u.*) AS users
+FROM "conversations" c
+    JOIN "users_conversations" uc ON c.id = uc.conversation_id
+    JOIN "user" u ON uc.user_id = u.id
+WHERE c.id = $1
+GROUP BY c.id;
+-- name: FindOneToOneConversation :one
 SELECT c.*
 FROM conversations c
     JOIN users_conversations uc1 ON c.id = uc1.conversation_id
@@ -17,11 +31,15 @@ FROM conversations c
 WHERE uc1.user_id = $1
     AND uc2.user_id = $2;
 -- name: ListConversationsOfUser :many
-SELECT c.*
+SELECT c.*,
+    array_agg(DISTINCT u.*) AS users
 FROM "conversations" c
-    JOIN "messages" m ON c.id = m.conversation_id
-    JOIN "users_conversations" uc ON c.id = uc.conversation_id
-WHERE uc.user_id = $1
+    JOIN "users_conversations" uc1 ON c.id = uc1.conversation_id
+    JOIN "users_conversations" uc2 ON c.id = uc2.conversation_id
+    JOIN "user" u ON uc2.user_id = u.id
+    LEFT JOIN "messages" m ON c.id = m.conversation_id
+WHERE uc1.user_id = $1
+    AND c.is_class_chat = FALSE
 GROUP BY c.id
 ORDER BY MAX(m.sent_at) DESC;
 -- name: ListUserIDsInConversation :many
@@ -30,7 +48,7 @@ FROM "user" u
     JOIN "users_conversations" uc ON u.id = uc.user_id
 WHERE uc.conversation_id = $1;
 -- name: CreateConversation :one
-INSERT INTO "conversations" ("is_group")
+INSERT INTO "conversations" ("is_class_chat")
 VALUES ($1)
 RETURNING *;
 -- name: AddUserToConversation :exec

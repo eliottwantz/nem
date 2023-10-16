@@ -55,14 +55,14 @@ func (r *Room) Run() {
 }
 
 func (r *Room) publishRoomMessage(message []byte) {
-	err := r.redis.Publish(ctx, fmt.Sprint(r.id), message).Err()
+	err := r.redis.Publish(ctx, fmt.Sprintf("%d", r.id), message).Err()
 	if err != nil {
 		r.logger.Warn("publish error", "err", err)
 	}
 }
 
 func (r *Room) subscribeToRoomMessages() {
-	ch := r.redis.Subscribe(ctx, fmt.Sprint(r.id)).Channel()
+	ch := r.redis.Subscribe(ctx, fmt.Sprintf("%d", r.id)).Channel()
 
 	for msg := range ch {
 		for client := range r.clients {

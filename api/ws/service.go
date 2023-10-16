@@ -87,7 +87,7 @@ func (s *Service) EndClass(roomId int64) error {
 	return nil
 }
 
-func (s *Service) EmitNewMessage(roomID int64, message *rpc.MessageResponse) error {
+func (s *Service) EmitNewMessage(roomID int64, message *rpc.Message) error {
 	s.hub.PublishToRoom(&EmittedMessage{
 		Action: ActionEmitNewMessage,
 		Data:   message,

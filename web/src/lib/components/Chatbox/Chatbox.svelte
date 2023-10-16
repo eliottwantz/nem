@@ -1,29 +1,75 @@
 <script lang="ts">
+	import { page } from '$app/stores'
+	import { fetchers, safeFetch } from '$lib/api'
+	import type { User } from '$lib/api/api.gen'
 	import { chatStore } from '$lib/stores/chatStore'
 	import { userStore } from '$lib/stores/user'
 	import { stringToLocalTime } from '$lib/utils/datetime'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import Avatar from '../Avatar.svelte'
-	import Prompt from './Prompt.svelte'
 	import Profile from '../Profile/User.svelte'
-	import type { User } from '$lib/api/api.gen'
+	import Prompt from './Prompt.svelte'
 
-	export let conversationId: number | undefined // undefined if no conversation exists yet
-	export let recepient: User | undefined // undefined if group chat
+	export let conversationId: number | undefined = undefined // undefined if no conversation exists yet
+	export let recepient: User | undefined = undefined // undefined if group chat
+
+	const toastStore = getToastStore()
 
 	let elemChat: HTMLElement
 
-	onMount(() => {
+	onMount(async () => {
+		if (conversationId && $chatStore.conversationId !== conversationId) {
+			const res = await safeFetch(
+				fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
+					conversationId
+				})
+			)
+			if (res.ok) {
+				console.log('got message', res.data.messages)
+				chatStore.addOldMessages(res.data.messages)
+			}
+		}
+		// await fetchOlderMessage()
 		scrollChatBottom()
 		chatStore.resetUnreadMessages()
 	})
 	$: console.log($chatStore.messages)
 	$: if ($chatStore.messages.length > 0) scrollChatBottom()
+
 	$: typingString = getTypingString($chatStore.peopleTyping)
 
 	function scrollChatBottom(): void {
+		console.log('scrolling down')
 		setTimeout(() => elemChat.scrollTo({ top: elemChat.scrollHeight, behavior: 'smooth' }), 0)
+	}
+	$: if (elemChat) console.log('elemChat.scrollTop', elemChat.scrollTop)
+	$: if (elemChat) console.log('elemChat.scrollHeight', elemChat.scrollHeight)
+
+	async function fetchOlderMessage() {
+		console.log(elemChat.scrollTop, elemChat.scrollHeight)
+		if (elemChat.scrollTop !== 0 || !$chatStore.isMore) return
+		console.log('there is more')
+		if (!chatStore.oldestMessage) return
+		const res = await safeFetch(
+			fetchers
+				.messageService(fetch, $page.data.session)
+				.listMessagesOfConversationWithCursor({
+					conversationId: conversationId!,
+					cursor: chatStore.oldestMessage.sentAt
+				})
+		)
+		if (!res.ok) {
+			toastStore.trigger({
+				message: 'Failed to fetch older messages',
+				background: 'bg-error-500'
+			})
+			return
+		}
+
+		if (res.data.isMore === false) $chatStore.isMore = false
+		chatStore.addOldMessages(res.data.messages)
 	}
 
 	function getTypingString(peopleFirstNames: string[]) {
@@ -40,14 +86,23 @@
 	}
 </script>
 
-<div class="flex h-full flex-col p-2">
+<div class="grid h-full grid-rows-[1fr_auto] p-2">
 	{#if recepient}
 		<div class="sm:p-4">
 			<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 		</div>
 	{/if}
+	{#if !$chatStore.isMore}
+		<div class="text-center">
+			<p>You reached the start of the conversation</p>
+		</div>
+	{/if}
 	<!-- Conversation -->
-	<section bind:this={elemChat} class="flex-1 space-y-4 overflow-y-auto sm:p-4">
+	<section
+		bind:this={elemChat}
+		on:wheel={fetchOlderMessage}
+		class="space-y-4 overflow-y-auto sm:p-4"
+	>
 		{#each $chatStore.messages as msg}
 			{#if msg.sender.id !== $userStore?.id}
 				<!-- Got message from someone else -->

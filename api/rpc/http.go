@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"nem/db"
 
@@ -34,21 +35,10 @@ func FromDbUser(dbUser *db.User) *User {
 		AvatarFilePath:   dbUser.AvatarFilePath,
 		AvatarUrl:        dbUser.AvatarUrl,
 		CreatedAt:        dbUser.CreatedAt,
-		UpdatedAt:        dbUser.UpdatedAt.Time,
+		UpdatedAt:        dbUser.UpdatedAt,
 	}
 }
 
-//	func FromDBSpokenLanguage(dbSpokenLanguage []*db.SpokenLanguage) []*SpokenLanguage {
-//		ret := make([]*SpokenLanguage, 0, len(dbSpokenLanguage))
-//		for _, dbSpokenLanguage := range dbSpokenLanguage {
-//			ret = append(ret, &SpokenLanguage{
-//				Id:          dbSpokenLanguage.ID,
-//				Language:    dbSpokenLanguage.Language,
-//				Proficiency: dbSpokenLanguage.Proficiency,
-//			})
-//		}
-//		return ret
-//	}
 func pgRowToSpokenLang(e interface{}) []*SpokenLanguage {
 	ba := pq.ByteaArray{}
 	err := ba.Scan(e)
@@ -56,8 +46,7 @@ func pgRowToSpokenLang(e interface{}) []*SpokenLanguage {
 		return []*SpokenLanguage{}
 	}
 	// We have sa in the form of an array of tuples (language, proficiency)
-	sa := pq.StringArray{}
-	ret := make([]*SpokenLanguage, 0, len(sa))
+	ret := make([]*SpokenLanguage, 0, len(ba))
 	for _, b := range ba {
 		s := string(b)
 		trimed := s[1 : len(s)-1] // remove parentheses
@@ -70,6 +59,36 @@ func pgRowToSpokenLang(e interface{}) []*SpokenLanguage {
 	return ret
 }
 
+func pgRowToUsers(e interface{}) []*User {
+	ba := pq.ByteaArray{}
+	err := ba.Scan(e)
+	if err != nil {
+		return []*User{}
+	}
+	// We have sa in the form of an array of tuples (id,email,firstName,lastName,role,preferedLang,avatar_file_path,avatar_url,createdAt,updatedAt)
+	ret := make([]*User, 0, len(ba))
+	for _, b := range ba {
+		s := string(b)
+		trimed := s[1 : len(s)-1] // remove parentheses
+		spl := strings.Split(trimed, ",")
+		createdAt, _ := time.Parse("2006-01-02 15:04:05.999999+00", spl[8])
+		updatedAt, _ := time.Parse("2006-01-02 15:04:05", spl[9])
+		ret = append(ret, &User{
+			Id:               spl[0],
+			Email:            spl[1],
+			FirstName:        spl[2],
+			LastName:         spl[3],
+			Role:             spl[4],
+			PreferedLanguage: spl[5],
+			AvatarFilePath:   spl[6],
+			AvatarUrl:        spl[7],
+			CreatedAt:        createdAt,
+			UpdatedAt:        updatedAt,
+		})
+	}
+	return ret
+}
+
 func pgArrayToStringArray(e interface{}) []string {
 	sa := pq.StringArray{}
 	err := sa.Scan(e)
@@ -77,6 +96,15 @@ func pgArrayToStringArray(e interface{}) []string {
 		return []string{}
 	}
 	return sa
+}
+
+func FromDbConversation(c *db.ListConversationsOfUserRow) *Conversation {
+	return &Conversation{
+		Id:          c.ID,
+		IsClassChat: c.IsClassChat,
+		Users:       pgRowToUsers(c.Users),
+		CreatedAt:   c.CreatedAt,
+	}
 }
 
 func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
@@ -99,7 +127,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 		AvatarFilePath:   t.AvatarFilePath,
 		AvatarUrl:        t.AvatarUrl,
 		CreatedAt:        t.CreatedAt,
-		UpdatedAt:        t.UpdatedAt.Time,
+		UpdatedAt:        t.UpdatedAt,
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
 		TopAgent:         t.TopAgent,

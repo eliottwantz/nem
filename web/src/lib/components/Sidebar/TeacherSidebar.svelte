@@ -10,6 +10,7 @@
 	import { t } from 'svelte-i18n'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
+	import { MessagesSquare } from 'lucide-svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -65,6 +66,20 @@
 						<CalendarIcon />
 						<span>
 							{$t('nav.calendar')}
+						</span>
+					</a>
+				</li>
+				<li>
+					<a
+						href="/dashboard/messages"
+						class="flex {$page.url.pathname === '/dashboard/messages'
+							? 'bg-primary-active-token'
+							: ''}"
+						on:click={() => drawerStore.close()}
+					>
+						<MessagesSquare size="32" />
+						<span>
+							{$t('nav.messages')}
 						</span>
 					</a>
 				</li>

@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/stores'
+	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/Teacher.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
 	import { Tab, TabGroup, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton'
+	import { onMount } from 'svelte'
 
 	export let data
 
@@ -27,21 +30,22 @@
 	}
 
 	async function openChat() {
-		// modalStore.trigger({
-		// 	type: 'component',
-		// 	component: {
-		// 		ref: Chatbox,
-		// 		props: {
-		// 			recepientId: data.teacher.id
-		// 		}
-		// 	}
-		// })
+		const res = await safeFetch(
+			fetchers.messageService(fetch, $page.data.session).findOneToOneConversation({
+				user1Id: data.teacher.id,
+				user2Id: $page.data.user.id
+			})
+		)
+		let conversationId = undefined
+		if (res.ok) conversationId = res.data.conversation.id
 		drawerStore.open({
 			id: drawerStoreIds.chat,
 			meta: {
+				conversationId,
 				recepient: data.teacher
 			},
-			position: 'right'
+			position: 'right',
+			width: 'w-2/3'
 		})
 	}
 </script>

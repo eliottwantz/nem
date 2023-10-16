@@ -87,9 +87,9 @@ type Class struct {
 }
 
 type Conversation struct {
-	ID        int64
-	IsGroup   bool
-	CreatedAt time.Time
+	ID          int64
+	IsClassChat bool
+	CreatedAt   time.Time
 }
 
 type HoursBank struct {
@@ -198,7 +198,7 @@ type User struct {
 	AvatarFilePath   string
 	AvatarUrl        string
 	CreatedAt        time.Time
-	UpdatedAt        sql.NullTime
+	UpdatedAt        time.Time
 }
 
 type UsersConversation struct {
