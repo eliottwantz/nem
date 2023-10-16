@@ -4,4 +4,4 @@
 	export let data
 </script>
 
-<Chatbox conversationId={data.conversation.id} />
+<Chatbox conversationId={data.conversation.id} recepient={data.recipient} />

@@ -6,13 +6,14 @@
 	export let user: User
 	export let avatarWidth = 'w-28'
 	export let avatarHeight = 'h-28'
+	console.log(user.avatarUrl === '""')
 </script>
 
 <div class="flex items-center gap-1">
 	<Avatar
 		width={avatarWidth}
 		height={avatarHeight}
-		src={user.avatarUrl}
+		src={user.avatarUrl === '""' ? undefined : user.avatarUrl}
 		initials={getInitials(user.firstName, user.lastName)}
 	/>
 	<div>

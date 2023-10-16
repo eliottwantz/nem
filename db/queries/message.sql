@@ -32,6 +32,7 @@ WHERE uc1.user_id = $1
     AND uc2.user_id = $2;
 -- name: ListConversationsOfUser :many
 SELECT c.*,
+    MAX(m.sent_at) as last_sent,
     array_agg(DISTINCT u.*) AS users
 FROM "conversations" c
     JOIN "users_conversations" uc1 ON c.id = uc1.conversation_id

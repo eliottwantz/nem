@@ -12,8 +12,8 @@
 	import Prompt from './Prompt.svelte'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 
-	export let conversationId: number
-	export let recepient: User
+	export let conversationId: number | undefined = undefined // undefined if no conversation exists yet
+	export let recepient: User | undefined = undefined // undefined if group chat
 
 	const toastStore = getToastStore()
 
@@ -21,16 +21,20 @@
 	let isFetching = false
 
 	onMount(async () => {
-		chatStore.reset()
-		const res = await safeFetch(
-			fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
-				conversationId
-			})
-		)
-		if (res.ok) {
-			console.log('got message', res.data.messages)
-			chatStore.addOldMessages(res.data.messages)
+		if (!conversationId) chatStore.reset()
+		if (conversationId && $chatStore.conversationId !== conversationId) {
+			chatStore.reset()
+			const res = await safeFetch(
+				fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
+					conversationId
+				})
+			)
+			if (res.ok) {
+				console.log('got message', res.data.messages)
+				chatStore.addOldMessages(res.data.messages)
+			}
 		}
+		// await fetchOlderMessage()
 		scrollChatBottom()
 		chatStore.resetUnreadMessages()
 	})
@@ -58,7 +62,7 @@
 			fetchers
 				.messageService(fetch, $page.data.session)
 				.listMessagesOfConversationWithCursor({
-					conversationId,
+					conversationId: conversationId!,
 					cursor: chatStore.oldestMessage.sentAt
 				})
 		)
@@ -92,9 +96,11 @@
 
 <section class="flex h-full flex-col p-2">
 	<div>
-		<div class="sm:p-4">
-			<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
-		</div>
+		{#if recepient}
+			<div class="sm:p-4">
+				<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+			</div>
+		{/if}
 		{#if !$chatStore.isMore}
 			<div class="text-center">
 				<p>You reached the start of the conversation</p>

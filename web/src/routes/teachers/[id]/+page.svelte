@@ -3,7 +3,7 @@
 	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
-	import Profile from '$lib/components/Profile/Teacher.svelte'
+	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
 	import { Tab, TabGroup, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'

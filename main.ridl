@@ -138,6 +138,7 @@ struct Conversation
     - id: int64
     - isClassChat: bool
     - users: []User
+    - lastSent: timestamp
     - createdAt: timestamp
 
 #################### STRUCTS ####################

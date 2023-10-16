@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
-	import { getPublicName } from '$lib/utils/initials'
+	import UserProfile from '$lib/components/Profile/UserProfile.svelte'
+	import { stringToLocalTime } from '$lib/utils/datetime'
 
 	export let data
 </script>
@@ -13,9 +14,14 @@
 	<section>
 		<nav class="list-nav">
 			{#each data.conversations as convo}
-				{@const user = convo.users.find((u) => u.id !== data.user.id)}
+				{@const recipient =
+					convo.users[0].id !== data.user.id ? convo.users[0] : convo.users[1]}
+				{@debug convo}
 				<a href="/dashboard/messages/{convo.id}">
-					{getPublicName(user?.firstName, user?.lastName)}
+					<UserProfile user={recipient} avatarHeight="h-12" avatarWidth="w-12" />
+					<small class="opacity-50">
+						{stringToLocalTime(convo.lastSent)}
+					</small>
 				</a>
 			{/each}
 		</nav>

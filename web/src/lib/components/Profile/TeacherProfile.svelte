@@ -158,7 +158,6 @@
 			</div>
 			<div class="self-end">
 				<a href="/teachers/{teacher.id}" class="variant-filled-primary btn">Show more</a>
-				<button class="variant-ghost btn">Send message</button>
 			</div>
 		</div>
 	</div>

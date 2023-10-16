@@ -1,4 +1,5 @@
 import { fetchers, safeFetch } from '$lib/api'
+import type { User } from '$lib/api/api.gen'
 import { redirect } from '@sveltejs/kit'
 
 export async function load({ locals: { user, session }, fetch, params }) {
@@ -16,6 +17,7 @@ export async function load({ locals: { user, session }, fetch, params }) {
 
 	return {
 		user,
-		conversation: streams[0].data.conversation
+		conversation: streams[0].data.conversation,
+		recipient: streams[0].data.conversation.users.find((u) => u.id !== user.id) as User
 	}
 }

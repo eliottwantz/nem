@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
-	import Profile from '$lib/components/Profile/Teacher.svelte'
+	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
 
 	export let data
 	console.log(data.teachers)

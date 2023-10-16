@@ -129,6 +129,7 @@ func (q *Queries) FindOneToOneConversation(ctx context.Context, arg FindOneToOne
 
 const listConversationsOfUser = `-- name: ListConversationsOfUser :many
 SELECT c.id, c.is_class_chat, c.created_at,
+    MAX(m.sent_at) as last_sent_time,
     array_agg(DISTINCT u.*) AS users
 FROM "conversations" c
     JOIN "users_conversations" uc1 ON c.id = uc1.conversation_id
@@ -142,10 +143,11 @@ ORDER BY MAX(m.sent_at) DESC
 `
 
 type ListConversationsOfUserRow struct {
-	ID          int64
-	IsClassChat bool
-	CreatedAt   time.Time
-	Users       interface{}
+	ID           int64
+	IsClassChat  bool
+	CreatedAt    time.Time
+	LastSentTime interface{}
+	Users        interface{}
 }
 
 func (q *Queries) ListConversationsOfUser(ctx context.Context, userID uuid.UUID) ([]*ListConversationsOfUserRow, error) {
@@ -161,6 +163,7 @@ func (q *Queries) ListConversationsOfUser(ctx context.Context, userID uuid.UUID)
 			&i.ID,
 			&i.IsClassChat,
 			&i.CreatedAt,
+			&i.LastSentTime,
 			&i.Users,
 		); err != nil {
 			return nil, err
