@@ -12,6 +12,7 @@
 	import Navigation from '../Navigation.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
 	import { MessageCircle, MessagesSquare } from 'lucide-svelte'
+	import { getPublicName } from '$lib/utils/initials'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -81,7 +82,7 @@
 				<li>
 					<a
 						href="/dashboard/messages"
-						class="flex {$page.url.pathname === '/dashboard/messages'
+						class="flex {$page.url.pathname.startsWith('/dashboard/messages')
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -113,5 +114,5 @@
 		</nav>
 	</div>
 
-	<hr class="border-surface-token divider border-t" />
+	<!-- <hr class="border-surface-token divider border-t" /> -->
 </div>

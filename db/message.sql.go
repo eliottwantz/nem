@@ -77,7 +77,7 @@ func (q *Queries) DeleteMessage(ctx context.Context, id int64) error {
 	return err
 }
 
-const findConversation = `-- name: FindConversation :one
+const findConversationById = `-- name: FindConversationById :one
 SELECT c.id, c.is_class_chat, c.created_at,
     array_agg(DISTINCT u.*) AS users
 FROM "conversations" c
@@ -87,16 +87,16 @@ WHERE c.id = $1
 GROUP BY c.id
 `
 
-type FindConversationRow struct {
+type FindConversationByIdRow struct {
 	ID          int64
 	IsClassChat bool
 	CreatedAt   time.Time
 	Users       interface{}
 }
 
-func (q *Queries) FindConversation(ctx context.Context, id int64) (*FindConversationRow, error) {
-	row := q.db.QueryRowContext(ctx, findConversation, id)
-	var i FindConversationRow
+func (q *Queries) FindConversationById(ctx context.Context, id int64) (*FindConversationByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, findConversationById, id)
+	var i FindConversationByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.IsClassChat,

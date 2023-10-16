@@ -15,7 +15,7 @@ WHERE m."conversation_id" = $1
     AND m."sent_at" < $2
 ORDER BY m."sent_at" DESC
 LIMIT 20;
--- name: FindConversation :one
+-- name: FindConversationById :one
 SELECT c.*,
     array_agg(DISTINCT u.*) AS users
 FROM "conversations" c

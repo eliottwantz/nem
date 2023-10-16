@@ -91,7 +91,7 @@ func (s *Service) SendMessageToUser(ctx context.Context, message *rpc.SentMessag
 	if err != nil {
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
-	convo, err := tx.FindConversation(ctx, message.ConversationId)
+	convo, err := tx.FindConversationById(ctx, message.ConversationId)
 	if err != nil {
 		s.logger.Warn("failed to find conversation", "error", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
@@ -138,7 +138,7 @@ func (s *Service) SendMessageToClass(ctx context.Context, message *rpc.SentMessa
 		s.logger.Warn("failed to find sender user", "error", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
 	}
-	convo, err := tx.FindConversation(ctx, message.ConversationId)
+	convo, err := tx.FindConversationById(ctx, message.ConversationId)
 	if err != nil {
 		s.logger.Warn("failed to find conversation", "error", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrSendMessage)
@@ -272,6 +272,7 @@ func (s *Service) ListMessagesOfConversation(ctx context.Context, conversationId
 }
 
 func (s *Service) ListMessagesOfConversationWithCursor(ctx context.Context, conversationId int64, cursor time.Time) ([]*rpc.Message, bool, error) {
+	time.Sleep(time.Second * 5)
 	if conversationId <= 0 {
 		s.logger.Warn("failed to parse conversation id")
 		return nil, false, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("invalid or empty  conversation id param"))
@@ -310,4 +311,24 @@ func (s *Service) ListMessagesOfConversationWithCursor(ctx context.Context, conv
 	}
 
 	return ret, len(msgs) == 20, nil // isMore if LIMIT of 20 = len of msgs
+}
+
+func (s *Service) FindConversationById(ctx context.Context, conversationId int64) (*rpc.Conversation, error) {
+	if conversationId <= 0 {
+		s.logger.Warn("failed to parse conversation id")
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("invalid or empty  conversation id param"))
+	}
+
+	convo, err := db.Pg.FindConversationById(ctx, conversationId)
+	if err != nil {
+		s.logger.Warn("failed to find conversation", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("failed to find conversation"))
+	}
+
+	return rpc.FromDbConversation(&db.ListConversationsOfUserRow{
+		ID:          convo.ID,
+		IsClassChat: convo.IsClassChat,
+		CreatedAt:   convo.CreatedAt,
+		Users:       convo.Users,
+	}), nil
 }

@@ -188,6 +188,7 @@ service MessageServiceAPI
     - CreateOneToOneConversation(recepientId: string) => (conversationId: int64)
     - SendMessageToUser(message: SentMessage)
     - SendMessageToClass(message: SentMessage)
+    - FindConversationById(conversationId: int64) => (conversation: Conversation)
     - FindOneToOneConversation(user1Id: string, user2Id: string) => (conversation: Conversation)
     - ListConversationsOfUser(userId: string) => (conversations: []Conversation)
     - ListMessagesOfConversation(conversationId: int64) => (messages: []Message)
