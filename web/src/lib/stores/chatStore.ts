@@ -38,10 +38,13 @@ export const chatStore = {
 			return state
 		})
 	},
-	resetMessages: () => {
-		update((state) => {
-			state.messages = []
-			return state
+	reset: () => {
+		set({
+			conversationId: 0,
+			messages: [],
+			peopleTyping: [],
+			unreadMessages: 0,
+			isMore: true
 		})
 	},
 	addTyping: (firstName: string) => {

@@ -6,11 +6,11 @@
 	import { userStore } from '$lib/stores/user'
 	import { stringToLocalTime } from '$lib/utils/datetime'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
-	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import Avatar from '../Avatar.svelte'
 	import Profile from '../Profile/User.svelte'
 	import Prompt from './Prompt.svelte'
+	import { getToastStore } from '@skeletonlabs/skeleton'
 
 	export let conversationId: number | undefined = undefined // undefined if no conversation exists yet
 	export let recepient: User | undefined = undefined // undefined if group chat
@@ -20,7 +20,9 @@
 	let elemChat: HTMLElement
 
 	onMount(async () => {
+		if (!conversationId) chatStore.reset()
 		if (conversationId && $chatStore.conversationId !== conversationId) {
+			chatStore.reset()
 			const res = await safeFetch(
 				fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
 					conversationId
@@ -47,8 +49,9 @@
 	$: if (elemChat) console.log('elemChat.scrollTop', elemChat.scrollTop)
 	$: if (elemChat) console.log('elemChat.scrollHeight', elemChat.scrollHeight)
 
-	async function fetchOlderMessage() {
-		console.log(elemChat.scrollTop, elemChat.scrollHeight)
+	async function fetchOlderMessage(e: WheelEvent) {
+		const isUp = e.deltaY < 0
+		if (!isUp) return
 		if (elemChat.scrollTop !== 0 || !$chatStore.isMore) return
 		console.log('there is more')
 		if (!chatStore.oldestMessage) return
@@ -86,104 +89,115 @@
 	}
 </script>
 
-<div class="grid h-full grid-rows-[1fr_auto] p-2">
-	{#if recepient}
-		<div class="sm:p-4">
-			<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
-		</div>
-	{/if}
-	{#if !$chatStore.isMore}
-		<div class="text-center">
-			<p>You reached the start of the conversation</p>
-		</div>
-	{/if}
-	<!-- Conversation -->
+<section class="flex h-full flex-col p-2">
+	<div>
+		{#if recepient}
+			<div class="sm:p-4">
+				<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+			</div>
+		{/if}
+		{#if !$chatStore.isMore}
+			<div class="text-center">
+				<p>You reached the start of the conversation</p>
+			</div>
+		{/if}
+	</div>
 	<section
 		bind:this={elemChat}
 		on:wheel={fetchOlderMessage}
-		class="space-y-4 overflow-y-auto sm:p-4"
+		class="flex flex-1 flex-col-reverse overflow-y-auto sm:p-4"
 	>
-		{#each $chatStore.messages as msg}
-			{#if msg.sender.id !== $userStore?.id}
-				<!-- Got message from someone else -->
-				<div id="message">
-					<div id="outer" class="flex">
-						<div id="avatar" class="self-end">
-							<Avatar
-								initials={getInitials(msg.sender.firstName, msg.sender.lastName)}
-								src={msg.sender.avatarUrl}
-								width="w-8"
-							/>
-						</div>
-						<div id="inner" class="flex flex-1 items-center pl-2">
-							<div
-								id="bubble"
-								class="wrap-bal card variant-filled-surface max-w-[75%] break-words px-2"
-							>
-								<header class="flex items-center justify-between gap-x-1">
-									<p class="font-bold">
-										{getPublicName(msg.sender.firstName, msg.sender.lastName)}
-									</p>
-									<small class="opacity-50">
-										{stringToLocalTime(msg.sentAt)}
-									</small>
-								</header>
-								<p>{msg.text}</p>
+		<ul class="space-y-4">
+			{#each $chatStore.messages as msg}
+				{#if msg.sender.id !== $userStore?.id}
+					<!-- Got message from someone else -->
+					<div id="message">
+						<div id="outer" class="flex">
+							<div id="avatar" class="self-end">
+								<Avatar
+									initials={getInitials(
+										msg.sender.firstName,
+										msg.sender.lastName
+									)}
+									src={msg.sender.avatarUrl}
+									width="w-8"
+								/>
 							</div>
-							<!-- <div id="actions" class="pl-2 min-w-fit shrink-0">
-								<div class="hidden sm:flex items-center space-x-2 flex-row-reverse">
-									<TrippleDots />
-									<ShareIcon />
-									<ReactionIcon />
+							<div id="inner" class="flex flex-1 items-center pl-2">
+								<div
+									id="bubble"
+									class="wrap-bal card variant-filled-surface max-w-[75%] break-words px-2"
+								>
+									<header class="flex items-center justify-between gap-x-1">
+										<p class="font-bold">
+											{getPublicName(
+												msg.sender.firstName,
+												msg.sender.lastName
+											)}
+										</p>
+										<small class="opacity-50">
+											{stringToLocalTime(msg.sentAt)}
+										</small>
+									</header>
+									<p>{msg.text}</p>
 								</div>
-								<div class="sm:hidden">
-									<TrippleDots />
-								</div>
-							</div> -->
-							<div id="spacer" class="flex-grow"></div>
+								<!-- <div id="actions" class="pl-2 min-w-fit shrink-0">
+										<div class="hidden sm:flex items-center space-x-2 flex-row-reverse">
+											<TrippleDots />
+											<ShareIcon />
+											<ReactionIcon />
+										</div>
+										<div class="sm:hidden">
+											<TrippleDots />
+										</div>
+									</div> -->
+								<div id="spacer" class="flex-grow"></div>
+							</div>
 						</div>
 					</div>
-				</div>
-			{:else}
-				<!-- Current User sent message -->
-				<div id="message">
-					<div id="outer" class="flex">
-						<div id="inner" class="flex flex-1 flex-row-reverse items-center">
-							<div
-								id="bubble"
-								class="wrap-bal card variant-filled-primary max-w-[75%] break-words px-2"
-							>
-								<header class="flex items-center justify-between">
-									<small class="opacity-50">{stringToLocalTime(msg.sentAt)}</small
-									>
-								</header>
-								<p>{msg.text}</p>
+				{:else}
+					<!-- Current User sent message -->
+					<div id="message">
+						<div id="outer" class="flex">
+							<div id="inner" class="flex flex-1 flex-row-reverse items-center">
+								<div
+									id="bubble"
+									class="wrap-bal card variant-filled-primary max-w-[75%] break-words px-2"
+								>
+									<header class="flex items-center justify-between">
+										<small class="opacity-50"
+											>{stringToLocalTime(msg.sentAt)}</small
+										>
+									</header>
+									<p>{msg.text}</p>
+								</div>
+								<!-- <div id="actions" class="pr-2 min-w-fit">
+										<div class="hidden sm:flex items-center space-x-2">
+											<TrippleDots />
+											<ShareIcon />
+											<ReactionIcon />
+										</div>
+										<div class="sm:hidden">
+											<TrippleDots />
+										</div>
+									</div> -->
+								<div id="spacer" class="flex-grow"></div>
 							</div>
-							<!-- <div id="actions" class="pr-2 min-w-fit">
-								<div class="hidden sm:flex items-center space-x-2">
-									<TrippleDots />
-									<ShareIcon />
-									<ReactionIcon />
-								</div>
-								<div class="sm:hidden">
-									<TrippleDots />
-								</div>
-							</div> -->
-							<div id="spacer" class="flex-grow"></div>
-						</div>
-						<div id="status" class="flex w-5 flex-col items-center justify-center">
-							<small class="opacity-50"></small>
+							<div id="status" class="flex w-5 flex-col items-center justify-center">
+								<small class="opacity-50"></small>
+							</div>
 						</div>
 					</div>
-				</div>
-			{/if}
-		{/each}
+				{/if}
+			{/each}
+		</ul>
 	</section>
-
-	{#if $chatStore.peopleTyping.length > 0}
-		<p class="semi-bold pl-2">{typingString}</p>
-	{/if}
-
-	<!-- Prompt -->
-	<Prompt {conversationId} {recepient} />
-</div>
+	<div>
+		{#if $chatStore.peopleTyping.length > 0}
+			<p class="semi-bold pl-2">{typingString}</p>
+		{/if}
+		<div class=" bg-red-400">
+			<Prompt {conversationId} {recepient} />
+		</div>
+	</div>
+</section>
