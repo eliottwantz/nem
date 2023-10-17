@@ -19,6 +19,7 @@
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
+	import { takeClassStore } from '$lib/stores/takeClassStore'
 
 	export let teacher: Teacher
 	export let classes: Class[]
@@ -27,25 +28,23 @@
 	const toastStore = getToastStore()
 	const modalStore = getModalStore()
 
-	let selectedLanguage: string
-	let selectedTopic: string
-	let selectedIsPrivate: boolean = false
-	let selectedEvent: CalendarInteractEvent | undefined
-
-	$: lockedLanguage = !selectedLanguage
-	$: lockedTopic = !selectedTopic
-	$: lockedEvent = !selectedEvent
-	$: console.log('selectedLanguage', selectedLanguage)
-	$: console.log('selectedTopic', selectedTopic)
-	$: console.log('selectedIsPrivate', selectedIsPrivate)
-	$: console.log('selectedTimeSlot', selectedEvent)
+	$: lockedLanguage = !$takeClassStore.selectedLanguage
+	$: lockedTopic = !$takeClassStore.selectedTopic
+	$: lockedEvent = !$takeClassStore.selectedEvent
+	$: console.log('selectedLanguage', $takeClassStore.selectedLanguage)
+	$: console.log('selectedTopic', $takeClassStore.selectedTopic)
+	$: console.log('selectedIsPrivate', $takeClassStore.selectedIsPrivate)
+	$: console.log('selectedTimeSlot', $takeClassStore.selectedEvent)
 	$: topics = teacher.topicsTaught
 	$: console.log('topics', topics)
 	$: events = availabilities
 		.filter((a) => {
 			const matchClass = classes.find((c) => c.startAt === a.startAt && c.endAt === a.endAt)
 			if (!matchClass) return true
-			return matchClass.language === selectedLanguage && matchClass.topic === selectedTopic
+			return (
+				matchClass.language === $takeClassStore.selectedLanguage &&
+				matchClass.topic === $takeClassStore.selectedTopic
+			)
 		})
 		.map((a) => availabilityToCalendarEntryOneHourBlock(a))
 		.reduce((a, b) => [...a, ...b], [] as CalendarEvent[])
@@ -53,14 +52,14 @@
 
 	async function selectClass(cal: any, info: CalendarInteractEvent) {
 		console.log('Time slot selected for class', info)
-		if (selectedEvent) {
+		if ($takeClassStore.selectedEvent) {
 			const event: CalendarEvent = {
-				...selectedEvent.event,
+				...$takeClassStore.selectedEvent.event,
 				backgroundColor: '#fbdc90'
 			}
 			cal.updateEvent(event)
 		}
-		selectedEvent = info
+		$takeClassStore.selectedEvent = info
 		const event: CalendarEvent = {
 			...info.event,
 			backgroundColor: '#01c4a9'
@@ -69,37 +68,35 @@
 	}
 
 	async function scheduleClass() {
-		if (
-			!selectedLanguage ||
-			!selectedTopic ||
-			selectedIsPrivate === undefined ||
-			!selectedEvent
-		)
-			return
+		if (takeClassStore.isInValid()) return
 
-		if (!$page.data.session) return
-		const res = await safeFetch(
-			fetchers.classService(fetch, $page.data.session).createOrJoinClass({
-				req: {
-					isPrivate: selectedIsPrivate,
-					language: selectedLanguage,
-					topic: selectedTopic,
-					name: `${selectedLanguage} - ${selectedTopic}`,
-					timeSlotId: selectedEvent.event.id
-				}
-			})
-		)
-		if (!res.ok) {
-			toastStore.trigger({
-				message: res.cause,
-				background: 'bg-error-500'
-			})
-			return
-		}
-
-		await goto('/dashboard/student/classes')
+		await goto(`/teachers/${teacher.id}/take-class`)
 		await invalidateAll()
 		modalStore.close()
+
+		// if (!$page.data.session) return
+		// const res = await safeFetch(
+		// 	fetchers.classService(fetch, $page.data.session).createOrJoinClass({
+		// 		req: {
+		// 			isPrivate: $takeClassStore.selectedIsPrivate,
+		// 			language: $takeClassStore.selectedLanguage!,
+		// 			topic: $takeClassStore.selectedTopic!,
+		// 			name: `${$takeClassStore.selectedLanguage} - ${$takeClassStore.selectedTopic}`,
+		// 			timeSlotId: $takeClassStore.selectedEvent!.event.id
+		// 		}
+		// 	})
+		// )
+		// if (!res.ok) {
+		// 	toastStore.trigger({
+		// 		message: res.cause,
+		// 		background: 'bg-error-500'
+		// 	})
+		// 	return
+		// }
+
+		// await goto('/dashboard/student/classes')
+		// await invalidateAll()
+		// modalStore.close()
 	}
 </script>
 
@@ -116,7 +113,11 @@
 			<svelte:fragment slot="header">{$t('learn.language-teach')}</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
 				{#each new Set(teacher.spokenLanguages.map((l) => l.language)) as language}
-					<ListBoxItem bind:group={selectedLanguage} name={language} value={language}>
+					<ListBoxItem
+						bind:group={$takeClassStore.selectedLanguage}
+						name={language}
+						value={language}
+					>
 						{language}
 					</ListBoxItem>
 				{/each}
@@ -127,8 +128,12 @@
 				{$t('learn.topic')}
 			</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each topics.filter((t) => t !== selectedLanguage) as topic}
-					<ListBoxItem bind:group={selectedTopic} name={topic} value={topic}>
+				{#each topics.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
+					<ListBoxItem
+						bind:group={$takeClassStore.selectedTopic}
+						name={topic}
+						value={topic}
+					>
 						{topic}
 					</ListBoxItem>
 				{/each}
@@ -140,7 +145,7 @@
 				class="checkbox"
 				type="checkbox"
 				name="isPrivate"
-				bind:checked={selectedIsPrivate}
+				bind:checked={$takeClassStore.selectedIsPrivate}
 			/>
 		</Step>
 		<Step locked={lockedEvent}>
@@ -148,27 +153,30 @@
 			{#if availabilities.length > 0}
 				<Calendar calendarMode="selectCourse" {events} eventClick={selectClass} />
 			{:else}
-				<p>This teacher hasn't setup any available time slots</p>
+				<p>
+					This teacher hasn't setup any available time slots. Refresh the page or try
+					again later
+				</p>
 			{/if}
 		</Step>
 		<Step
-			locked={!selectedLanguage ||
-				!selectedTopic ||
-				selectedIsPrivate === undefined ||
-				!selectedEvent}
+			locked={!$takeClassStore.selectedLanguage ||
+				!$takeClassStore.selectedTopic ||
+				$takeClassStore.selectedIsPrivate === undefined ||
+				!$takeClassStore.selectedEvent}
 		>
 			<svelte:fragment slot="header">Summary</svelte:fragment>
 
-			<p>Selected language: {selectedLanguage}</p>
-			<p>Selected topic: {selectedTopic}</p>
-			<p>Private class: {selectedIsPrivate ? 'Yes' : 'No'}</p>
-			{#if selectedEvent}
+			<p>Selected language: {$takeClassStore.selectedLanguage}</p>
+			<p>Selected topic: {$takeClassStore.selectedTopic}</p>
+			<p>Private class: {$takeClassStore.selectedIsPrivate ? 'Yes' : 'No'}</p>
+			{#if $takeClassStore.selectedEvent}
 				<p>
-					Selected time slot: {new Date(selectedEvent.event.start).toLocaleString(
-						$userStore?.preferedLanguage
-					)} - {new Date(selectedEvent.event.end).toLocaleString(
-						$userStore?.preferedLanguage
-					)}
+					Selected time slot: {new Date(
+						$takeClassStore.selectedEvent.event.start
+					).toLocaleString($userStore?.preferedLanguage)} - {new Date(
+						$takeClassStore.selectedEvent.event.end
+					).toLocaleString($userStore?.preferedLanguage)}
 				</p>
 			{/if}
 		</Step>

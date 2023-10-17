@@ -30,8 +30,6 @@ export async function load({ params, fetch, locals: { session, user }, url }) {
 		throw error(res.error.status, 'Could not fetch teachers')
 	}
 
-	debugger
-
 	return {
 		teachers: res.data.teachers,
 		user
