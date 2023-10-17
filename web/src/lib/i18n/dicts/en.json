@@ -39,7 +39,8 @@
     "spokenLanguages": "Spoken Languages",
     "bio": "Biography",
     "hourRate": "Hour Rate",
-    "proficiencyLevel": "Proficiency"
+    "proficiencyLevel": "Proficiency",
+    "topicsTaught": "Topics you want to teach"
   },
   "login": {
     "email": "Email",

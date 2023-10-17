@@ -76,40 +76,37 @@
 			</div>
 		</div>
 
+		{#if data.teacher.topAgent}
+			<div class="flex items-center gap-2">
+				<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
+				<p>
+					This teacher is a NEM
+					<a href="/top-agent" class="anchor font-bold text-primary-600">
+						<span> TopAgent </span>
+					</a>
+				</p>
+			</div>
+		{/if}
+
 		<div>
 			<TabGroup>
 				<Tab bind:group={tabSet} name="Teaches" value={0}>Teaches</Tab>
 				<Tab bind:group={tabSet} name="Bio" value={1}>Bio</Tab>
 				<!-- Tab Panels --->
 				<svelte:fragment slot="panel">
-					{#if tabSet === 0}
-						<div
-							class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-1 ring-surface-500"
-						>
-							{#if data.teacher.topAgent}
-								<div class="flex items-center gap-2">
-									<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
-									<p>
-										This teacher is a NEM
-										<span class="font-bold text-primary-600"> TopAgent </span>
-									</p>
-								</div>
-							{/if}
+					<div
+						class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-2 ring-surface-500"
+					>
+						{#if tabSet === 0}
 							<div class="flex flex-col gap-2">
 								{#each data.teacher.topicsTaught as topic}
 									<p>{topic}</p>
 								{/each}
 							</div>
-						</div>
-					{:else if tabSet === 1}
-						<div class="flex flex-col gap-8">
-							<div
-								class="card flex flex-col gap-4 px-8 py-4 shadow-md ring-2 ring-surface-500"
-							>
-								<p class="whitespace-pre-line">{data.teacher.bio}</p>
-							</div>
-						</div>
-					{/if}
+						{:else if tabSet === 1}
+							<p class="whitespace-pre-line">{data.teacher.bio}</p>
+						{/if}
+					</div>
 				</svelte:fragment>
 			</TabGroup>
 		</div>

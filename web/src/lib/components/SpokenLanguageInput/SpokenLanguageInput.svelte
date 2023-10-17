@@ -1,16 +1,15 @@
 <script lang="ts">
 	import {
-		availableLanguages,
 		proficienciesMeaning,
 		proficiencyLevels,
-		type Language,
 		type SpokenLanguages
 	} from '$lib/schemas/profile'
 	import { TrashIcon } from 'lucide-svelte'
 	import { t } from 'svelte-i18n'
 
+	export let availableLanguages: string[]
 	export let spokenLanguages: SpokenLanguages
-	let languages = (JSON.parse(JSON.stringify(availableLanguages)) as Language[]).sort((a, b) =>
+	let languages = (JSON.parse(JSON.stringify(availableLanguages)) as string[]).sort((a, b) =>
 		a.localeCompare(b)
 	)
 	$: selectableLanguages = languages.filter(
@@ -28,7 +27,7 @@
 		})
 	}
 
-	function remove(index: number, lang: Language) {
+	function remove(index: number, lang: string) {
 		console.log(index, lang)
 		spokenLanguages.splice(index, 1)
 		spokenLanguages = spokenLanguages

@@ -102,7 +102,7 @@ func FromDbConversation(c *db.ListConversationsOfUserRow) *Conversation {
 	return &Conversation{
 		Id:          c.ID,
 		IsClassChat: c.IsClassChat,
-		LastSent:    c.LastSentTime.(time.Time),
+		LastSent:    c.LastSent.(time.Time),
 		Users:       pgRowToUsers(c.Users),
 		CreatedAt:   c.CreatedAt,
 	}

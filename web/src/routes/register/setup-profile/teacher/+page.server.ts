@@ -4,7 +4,7 @@ import { createTeacherSchema } from '$lib/schemas/profile'
 import { fail, json, redirect } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 
-export const load = async ({ locals: { session, user } }) => {
+export const load = async ({ locals: { session, user }, fetch }) => {
 	console.log('setup profile page.server load')
 	if (!session) throw redirect(302, '/')
 	if (user) {
@@ -12,13 +12,23 @@ export const load = async ({ locals: { session, user } }) => {
 		throw redirect(302, '/dashboard/profile')
 	}
 
+	const streams = await Promise.all([
+		safeFetch(fetchers.classService(fetch, session).listLanguages()),
+		safeFetch(fetchers.classService(fetch, session).listTopics())
+	])
+
 	const form = await superValidate(createTeacherSchema)
 	form.data.role = 'teacher'
-	return { form }
+
+	return {
+		form,
+		languages: streams[0].ok ? streams[0].data.languages : [],
+		topics: streams[1].ok ? streams[1].data.topics : []
+	}
 }
 
 export const actions = {
-	registerTeacher: async ({ request, fetch, locals: { session } }) => {
+	default: async ({ request, fetch, locals: { session } }) => {
 		if (!session) throw redirect(302, '/login')
 		debugger
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
@@ -45,7 +55,8 @@ export const actions = {
 					preferedLanguage: form.data.preferedLanguage,
 					bio: form.data.bio,
 					hourRate: form.data.hourRate,
-					spokenLanguages: form.data.spokenLanguages
+					spokenLanguages: form.data.spokenLanguages,
+					topicsTaught: form.data.topicsTaught
 				}
 			})
 		)

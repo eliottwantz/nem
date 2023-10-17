@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
 	import SpokenLanguageInput from '$lib/components/SpokenLanguageInput/SpokenLanguageInput.svelte'
+	import TopicsTaughtInput from '$lib/components/TopicsTaughtInput/TopicsTaughtInput.svelte'
 	import type { ServerMessage } from '$lib/schemas/error'
 	import { createTeacherSchema } from '$lib/schemas/profile.js'
 	import { getToastStore } from '@skeletonlabs/skeleton'
@@ -22,19 +23,23 @@
 		form: superF,
 		errors,
 		enhance,
-		message
+		message,
+		submitting,
+		tainted,
+		fields
 	} = superForm<typeof createTeacherSchema, ServerMessage>(data.form, {
 		validators: createTeacherSchema,
 		dataType: 'json'
 	})
 
+	$: console.log('fields', fields)
 	$: $superF.preferedLanguage = $locale ?? 'en'
 </script>
 
 <Layout>
 	<h1 slot="title" class="h1 pb-4 text-center">{$t('setup-profile.title')}</h1>
 
-	<form method="post" action="?/registerTeacher" use:enhance class="w-full max-w-lg space-y-4">
+	<form method="post" use:enhance class="w-full max-w-lg space-y-4">
 		<div class="space-y-2">
 			<label class="label">
 				<span>{$t('register.firstName')}</span>
@@ -68,14 +73,26 @@
 				<p class="text-error-500">{$errors.hourRate}</p>
 			{/if}
 
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<SpokenLanguageInput bind:spokenLanguages={$superF.spokenLanguages} />
-			{#if $errors.spokenLanguages}
+			<SpokenLanguageInput
+				availableLanguages={data.languages}
+				bind:spokenLanguages={$superF.spokenLanguages}
+			/>
+			<!-- {#if $errors.spokenLanguages && $errors.spokenLanguages._errors && $tainted?.spokenLanguages} -->
+			{#if $errors.spokenLanguages && $errors.spokenLanguages._errors}
 				<p class="text-error-500">{$errors.spokenLanguages._errors}</p>
+			{/if}
+
+			<TopicsTaughtInput
+				bind:topicsTaught={$superF.topicsTaught}
+				availableTopics={data.topics}
+			/>
+			<!-- {#if $errors.topicsTaught && $errors.topicsTaught._errors && $tainted?.topicsTaught} -->
+			{#if $errors.topicsTaught && $errors.topicsTaught._errors}
+				<p class="text-error-500">{$errors.topicsTaught._errors}</p>
 			{/if}
 		</div>
 
-		<button class="btn bg-primary-active-token">
+		<button disabled={$submitting} class="btn bg-primary-active-token">
 			{$t('register.register')}
 		</button>
 	</form>

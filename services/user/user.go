@@ -127,6 +127,8 @@ func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentReque
 }
 
 func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherRequest) error {
+	ErrCreateTeacher := errors.New("failed to create user")
+
 	if !db.Role(req.Role).Valid() {
 		s.logger.Warn("invalid role", "role", req.Role)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("invalid role"))
@@ -134,7 +136,8 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("could not create transaction", "err", err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 	defer tx.Rollback()
 
@@ -150,14 +153,11 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 	})
 	if err != nil {
 		s.logger.Warn("could not create user", "err", err)
-		if err == sql.ErrNoRows {
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
-		}
 		var pgErr *pq.Error
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
 				log.Warn("Trying to create a user that already exists")
-				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("user already created. please login"))
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("user already created. please login if it is your account"))
 			}
 		}
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
@@ -170,7 +170,7 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 	})
 	if err != nil {
 		s.logger.Warn("could not create teacher", "err", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrCreateTeacher)
 	}
 
 	for _, lang := range req.SpokenLanguages {
@@ -183,21 +183,21 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 				langDB, err := tx.FindLanguage(ctx, lang.Language)
 				if err != nil {
 					s.logger.Warn("error finding language", "err", err)
-					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("Language not supported"))
+					return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New(" Language not supported. Please contact us if you wish to teach this language"))
 				}
-				// Create it
+				// Create spoken language
 				exists, err = tx.CreateSpokenLanguage(ctx, db.CreateSpokenLanguageParams{
 					LanguageID:  langDB.ID,
 					Proficiency: lang.Proficiency,
 				})
 				if err != nil {
 					s.logger.Warn("could not create spoken language", "err", err)
-					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 				}
 
 			} else {
 				s.logger.Warn("error finding spoken language", "err", err)
-				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, utils.ErrInternalServer)
 			}
 		}
 		// Add it to teacher's spoken languages
@@ -207,14 +207,30 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 		})
 		if err != nil {
 			s.logger.Warn("could not add spoken language to teacher", "err", err)
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+		}
+	}
+
+	for _, topic := range req.TopicsTaught {
+		dbTopic, err := tx.FindTopic(ctx, topic)
+		if err != nil {
+			s.logger.Warn("could not find topic", "err", err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New(" Topic not supported. please contact us if you wish to teach this topic"))
+		}
+		err = tx.AddTeacherToTopics(ctx, db.AddTeacherToTopicsParams{
+			TeacherID: u.ID,
+			TopicID:   dbTopic.ID,
+		})
+		if err != nil {
+			s.logger.Warn("could not add teacher to topic", "err", err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		s.logger.Warn("could not commit transaction creating user", "err", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
 	return nil

@@ -15,6 +15,7 @@
 	let isEditing = false
 
 	async function saveEdits() {
+		if (copyTopicsTaught.length <= 1) return
 		isEditing = false
 		const diff = data.topics.filter((t) => !copyTopicsTaught.includes(t))
 		const res = await safeFetch(
@@ -47,11 +48,17 @@
 
 	<div class="flex w-full flex-col gap-y-8">
 		{#if data.topicsTaught.length > 0}
-			<div class="flex gap-4">
+			<div class="flex items-center gap-4">
 				<h2 class="h3">Topics you teach</h2>
 				{#if isEditing}
 					<button on:click={cancelEdits} class="variant-ghost btn"> Cancel </button>
-					<button on:click={saveEdits} class="variant-ghost-success btn"> Save </button>
+					<button
+						disabled={copyTopicsTaught.length <= 1}
+						on:click={saveEdits}
+						class="variant-ghost-success btn"
+					>
+						Save
+					</button>
 				{:else}
 					<button on:click={() => (isEditing = true)} class="variant-ghost btn"
 						>Edit</button
@@ -61,14 +68,17 @@
 			<section
 				class="m-auto flex w-full max-w-xl flex-wrap justify-center gap-4 lg:max-w-3xl xl:max-w-5xl"
 			>
+				{#if copyTopicsTaught.length <= 1}
+					<p class="text-xl text-red-500">You must have at least one topic to teach</p>
+				{/if}
 				{#each copyTopicsTaught as topic}
 					<div class="card relative inline-block p-1 sm:p-2">
-						{#if isEditing}
+						{#if isEditing && copyTopicsTaught.length > 1}
 							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<!-- svelte-ignore a11y-no-static-element-interactions -->
 							<span
 								on:click={() => removeTopic(topic)}
-								class="variant-filled-error badge-icon absolute -right-0 -top-1 z-10"
+								class="variant-filled-error badge-icon absolute -right-0 -top-1 z-10 cursor-pointer"
 							>
 								<Trash class="h-4 w-4" />
 							</span>

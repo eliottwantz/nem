@@ -347,6 +347,10 @@ VALUES (
         '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid
     ),
     (
+        13,
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid
+    ),
+    (
         14,
         '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid
     );
@@ -360,6 +364,23 @@ VALUES ('French'),
     ('Chemistry'),
     ('History'),
     ('Geography');
+INSERT INTO "teacher_topic" (teacher_id, topic_id)
+VALUES (
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
+        1
+    ),
+    (
+        '3fe7bbf2-713d-4baa-b2da-2bb7df701240'::uuid,
+        3
+    ),
+    (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
+        6
+    ),
+    (
+        '9974eb35-ff48-43eb-a047-9af99abfd3d0'::uuid,
+        7
+    );
 INSERT INTO "subscription" (id, name, hours)
 VALUES (1, 'Explorer', 1),
     (2, 'Voyage', 2),
