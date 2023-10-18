@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Layout from '$lib/components/Layout.svelte'
+	import { PUBLIC_VIDEO_SDK_TEMP_TOKEN } from '$env/static/public'
 	import { Meeting, Participant, VideoSDK } from '@videosdk.live/js-sdk'
 
 	let videoContainer: HTMLDivElement
@@ -14,14 +14,14 @@
 			joinButton.style.display = 'none'
 			textDiv.textContent = 'Please wait, we are joining the meeting'
 
-			VideoSDK.config(
-				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlrZXkiOiJkZjc5NzliOS1mYjM3LTQxYTctYjQ4MC05YWRlODk1NTJmNzAiLCJwZXJtaXNzaW9ucyI6WyJhbGxvd19qb2luIl0sImlhdCI6MTY5NzU3NDgzMCwiZXhwIjoxNjk3NjYxMjMwfQ.QDMLT9j6n1dvLbvmeJz9NvSbX7qAXfL1umHGlB5ynb0'
-			) // required;
+			VideoSDK.config(PUBLIC_VIDEO_SDK_TEMP_TOKEN)
 			meeting = VideoSDK.initMeeting({
 				meetingId: 'ue0p-stx9-l8y3', // required
 				name: "Eliott's Org", // required
-				micEnabled: true, // optional, default: true
-				webcamEnabled: true // optional, default: true
+				micEnabled: false, // optional, default: true
+				webcamEnabled: false, // optional, default: true
+				chatEnabled: false,
+				maxResolution: 'sd'
 			})
 
 			meeting.join()
@@ -94,41 +94,77 @@
 </script>
 
 <svelte:head>
-	<script src="https://sdk.videosdk.live/js-sdk/0.0.63/videosdk.js"></script>
+	<script>
+		var script = document.createElement('script')
+		script.type = 'text/javascript'
+
+		script.addEventListener('load', function (event) {
+			const config = {
+				name: 'Demo User',
+				meetingId: 'milkyway',
+				apiKey: 'df7979b9-fb37-41a7-b480-9ade89552f70',
+
+				containerId: 'meetingDiv',
+
+				micEnabled: true,
+				webcamEnabled: true,
+				participantCanToggleSelfWebcam: true,
+				participantCanToggleSelfMic: true,
+
+				chatEnabled: true,
+				screenShareEnabled: true,
+				canCreatePoll: true,
+				whiteboardEnabled: true,
+
+				theme: 'LIGHT',
+				branding: {
+					enabled: true,
+					logoURL:
+						'https://prfhxmmcrvholuplxcad.supabase.co/storage/v1/object/public/assets/logo_400x400.png?t=2023-10-18T13%3A36%3A05.812Z',
+					name: 'NEM',
+					poweredBy: false
+				}
+			}
+
+			const meeting = new VideoSDKMeeting()
+			meeting.init(config)
+		})
+
+		script.src = 'https://sdk.videosdk.live/rtc-js-prebuilt/0.3.33/rtc-js-prebuilt.js'
+		document.getElementsByTagName('head')[0].appendChild(script)
+	</script>
 </svelte:head>
 
-<Layout>
-	<h1 class="h1" slot="title">Video SDK</h1>
+<h1 class="h1 text-center">Video SDK</h1>
 
-	<button use:handleClick>Join meeting</button>
+<button disabled use:handleClick>Join meeting</button>
 
-	<div bind:this={textDiv} id="textDiv"></div>
+<div bind:this={textDiv} id="textDiv"></div>
 
-	{#if meeting}
-		<div class="row" bind:this={videoContainer} id="videoContainer">
-			<!-- Local participant -->
-			{#if meeting.localParticipant}
+<div class="h-full w-full" id="meetingDiv"></div>
+{#if meeting}
+	<div class="row" bind:this={videoContainer} id="videoContainer">
+		<!-- Local participant -->
+		{#if meeting.localParticipant}
+			<!-- svelte-ignore a11y-media-has-caption -->
+			<video
+				bind:this={localParticipantVideo}
+				class="video-frame"
+				playsinline
+				width="300"
+				id="v-{meeting.localParticipant.id}"
+			>
+			</video>
+		{/if}
+		<!-- Local participant -->
+
+		{#each participants as participant}
+			<div use:handleStreamTrack={{ participant }}>
 				<!-- svelte-ignore a11y-media-has-caption -->
-				<video
-					bind:this={localParticipantVideo}
-					class="video-frame"
-					playsinline
-					width="300"
-					id="v-{meeting.localParticipant.id}"
-				>
-				</video>
-			{/if}
-			<!-- Local participant -->
-
-			{#each participants as participant}
-				<div use:handleStreamTrack={{ participant }}>
-					<!-- svelte-ignore a11y-media-has-caption -->
-					<video class="video-frame" playsinline width="300" id="v-{participant.id}">
-					</video>
-					<audio autoplay={false} playsinline controls={false} id="a-{participant.id}">
-					</audio>
-				</div>
-			{/each}
-		</div>
-	{/if}
-</Layout>
+				<video class="video-frame" playsinline width="300" id="v-{participant.id}"> </video>
+				<audio autoplay={false} playsinline controls={false} id="a-{participant.id}">
+				</audio>
+			</div>
+		{/each}
+	</div>
+{/if}
