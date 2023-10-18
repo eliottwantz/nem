@@ -1,13 +1,13 @@
 import type { CalendarInteractEvent } from '$lib/components/Calendar'
 import { get, writable } from 'svelte/store'
 
-type Store = {
+export type TakeClassStore = {
 	selectedLanguage: string | undefined
 	selectedTopic: string | undefined
 	selectedIsPrivate: boolean
 	selectedEvent: CalendarInteractEvent | undefined
 }
-const store = writable<Store>({
+const store = writable<TakeClassStore>({
 	selectedLanguage: undefined,
 	selectedTopic: undefined,
 	selectedIsPrivate: false,

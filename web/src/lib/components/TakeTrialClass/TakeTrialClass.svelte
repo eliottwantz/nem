@@ -28,6 +28,8 @@
 	const toastStore = getToastStore()
 	const modalStore = getModalStore()
 
+	console.log('TRIAL CLASS URL', `${$page.url.pathname}/take-trial-class`)
+
 	$: lockedLanguage = !$takeClassStore.selectedLanguage
 	$: lockedTopic = !$takeClassStore.selectedTopic
 	$: lockedEvent = !$takeClassStore.selectedEvent
@@ -70,21 +72,44 @@
 	async function scheduleClass() {
 		if (takeClassStore.isInValid()) return
 
-		await goto(`/teachers/${teacher.id}/take-class`)
-		await invalidateAll()
-		modalStore.close()
+		try {
+			const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
+				method: 'POST',
+				body: JSON.stringify($takeClassStore)
+			})
+			const data = await res.json()
+			console.log('IS IT OK?', res.ok)
+			if (!res.ok) {
+				toastStore.trigger({
+					message: data.message,
+					background: 'bg-error-500'
+				})
+				return
+			}
+			window.location.replace(data.url)
+		} catch (e) {
+			console.log(e)
+			toastStore.trigger({
+				message: e instanceof Error ? e.message : 'Failed to schedule class',
+				background: 'bg-error-500'
+			})
+		}
+
+		// await goto(`/teachers/${teacher.id}/take-class`)
+		// await invalidateAll()
+		// modalStore.close()
 
 		// if (!$page.data.session) return
 		// const res = await safeFetch(
-		// 	fetchers.classService(fetch, $page.data.session).createOrJoinClass({
-		// 		req: {
-		// 			isPrivate: $takeClassStore.selectedIsPrivate,
-		// 			language: $takeClassStore.selectedLanguage!,
-		// 			topic: $takeClassStore.selectedTopic!,
-		// 			name: `${$takeClassStore.selectedLanguage} - ${$takeClassStore.selectedTopic}`,
-		// 			timeSlotId: $takeClassStore.selectedEvent!.event.id
-		// 		}
-		// 	})
+		// fetchers.classService(fetch, $page.data.session).createOrJoinClass({
+		// 	req: {
+		// 		isPrivate: $takeClassStore.selectedIsPrivate,
+		// 		language: $takeClassStore.selectedLanguage!,
+		// 		topic: $takeClassStore.selectedTopic!,
+		// 		name: `${$takeClassStore.selectedLanguage} - ${$takeClassStore.selectedTopic}`,
+		// 		timeSlotId: $takeClassStore.selectedEvent!.event.id
+		// 	}
+		// })
 		// )
 		// if (!res.ok) {
 		// 	toastStore.trigger({
@@ -106,7 +131,7 @@
 		stepTerm={$t('learn.stepper.stepTerm')}
 		buttonBackLabel={$t('learn.stepper.buttonBack')}
 		buttonNextLabel={$t('learn.stepper.buttonNext')}
-		buttonCompleteLabel={$t('learn.bookLearn')}
+		buttonCompleteLabel={$t('learn.checkout')}
 		on:complete={scheduleClass}
 	>
 		<Step locked={lockedLanguage}>

@@ -48,7 +48,7 @@ func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher,
 	return rpc.FromDbTeacher(u), nil
 }
 
-func (s *Service) ListClasses(ctx context.Context, teacherId string) ([]*rpc.Class, error) {
+func (s *Service) ListClassesOfTeacher(ctx context.Context, teacherId string) ([]*rpc.Class, error) {
 	tID, err := uuid.Parse(teacherId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
@@ -77,7 +77,7 @@ func (s *Service) ListClasses(ctx context.Context, teacherId string) ([]*rpc.Cla
 	return ret, nil
 }
 
-func (s *Service) ListStudents(ctx context.Context, teacherId string) ([]*rpc.User, error) {
+func (s *Service) ListStudentsOfTeacher(ctx context.Context, teacherId string) ([]*rpc.User, error) {
 	tID, err := uuid.Parse(teacherId)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
@@ -93,6 +93,26 @@ func (s *Service) ListStudents(ctx context.Context, teacherId string) ([]*rpc.Us
 	}
 
 	return ret, nil
+}
+
+func (s *Service) FindStudentOfTeacher(ctx context.Context, studentId, teacherId string) (*rpc.User, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty teacher id param"))
+	}
+	sID, err := uuid.Parse(studentId)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty studentId id param"))
+	}
+	dbUser, err := db.Pg.FindStudentOfTeacher(ctx, db.FindStudentOfTeacherParams{
+		ID:        tID,
+		StudentID: sID,
+	})
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return rpc.FromDbUser(dbUser), nil
 }
 
 func (s *Service) ListAvailabilities(ctx context.Context, teacherId string) ([]*rpc.TimeSlot, error) {

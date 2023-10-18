@@ -61,6 +61,10 @@ tasks:
     cmds:
       - pnpm dev
 
+  stripe:
+    cmds:
+      - stripe listen --forward-to localhost:5173/stripe/webhooks
+
   desktop:
     dir: "./web"
     cmds:

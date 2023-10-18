@@ -4,9 +4,8 @@
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
-	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
+	import TakeTrialClass from '$lib/components/TakeTrialClass/TakeTrialClass.svelte'
 	import { Tab, TabGroup, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton'
-	import { onMount } from 'svelte'
 
 	export let data
 
@@ -19,7 +18,7 @@
 		modalStore.trigger({
 			type: 'component',
 			component: {
-				ref: TakeClass,
+				ref: TakeTrialClass,
 				props: {
 					teacher: data.teacher,
 					classes: data.classes,
@@ -67,7 +66,11 @@
 				</div>
 				<div class="flex flex-col gap-2">
 					<button class="variant-filled-primary btn" on:click={scheduleClass}>
-						Schedule a class with this teacher
+						{#if data.isFirstClass}
+							Schedule a trial class
+						{:else}
+							Schedule a class
+						{/if}
 					</button>
 					<button class="variant-ghost-surface btn" on:click={openChat}>
 						Send a message

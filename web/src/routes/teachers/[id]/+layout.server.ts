@@ -9,7 +9,15 @@ export async function load({ params, fetch, locals: { session, user } }) {
 		safeFetch(
 			fetchers.teacherService(fetch, session).listAvailabilities({ teacherId: params.id })
 		),
-		safeFetch(fetchers.teacherService(fetch, session).listClasses({ teacherId: params.id }))
+		safeFetch(
+			fetchers.teacherService(fetch, session).listClassesOfTeacher({ teacherId: params.id })
+		),
+		safeFetch(
+			fetchers.teacherService(fetch, session).findStudentOfTeacher({
+				studentId: user.id,
+				teacherId: params.id
+			})
+		)
 	])
 
 	if (!res[0].ok) {
@@ -21,6 +29,7 @@ export async function load({ params, fetch, locals: { session, user } }) {
 		teacher: res[0].data.teacher,
 		availabilities: res[1].ok ? res[1].data.timeSlots : [],
 		classes: res[2].ok ? res[2].data.classes : [],
+		isFirstClass: !res[3].ok,
 		user
 	}
 }

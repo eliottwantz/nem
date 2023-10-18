@@ -166,8 +166,9 @@ service StudentServiceAPI
 
 service TeacherServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)
-    - ListClasses(teacherId: string) => (classes: []Class)
-    - ListStudents(teacherId: string) => (students: []User)
+    - ListClassesOfTeacher(teacherId: string) => (classes: []Class)
+    - ListStudentsOfTeacher(teacherId: string) => (students: []User)
+    - FindStudentOfTeacher(studentId: string, teacherId: string) => (student: User)
     - ListAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
 
     - Teach(topic: string)

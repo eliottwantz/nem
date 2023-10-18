@@ -62,8 +62,8 @@
       "buttonBack": "← Back",
       "buttonNext": "Next →"
     },
-    "bookLearn": "Take a course",
-    "language-teach": "Teaching language"
+    "language-teach": "Teaching language",
+    "checkout": "Checkout"
   },
   "calendar": {
     "title": "Calendar",
