@@ -6,8 +6,8 @@
 	import MicrophoneIcon from '$lib/icons/MicrophoneIcon.svelte'
 	import MicrophoneMutedIcon from '$lib/icons/MicrophoneMutedIcon.svelte'
 
-	let audioEnabled = false
-	let videoEnabled = false
+	export let audioEnabled = false
+	export let videoEnabled = false
 	let videoDevice: MediaDeviceInfo | undefined = undefined
 	let audioDevice: MediaDeviceInfo | undefined = undefined
 
