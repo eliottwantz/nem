@@ -1,21 +1,12 @@
 <script lang="ts">
 	import ParticipantIcon from '$lib/icons/ParticipantIcon.svelte'
+	import { Mic, MicOff, Video, VideoOff } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import CameraIcon from '$lib/icons/CameraIcon.svelte'
-	import CameraOffIcon from '$lib/icons/CameraOffIcon.svelte'
-	import MicrophoneIcon from '$lib/icons/MicrophoneIcon.svelte'
-	import MicrophoneMutedIcon from '$lib/icons/MicrophoneMutedIcon.svelte'
 
 	export let audioEnabled = false
 	export let videoEnabled = false
-	let videoDevice: MediaDeviceInfo | undefined = undefined
-	let audioDevice: MediaDeviceInfo | undefined = undefined
-
-	let audioDevices: MediaDeviceInfo[] = []
-	let videoDevices: MediaDeviceInfo[] = []
-
 	let videoElm: HTMLVideoElement
-	let audioElem: HTMLAudioElement
+	let audioStream: MediaStream | undefined
 
 	onMount(async () => {
 		if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
@@ -24,11 +15,6 @@
 			alert('Camera and microphone not supported in this browser')
 			return
 		}
-		const devices = await navigator.mediaDevices.enumerateDevices()
-		videoDevices = devices.filter((d) => d.kind === 'videoinput')
-		videoDevice = videoDevices[0]
-		audioDevices = devices.filter((d) => d.kind === 'audioinput')
-		audioDevice = audioDevices[0]
 	})
 
 	async function startStream(constraints: MediaStreamConstraints) {
@@ -37,6 +23,17 @@
 	}
 
 	async function toggleAudio() {
+		let text = audioEnabled ? 'closing microphone' : 'opening microphone'
+		console.log(text)
+
+		if (!audioEnabled) {
+			audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+		} else {
+			if (audioStream) {
+				audioStream.getTracks().forEach((t) => t.stop())
+			}
+		}
+
 		audioEnabled = !audioEnabled
 	}
 
@@ -45,13 +42,7 @@
 		console.log(text)
 
 		if (!videoEnabled) {
-			await startStream({
-				video: {
-					deviceId: {
-						exact: videoDevice?.deviceId
-					}
-				}
-			})
+			await startStream({ video: true })
 		} else {
 			const stream = videoElm.srcObject
 			if (stream) {
@@ -67,7 +58,6 @@
 
 <div id="prejoin" class="w-[min(100%,30rem)] space-y-2 p-2">
 	<div class="relative aspect-video overflow-hidden rounded-lg bg-black">
-		<audio bind:this={audioElem} />
 		<!-- svelte-ignore a11y-media-has-caption -->
 		<video
 			bind:this={videoElm}
@@ -78,54 +68,37 @@
 			class="pointer-events-none aspect-video w-full object-cover"
 		/>
 		{#if videoEnabled === false}
-			<div class="absolute left-0 top-0 grid aspect-video w-full place-items-center">
+			<div class="absolute bottom-4 left-0 grid aspect-video w-full place-items-center">
 				<ParticipantIcon class="h-[70%] max-w-[100%]" />
 			</div>
 		{/if}
-	</div>
-	<div id="devices" class="flex gap-4">
-		<div class="flex w-1/2">
+		<div id="devices" class="absolute bottom-3 flex w-full justify-center gap-x-4">
 			<button
 				on:click={toggleVideo}
-				class="variant-filled-surface btn flex select-none gap-1 p-2"
+				class="btn-icon h-8 w-8 {videoEnabled
+					? 'variant-filled-primary'
+					: 'variant-filled-surface'}"
 				title="Toggle camera"
 			>
 				{#if videoEnabled}
-					<CameraIcon class="h-6 w-6" />
+					<Video />
 				{:else}
-					<CameraOffIcon class="h-6 w-6" />
+					<VideoOff />
 				{/if}
-				Camera
 			</button>
-			<select
-				on:change={() => startStream({ video: { deviceId: videoDevice?.deviceId } })}
-				class="select"
-				name="video"
-				bind:value={videoDevice}
-			>
-				{#each videoDevices as device}
-					<option value={device}>{device.label}</option>
-				{/each}
-			</select>
-		</div>
-		<div class="flex w-1/2">
 			<button
 				on:click={toggleAudio}
-				class="variant-filled-surface btn flex select-none gap-1 p-2"
+				class="btn-icon h-8 w-8 {audioEnabled
+					? 'variant-filled-primary'
+					: 'variant-filled-surface'}"
 				title="Toggle microphone"
 			>
 				{#if audioEnabled}
-					<MicrophoneIcon class="h-6 w-6" />
+					<Mic />
 				{:else}
-					<MicrophoneMutedIcon class="h-6 w-6" />
+					<MicOff />
 				{/if}
-				Microphone
 			</button>
-			<select class="select" name="audio" bind:value={audioDevice}>
-				{#each audioDevices as device}
-					<option value={device}>{device.label}</option>
-				{/each}
-			</select>
 		</div>
 	</div>
 	<slot />

@@ -2,20 +2,25 @@
 	import { dev } from '$app/environment'
 	import { page } from '$app/stores'
 	import { PUBLIC_VIDEO_SDK_API_KEY } from '$env/static/public'
+	import LocalVideo from '$lib/components/MeetingVideo/LocalVideo.svelte'
 	import { getPublicName } from '$lib/utils/initials'
 	//@ts-expect-error
 	import VideoSDKMeeting from '@videosdk.live/rtc-js-prebuilt/dist/index'
 	import { onMount } from 'svelte'
 
 	export let data
+	let hasJoined = false
+	let audioEnabled = false
+	let videoEnabled = false
 
 	let isTeacher = data.user.role === 'teacher' && data.classDetails.teacher.id === data.user.id
 
-	onMount(() => {
-		initMeeting()
-	})
+	// onMount(() => {
+	// 	initMeeting()
+	// })
 
 	function initMeeting() {
+		hasJoined = true
 		const config = {
 			debug: dev ? true : false,
 			apiKey: PUBLIC_VIDEO_SDK_API_KEY,
@@ -23,8 +28,8 @@
 			name: getPublicName(data.user.firstName, data.user.lastName),
 			containerId: 'meetingDiv',
 
-			micEnabled: false,
-			webcamEnabled: false,
+			micEnabled: audioEnabled,
+			webcamEnabled: videoEnabled,
 			participantCanToggleSelfWebcam: true,
 			participantCanToggleSelfMic: true,
 			raiseHandEnabled: true,
@@ -32,9 +37,9 @@
 			screenShareEnabled: true,
 			whiteboardEnabled: true,
 
-			joinWithoutUserInteraction: false,
+			joinWithoutUserInteraction: true,
 			joinScreen: {
-				visible: true,
+				visible: false,
 				title: data.classDetails.class.name,
 				meetingUrl: window.location.href
 			},
@@ -100,4 +105,14 @@
 	}
 </script>
 
-<div class="h-full w-full" id="meetingDiv"></div>
+{#if hasJoined}
+	<div class="h-full w-full" id="meetingDiv"></div>
+{:else}
+	<div class="grid h-full place-items-center">
+		<LocalVideo bind:videoEnabled bind:audioEnabled>
+			<button class="variant-filled-primary btn w-full" on:click={initMeeting}>
+				Join class
+			</button>
+		</LocalVideo>
+	</div>
+{/if}
