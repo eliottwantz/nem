@@ -26,13 +26,9 @@ export async function load({ locals: { session, user }, params, fetch }) {
 	if (!res.ok) {
 		throw redirect(302, disconnectUrl)
 	}
-	const tokenRes = await safeFetch(
-		fetchers.classService(fetch, session).getJoinToken({ roomId: params.id })
-	)
 	return {
-		user: session.user,
+		user,
 		classDetails: res.data.classDetails,
-		token: tokenRes.ok ? tokenRes.data.token : undefined,
 		disconnectUrl
 	}
 }
