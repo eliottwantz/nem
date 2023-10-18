@@ -1,0 +1,11 @@
+diff --git a/dist/index.js b/dist/index.js
+index b584f0353216f679929e99d7bcdbddc94a3083b5..eb6b5ad786c5f85e782a7294018a65c8d4246dfb 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -591,5 +591,5 @@ var VideoSDKMeeting = /*#__PURE__*/function () {
+   return VideoSDKMeeting;
+ }();
+ 
+-exports.VideoSDKMeeting = VideoSDKMeeting;
++export default VideoSDKMeeting;
+ //# sourceMappingURL=index.js.map
