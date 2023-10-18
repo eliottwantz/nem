@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { dev } from '$app/environment'
+	import { page } from '$app/stores'
 	import { PUBLIC_VIDEO_SDK_API_KEY } from '$env/static/public'
+	import { getPublicName } from '$lib/utils/initials'
 	//@ts-expect-error
 	import VideoSDKMeeting from '@videosdk.live/rtc-js-prebuilt/dist/index'
 	import { onMount } from 'svelte'
@@ -18,7 +20,7 @@
 			debug: dev ? true : false,
 			apiKey: PUBLIC_VIDEO_SDK_API_KEY,
 			meetingId: data.classDetails.class.id,
-			name: data.classDetails.class.name,
+			name: getPublicName(data.user.firstName, data.user.lastName),
 			containerId: 'meetingDiv',
 
 			micEnabled: false,
@@ -30,19 +32,20 @@
 			screenShareEnabled: true,
 			whiteboardEnabled: true,
 
+			joinWithoutUserInteraction: false,
 			joinScreen: {
 				visible: true,
-				title: 'Daily scrum',
+				title: data.classDetails.class.name,
 				meetingUrl: window.location.href
 			},
 			notificationSoundEnabled: false,
-			redirectOnLeave: data.disconnectUrl,
+			redirectOnLeave: `${$page.url.origin}${data.disconnectUrl}`,
 			audioConfig: {
 				quality: 'high_quality' //speech_low_quality , high_quality
 			},
 			maxResolution: 'hd',
 			videoConfig: {
-				resolution: 'h720p_w1280p', //h360p_w640p, h540p_w960p, h1080p_w1920p
+				resolution: 'h360p_w640p', //h360p_w640p, h540p_w960p, h1080p_w1920p
 				optimizationMode: 'motion', // text , detail
 				multiStream: false
 			},
@@ -91,7 +94,9 @@
 		}
 
 		const meeting = new VideoSDKMeeting()
-		meeting.init(config)
+		meeting.init(config).then(() => {
+			console.log('Meeting Started')
+		})
 	}
 </script>
 

@@ -9,7 +9,11 @@
 <Layout>
 	<h1 class="h1" slot="title">Messages</h1>
 
-	<p class="mb-8 text-2xl">Please select a conversation</p>
+	{#if data.conversations.length > 0}
+		<p class="mb-8 text-2xl">Please select a conversation</p>
+	{:else}
+		<p class="mb-8 text-2xl">No student have reached out to you yet</p>
+	{/if}
 
 	<section>
 		<nav class="list-nav">
