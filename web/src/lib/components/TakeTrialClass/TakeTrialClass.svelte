@@ -1,17 +1,9 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
+	import { takeClassStore } from '$lib/stores/takeClassStore'
 	import { userStore } from '$lib/stores/user'
-	import {
-		ListBox,
-		ListBoxItem,
-		Step,
-		Stepper,
-		getModalStore,
-		getToastStore
-	} from '@skeletonlabs/skeleton'
+	import { ListBox, ListBoxItem, Step, Stepper, getToastStore } from '@skeletonlabs/skeleton'
 	import { t } from 'svelte-i18n'
 	import {
 		availabilityToCalendarEntryOneHourBlock,
@@ -19,15 +11,12 @@
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
-	import { takeClassStore } from '$lib/stores/takeClassStore'
 
 	export let teacher: Teacher
 	export let classes: Class[]
 	export let availabilities: TimeSlot[]
 
 	const toastStore = getToastStore()
-	const modalStore = getModalStore()
-
 	console.log('TRIAL CLASS URL', `${$page.url.pathname}/take-trial-class`)
 
 	$: lockedLanguage = !$takeClassStore.selectedLanguage
@@ -78,7 +67,6 @@
 				body: JSON.stringify($takeClassStore)
 			})
 			const data = await res.json()
-			console.log('IS IT OK?', res.ok)
 			if (!res.ok) {
 				toastStore.trigger({
 					message: data.message,

@@ -15,6 +15,7 @@ struct User
     - preferedLanguage: string
     - avatarFilePath: string
     - avatarUrl: string
+    - stripeCustomerId: string
     - createdAt: timestamp
     - updatedAt: timestamp
 
@@ -33,6 +34,7 @@ struct Teacher
     - rating: int32
     - spokenLanguages: []SpokenLanguage
     - topicsTaught: []string
+    - stripeCustomerId: string
     - createdAt: timestamp
     - updatedAt: timestamp
 
@@ -120,6 +122,7 @@ struct TimeSlot
     - endAt: timestamp
 
 struct CreateClassRequest
+    - userId: string
     - name: string
     - isPrivate: bool
     - language: string
@@ -147,6 +150,9 @@ struct Conversation
 
 #################### SERVICES ####################
 
+service PublicServiceAPI
+    - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
+
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
@@ -157,12 +163,11 @@ service UserServiceAPI
     - UpdateAvatar(path: string, url: string)
     - DeleteAvatar()
     - Delete()
+    - AddStripeCustomerId(stripeId: string)
 
 service StudentServiceAPI
     - ListClasses() => (classes: []Class)
     - ListTeachersOfStudent() => (teachers: []Teacher)
-    - JoinClass(classId: string)
-    - LeaveClass(classId: string)
 
 service TeacherServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)
@@ -176,8 +181,6 @@ service TeacherServiceAPI
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)
-    - StartClass(classId: string)
-    - EndClass(classId: string)
     - CancelClass(classId: string) => (usersInClass: []User, teacher: User)
 
 service ClassServiceAPI

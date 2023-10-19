@@ -3,11 +3,9 @@ import { dev } from '$app/environment'
 import { STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_DEV } from '$env/static/private'
 import { fetchers, safeFetch } from '$lib/api'
 import { stripe, type TrialClassMetaData } from '$lib/server/stripe'
-import { error, json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request, locals: { session } }) {
-	debugger
+export async function POST({ request }) {
 	const body = await request.text()
 	const sig = request.headers.get('stripe-signature') ?? ''
 
@@ -20,8 +18,8 @@ export async function POST({ request, locals: { session } }) {
 			dev ? STRIPE_WEBHOOK_SECRET_DEV : STRIPE_WEBHOOK_SECRET
 		)
 	} catch (err) {
-		return json(
-			{ message: `Webhook Error: ${err instanceof Error ? err.message : 'Unknown Error'}` },
+		return new Response(
+			`Webhook Error: ${err instanceof Error ? err.message : 'Unknown Error'}`,
 			{ status: 400 }
 		)
 	}
@@ -31,10 +29,11 @@ export async function POST({ request, locals: { session } }) {
 			const stripeSession = event.data.object as Stripe.Checkout.Session & {
 				metadata: TrialClassMetaData
 			}
-			if (!session) return json({ message: 'No user session found' }, { status: 400 })
+			debugger
 			const res = await safeFetch(
-				fetchers.classService(fetch, session).createOrJoinClass({
+				fetchers.publicService(fetch).createOrJoinClass({
 					req: {
+						userId: stripeSession.metadata.userId,
 						isPrivate: Boolean(stripeSession.metadata.isPrivate),
 						language: stripeSession.metadata.language,
 						topic: stripeSession.metadata.topic,
@@ -45,11 +44,11 @@ export async function POST({ request, locals: { session } }) {
 			)
 			if (!res.ok) {
 				console.log(res.error)
-				return json({ message: res.cause }, { status: res.error.status })
+				return new Response(res.cause, { status: res.error.status })
 			}
 			break
 		default:
 			console.log(`Unhandled event type ${event.type}`)
 	}
-	return json({}, { status: 200 })
+	return new Response(null, { status: 200 })
 }

@@ -61,17 +61,16 @@ func (s *Service) ListClassesOfTeacher(ctx context.Context, teacherId string) ([
 	ret := make([]*rpc.Class, 0, len(res))
 	for _, c := range res {
 		ret = append(ret, &rpc.Class{
-			Id:             c.ID.String(),
-			Name:           c.Name,
-			IsPrivate:      c.IsPrivate,
-			HasStarted:     c.HasStarted,
-			Language:       c.Language,
-			Topic:          c.Topic,
-			StartAt:        c.StartAt,
-			EndAt:          c.EndAt,
-			CreatedAt:      c.CreatedAt,
-			ConversationId: c.ConversationID,
-			TeacherId:      tID.String(),
+			Id:         c.ID.String(),
+			Name:       c.Name,
+			IsPrivate:  c.IsPrivate,
+			HasStarted: c.HasStarted,
+			Language:   c.Language,
+			Topic:      c.Topic,
+			StartAt:    c.StartAt,
+			EndAt:      c.EndAt,
+			CreatedAt:  c.CreatedAt,
+			TeacherId:  tID.String(),
 		})
 	}
 	return ret, nil
@@ -402,43 +401,6 @@ func (s *Service) DeleteAvailability(ctx context.Context, id string) error {
 	}
 
 	return nil
-}
-
-func (s *Service) StartClass(ctx context.Context, classId string) error {
-	s.logger.Info("start class", "classId", classId)
-
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
-	}
-
-	class, err := db.Pg.FindClass(ctx, cID)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
-	}
-
-	err = db.Pg.SetClassHasStarted(ctx, class.ID)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	return s.wsService.StartClass(class.ConversationID, httpmw.ContextUID(ctx))
-}
-
-func (s *Service) EndClass(ctx context.Context, classId string) error {
-	s.logger.Info("end class", "classId", classId)
-
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
-	}
-
-	class, err := db.Pg.FindClass(ctx, cID)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
-	}
-
-	return s.wsService.EndClass(class.ConversationID)
 }
 
 func (s *Service) CancelClass(ctx context.Context, classId string) ([]*rpc.User, *rpc.User, error) {

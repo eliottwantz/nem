@@ -36,3 +36,7 @@ WHERE id = $2;
 -- name: DeleteUser :exec
 DELETE FROM "user"
 WHERE id = $1;
+-- name: AddStripeCustomerId :exec
+UPDATE "user"
+SET stripe_customer_id = $1
+WHERE id = $2;

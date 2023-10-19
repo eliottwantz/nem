@@ -8,6 +8,7 @@ CREATE TABLE "user" (
     "prefered_language" TEXT NOT NULL DEFAULT 'en',
     "avatar_file_path" TEXT NOT NULL DEFAULT '',
     "avatar_url" TEXT NOT NULL DEFAULT '',
+    "stripe_customer_id" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -149,7 +150,7 @@ CREATE TABLE "class" (
     "is_private" BOOLEAN NOT NULL,
     "language" TEXT NOT NULL,
     "topic" TEXT NOT NULL,
-    "conversation_id" BIGINT NOT NULL REFERENCES "conversations" ("id") ON DELETE RESTRICT,
+    -- "conversation_id" BIGINT NOT NULL REFERENCES "conversations" ("id") ON DELETE RESTRICT,
     "time_slot_id" UUID NOT NULL REFERENCES "time_slots" ("id") ON DELETE RESTRICT,
     "has_started" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()

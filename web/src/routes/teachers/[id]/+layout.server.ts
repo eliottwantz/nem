@@ -22,7 +22,7 @@ export async function load({ params, fetch, locals: { session, user } }) {
 
 	if (!res[0].ok) {
 		console.log(res[0].error)
-		throw error(res[0].error.status, 'User not found')
+		throw error(res[0].error.status, 'Teacher not found')
 	}
 
 	return {

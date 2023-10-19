@@ -46,10 +46,9 @@ INSERT INTO "class" (
         is_private,
         language,
         topic,
-        conversation_id,
         time_slot_id
     )
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 -- name: AddStudentToClass :exec
 INSERT INTO "student_class" (student_id, class_id)

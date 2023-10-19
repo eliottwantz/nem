@@ -45,7 +45,7 @@
 		<div class="space-y-2">
 			<label class="label">
 				<span>{$t('login.email')}</span>
-				<input class="input" name="email" type="text" bind:value={$superF.email} />
+				<input class="input" name="email" type="email" bind:value={$superF.email} />
 			</label>
 			{#if $errors.email}
 				<p class="text-error-500">{$errors.email}</p>

@@ -28,6 +28,7 @@ func FromDbUser(dbUser *db.User) *User {
 	return &User{
 		Id:               dbUser.ID.String(),
 		Email:            dbUser.Email,
+		StripeCustomerId: dbUser.StripeCustomerID.String,
 		FirstName:        dbUser.FirstName,
 		LastName:         dbUser.LastName,
 		Role:             string(dbUser.Role),
@@ -129,6 +130,7 @@ func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 		AvatarUrl:        t.AvatarUrl,
 		CreatedAt:        t.CreatedAt,
 		UpdatedAt:        t.UpdatedAt,
+		StripeCustomerId: t.StripeCustomerID.String,
 		Bio:              t.Bio,
 		HourRate:         t.HourRate,
 		TopAgent:         t.TopAgent,

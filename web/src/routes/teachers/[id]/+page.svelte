@@ -5,14 +5,37 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
 	import TakeTrialClass from '$lib/components/TakeTrialClass/TakeTrialClass.svelte'
-	import { Tab, TabGroup, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton'
+	import {
+		Tab,
+		TabGroup,
+		getDrawerStore,
+		getModalStore,
+		getToastStore
+	} from '@skeletonlabs/skeleton'
+	import { onMount } from 'svelte'
 
 	export let data
+	console.log('DATA', data)
 
 	const modalStore = getModalStore()
 	const drawerStore = getDrawerStore()
-
+	const toastStore = getToastStore()
 	let tabSet: number = 0
+
+	onMount(() => {
+		if ($page.url.searchParams.get('take-trial-class') === 'cancel') {
+			toastStore.trigger({
+				message: 'Payment cancelled',
+				background: 'bg-error-500'
+			})
+		}
+		if ($page.url.searchParams.get('take-trial-class') === 'success') {
+			toastStore.trigger({
+				message: 'Payment successful',
+				background: 'bg-success-500'
+			})
+		}
+	})
 
 	async function scheduleClass() {
 		modalStore.trigger({

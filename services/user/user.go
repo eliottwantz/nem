@@ -287,3 +287,18 @@ func (s *Service) Delete(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (s *Service) AddStripeCustomerId(ctx context.Context, stripeId string) error {
+	if stripeId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty stripe id"))
+	}
+	err := db.Pg.AddStripeCustomerId(ctx, db.AddStripeCustomerIdParams{
+		StripeCustomerID: sql.NullString{String: stripeId, Valid: true},
+		ID:               httpmw.ContextUID(ctx),
+	})
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	return nil
+}

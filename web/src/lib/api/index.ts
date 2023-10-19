@@ -7,7 +7,8 @@ import {
 	TeacherServiceAPI,
 	UserServiceAPI,
 	WebrpcError,
-	type Fetch
+	type Fetch,
+	PublicServiceAPI
 } from './api.gen'
 
 export let apiEndpoint =
@@ -28,6 +29,7 @@ export const doFetch = (f: Fetch, session: Session): Fetch => {
 }
 
 export const fetchers = {
+	publicService: (f: Fetch) => new PublicServiceAPI(apiEndpoint, f),
 	userService: (f: Fetch, session: Session) =>
 		new UserServiceAPI(apiEndpoint, doFetch(f, session)),
 	classService: (f: Fetch, session: Session) =>

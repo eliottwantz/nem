@@ -82,17 +82,16 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 
 	return &rpc.ClassDetails{
 		Class: &rpc.Class{
-			Id:             dbClass.ID.String(),
-			Name:           dbClass.Name,
-			Language:       dbClass.Language,
-			HasStarted:     dbClass.HasStarted,
-			Topic:          dbClass.Topic,
-			ConversationId: dbClass.ConversationID,
-			TeacherId:      dbClass.TeacherID.String(),
-			IsPrivate:      dbClass.IsPrivate,
-			StartAt:        dbClass.StartAt,
-			EndAt:          dbClass.EndAt,
-			CreatedAt:      dbClass.CreatedAt,
+			Id:         dbClass.ID.String(),
+			Name:       dbClass.Name,
+			Language:   dbClass.Language,
+			HasStarted: dbClass.HasStarted,
+			Topic:      dbClass.Topic,
+			TeacherId:  dbClass.TeacherID.String(),
+			IsPrivate:  dbClass.IsPrivate,
+			StartAt:    dbClass.StartAt,
+			EndAt:      dbClass.EndAt,
+			CreatedAt:  dbClass.CreatedAt,
 		},
 		Users:   rpcUsers,
 		Teacher: rpc.FromDbTeacher(teacher),
@@ -163,31 +162,22 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				s.logger.Warn("failed to add student to class", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 			}
-			err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
-				UserID:         uID,
-				ConversationID: exists.ConversationID,
-			})
-			if err != nil {
-				s.logger.Warn("failed to add user to conversation", "error", err)
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
-			}
 			err = tx.Commit()
 			if err != nil {
 				s.logger.Warn("failed to commit transaction", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 			}
 			return &rpc.Class{
-				Id:             exists.ID.String(),
-				TeacherId:      timeSlot.TeacherID.String(),
-				IsPrivate:      exists.IsPrivate,
-				HasStarted:     exists.HasStarted,
-				Name:           exists.Name,
-				Language:       exists.Language,
-				ConversationId: exists.ConversationID,
-				Topic:          exists.Topic,
-				StartAt:        timeSlot.StartAt,
-				EndAt:          timeSlot.EndAt,
-				CreatedAt:      exists.CreatedAt,
+				Id:         exists.ID.String(),
+				TeacherId:  timeSlot.TeacherID.String(),
+				IsPrivate:  exists.IsPrivate,
+				HasStarted: exists.HasStarted,
+				Name:       exists.Name,
+				Language:   exists.Language,
+				Topic:      exists.Topic,
+				StartAt:    timeSlot.StartAt,
+				EndAt:      timeSlot.EndAt,
+				CreatedAt:  exists.CreatedAt,
 			}, nil
 		} else if err != sql.ErrNoRows {
 			s.logger.Warn("failed to find class by timeslot", "error", err)
@@ -195,30 +185,12 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		}
 	}
 
-	convo, err := tx.CreateConversation(ctx, true)
-	if err != nil {
-		s.logger.Warn("failed to create conversation", "error", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
-	}
-
-	for _, u := range []uuid.UUID{uID, timeSlot.TeacherID} {
-		err = tx.AddUserToConversation(ctx, db.AddUserToConversationParams{
-			UserID:         u,
-			ConversationID: convo.ID,
-		})
-		if err != nil {
-			s.logger.Warn("failed to add user to conversation", "error", err)
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
-		}
-	}
-
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
-		Name:           req.Name,
-		Language:       req.Language,
-		Topic:          req.Topic,
-		TimeSlotID:     tID,
-		ConversationID: convo.ID,
-		IsPrivate:      req.IsPrivate,
+		Name:       req.Name,
+		Language:   req.Language,
+		Topic:      req.Topic,
+		TimeSlotID: tID,
+		IsPrivate:  req.IsPrivate,
 	})
 	if err != nil {
 		s.logger.Warn("failed to create class", "error", err)
@@ -241,16 +213,15 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	}
 
 	return &rpc.Class{
-		Id:             dbClass.ID.String(),
-		TeacherId:      timeSlot.TeacherID.String(),
-		IsPrivate:      dbClass.IsPrivate,
-		HasStarted:     dbClass.HasStarted,
-		Name:           dbClass.Name,
-		Language:       dbClass.Language,
-		Topic:          dbClass.Topic,
-		ConversationId: dbClass.ConversationID,
-		StartAt:        timeSlot.StartAt,
-		EndAt:          timeSlot.EndAt,
-		CreatedAt:      dbClass.CreatedAt,
+		Id:         dbClass.ID.String(),
+		TeacherId:  timeSlot.TeacherID.String(),
+		IsPrivate:  dbClass.IsPrivate,
+		HasStarted: dbClass.HasStarted,
+		Name:       dbClass.Name,
+		Language:   dbClass.Language,
+		Topic:      dbClass.Topic,
+		StartAt:    timeSlot.StartAt,
+		EndAt:      timeSlot.EndAt,
+		CreatedAt:  dbClass.CreatedAt,
 	}, nil
 }

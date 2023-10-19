@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 
 	"nem/api"
@@ -11,6 +10,7 @@ import (
 	"nem/db"
 	"nem/services/class"
 	"nem/services/message"
+	"nem/services/public"
 	"nem/services/student"
 	"nem/services/teacher"
 	"nem/services/user"
@@ -46,11 +46,9 @@ func setup() error {
 	// SessionService layer
 	log.Info("Creating services...")
 
+	publicService := public.NewService()
+
 	userService := user.NewService()
-	if err != nil {
-		return fmt.Errorf("error creating user service: %w", err)
-	}
-	// adminService := admin.NewService()
 	classService := class.NewService()
 
 	// Endpoints layer
@@ -61,15 +59,13 @@ func setup() error {
 	})
 	go wsHub.Run()
 	wsService := ws.NewService(wsHub)
-	// webrtcManager := webrtc.NewManager()
-
 	teacherService := teacher.NewService(wsService)
 	studentService := student.NewService(wsService)
 	messageService := message.NewService(wsService)
 	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
 
 	api := api.New(&api.Services{
-		// AdminService:   adminService,
+		PublicService:  publicService,
 		UserService:    userService,
 		TeacherService: teacherService,
 		StudentService: studentService,

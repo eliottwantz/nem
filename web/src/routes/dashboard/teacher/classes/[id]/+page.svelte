@@ -43,23 +43,6 @@
 			body: 'Are you sure you want to start the class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-
-				const session = $page.data.session
-				if (!session) return
-
-				const res = await safeFetch(
-					fetchers.teacherService(fetch, session).startClass({
-						classId: data.classDetails.class.id
-					})
-				)
-				if (!res.ok) {
-					toastStore.trigger({
-						message: res.cause,
-						background: 'variant-filled-error'
-					})
-					return
-				}
-
 				await goto(`/dashboard/class/${data.classDetails.class.id}`)
 			}
 		})

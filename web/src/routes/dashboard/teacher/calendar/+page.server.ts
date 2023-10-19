@@ -6,7 +6,9 @@ export async function load({ locals: { session }, fetch }) {
 
 	const streams = await Promise.all([
 		safeFetch(
-			fetchers.teacherService(fetch, session).listClasses({ teacherId: session.user.id })
+			fetchers
+				.teacherService(fetch, session)
+				.listClassesOfTeacher({ teacherId: session.user.id })
 		),
 		safeFetch(
 			fetchers
