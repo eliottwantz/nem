@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
-	"github.com/livekit/protocol/auth"
 )
 
 type Service struct {
@@ -96,19 +94,6 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		Users:   rpcUsers,
 		Teacher: rpc.FromDbTeacher(teacher),
 	}, nil
-}
-
-func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, error) {
-	at := auth.NewAccessToken(utils.Cfg.LiveKitApiKey, utils.Cfg.LiveKitApiSecret)
-	grant := &auth.VideoGrant{
-		RoomJoin: true,
-		Room:     roomId,
-	}
-	at.AddGrant(grant).
-		SetIdentity(httpmw.ContextUID(ctx).String()).
-		SetValidFor(time.Hour)
-
-	return at.ToJWT()
 }
 
 func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassRequest) (*rpc.Class, error) {

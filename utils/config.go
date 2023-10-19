@@ -11,14 +11,12 @@ import (
 var Cfg Config
 
 type Config struct {
-	Host             string `env:"HOST,default=0.0.0.0"`
-	Port             string `env:"PORT,default=8080"`
-	Production       bool   `env:"PRODUCTION,default=false"`
-	DatabaseURL      string `env:"DATABASE_URL,required=true"`
-	RedisURL         string `env:"REDIS_URL,required=true"`
-	JWTSignKey       string `env:"JWT_SIGN_KEY,required=true"`
-	LiveKitApiKey    string `env:"LIVEKIT_API_KEY,required=true"`
-	LiveKitApiSecret string `env:"LIVEKIT_API_SECRET,required=true"`
+	Host        string `env:"HOST,default=0.0.0.0"`
+	Port        string `env:"PORT,default=8080"`
+	Production  bool   `env:"PRODUCTION,default=false"`
+	DatabaseURL string `env:"DATABASE_URL,required=true"`
+	RedisURL    string `env:"REDIS_URL,required=true"`
+	JWTSignKey  string `env:"JWT_SIGN_KEY,required=true"`
 }
 
 func LoadEnv() error {
