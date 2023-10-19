@@ -1,10 +1,12 @@
 import { fetchers, safeFetch } from '$lib/api'
 import type { Class } from '$lib/api/api.gen'
-import { redirect, type Actions } from '@sveltejs/kit'
+import { redirect } from '@sveltejs/kit'
 
 export async function load({ locals: { session, user }, fetch }) {
 	if (!session || !user) throw redirect(302, '/login')
-	const res = await safeFetch(fetchers.teacherService(fetch, session).listClasses())
+	const res = await safeFetch(
+		fetchers.teacherService(fetch, session).listClassesOfTeacher({ teacherId: user.id })
+	)
 	if (!res.ok) {
 		console.log(res.error)
 		return {

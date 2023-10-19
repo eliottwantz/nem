@@ -18,7 +18,8 @@ func (r CreateStudentRequest) Validate() error {
 func (r CreateClassRequest) Validate() error {
 	return validation.ValidateStruct(&r,
 		validation.Field(&r.Name, validation.Required),
-		validation.Field(&r.TopicTaughtId, validation.Required),
+		validation.Field(&r.Language, validation.Required),
+		validation.Field(&r.Topic, validation.Required),
 		validation.Field(&r.TimeSlotId, validation.Required),
 	)
 }

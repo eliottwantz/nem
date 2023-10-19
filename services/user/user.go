@@ -56,49 +56,34 @@ func (s *Service) FindUserByID(ctx context.Context, id string) (*rpc.User, error
 	return rpc.FromDbUser(u), nil
 }
 
-func (s *Service) FindTeacherByID(ctx context.Context, id string) (*rpc.Teacher, error) {
-	uID, err := uuid.Parse(id)
+func (s *Service) ListTeachers(ctx context.Context, filters *rpc.ListTeachersFilters) ([]*rpc.Teacher, error) {
+	teachers, err := db.Pg.ListTeachers(ctx)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("empty user id param"))
-	}
-	u, err := db.Pg.FindTeacherByID(ctx, uID)
-	if err != nil {
-		s.logger.Warn("could not find teacher", "err", err)
-		if err == sql.ErrNoRows {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
-		}
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrGet)
-	}
-	topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
-	if err != nil {
-		s.logger.Warn("could not find topic taught", "err", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
-	if err != nil {
-		s.logger.Warn("could not find spoken languages", "err", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
-	return rpc.FromDbTeacher(
-		&db.FindTeacherByIDRow{
-			ID:               u.ID,
-			Email:            u.Email,
-			FirstName:        u.FirstName,
-			LastName:         u.LastName,
-			Role:             u.Role,
-			PreferedLanguage: u.PreferedLanguage,
-			AvatarFilePath:   u.AvatarFilePath,
-			TopAgent:         u.TopAgent,
-			Bio:              u.Bio,
-			HourRate:         u.HourRate,
-			AvatarUrl:        u.AvatarUrl,
-			CreatedAt:        u.CreatedAt,
-			UpdatedAt:        u.UpdatedAt,
-		},
-		spokenLangs,
-		topicsTaught,
-	), nil
+	ret := make([]*rpc.Teacher, 0, len(teachers))
+	for _, t := range teachers {
+		ret = append(ret, rpc.FromDbTeacher(&db.FindTeacherByIDRow{
+			ID:               t.ID,
+			Email:            t.Email,
+			FirstName:        t.FirstName,
+			LastName:         t.LastName,
+			Role:             t.Role,
+			PreferedLanguage: t.PreferedLanguage,
+			AvatarFilePath:   t.AvatarFilePath,
+			AvatarUrl:        t.AvatarUrl,
+			CreatedAt:        t.CreatedAt,
+			UpdatedAt:        t.UpdatedAt,
+			Bio:              t.Bio,
+			HourRate:         t.HourRate,
+			TopAgent:         t.TopAgent,
+			SpokenLanguages:  t.SpokenLanguages,
+			TopicsTaught:     t.TopicsTaught,
+		}))
+	}
+
+	return ret, nil
 }
 
 func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentRequest) error {
@@ -142,6 +127,8 @@ func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentReque
 }
 
 func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherRequest) error {
+	ErrCreateTeacher := errors.New("failed to create user")
+
 	if !db.Role(req.Role).Valid() {
 		s.logger.Warn("invalid role", "role", req.Role)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("invalid role"))
@@ -149,7 +136,8 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("could not create transaction", "err", err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 	defer tx.Rollback()
 
@@ -165,14 +153,11 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 	})
 	if err != nil {
 		s.logger.Warn("could not create user", "err", err)
-		if err == sql.ErrNoRows {
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, ErrNotFound)
-		}
 		var pgErr *pq.Error
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
 				log.Warn("Trying to create a user that already exists")
-				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("user already created. please login"))
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("user already created. please login if it is your account"))
 			}
 		}
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
@@ -185,7 +170,7 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 	})
 	if err != nil {
 		s.logger.Warn("could not create teacher", "err", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrCreateTeacher)
 	}
 
 	for _, lang := range req.SpokenLanguages {
@@ -195,19 +180,24 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 		})
 		if err != nil {
 			if err == sql.ErrNoRows {
-				// Create it
+				langDB, err := tx.FindLanguage(ctx, lang.Language)
+				if err != nil {
+					s.logger.Warn("error finding language", "err", err)
+					return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New(" Language not supported. Please contact us if you wish to teach this language"))
+				}
+				// Create spoken language
 				exists, err = tx.CreateSpokenLanguage(ctx, db.CreateSpokenLanguageParams{
-					Language:    lang.Language,
+					LanguageID:  langDB.ID,
 					Proficiency: lang.Proficiency,
 				})
 				if err != nil {
 					s.logger.Warn("could not create spoken language", "err", err)
-					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+					return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 				}
 
 			} else {
 				s.logger.Warn("error finding spoken language", "err", err)
-				return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, utils.ErrInternalServer)
 			}
 		}
 		// Add it to teacher's spoken languages
@@ -217,14 +207,30 @@ func (s *Service) CreateTeacher(ctx context.Context, req *rpc.CreateTeacherReque
 		})
 		if err != nil {
 			s.logger.Warn("could not add spoken language to teacher", "err", err)
-			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
+		}
+	}
+
+	for _, topic := range req.TopicsTaught {
+		dbTopic, err := tx.FindTopic(ctx, topic)
+		if err != nil {
+			s.logger.Warn("could not find topic", "err", err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New(" Topic not supported. please contact us if you wish to teach this topic"))
+		}
+		err = tx.AddTeacherToTopics(ctx, db.AddTeacherToTopicsParams{
+			TeacherID: u.ID,
+			TopicID:   dbTopic.ID,
+		})
+		if err != nil {
+			s.logger.Warn("could not add teacher to topic", "err", err)
+			return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		s.logger.Warn("could not commit transaction creating user", "err", err)
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
 	return nil
@@ -279,5 +285,20 @@ func (s *Service) Delete(ctx context.Context) error {
 		s.logger.Error("unable to delete user", "err", err)
 		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrDelete)
 	}
+	return nil
+}
+
+func (s *Service) AddStripeCustomerId(ctx context.Context, stripeId string) error {
+	if stripeId == "" {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty stripe id"))
+	}
+	err := db.Pg.AddStripeCustomerId(ctx, db.AddStripeCustomerIdParams{
+		StripeCustomerID: sql.NullString{String: stripeId, Valid: true},
+		ID:               httpmw.ContextUID(ctx),
+	})
+	if err != nil {
+		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
 	return nil
 }

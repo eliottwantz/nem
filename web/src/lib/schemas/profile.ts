@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-export const availableLanguages = ['English', 'French', 'Arabic'] as const
 export const proficiencyLevels = ['Native', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
+export type ProficiencyLevel = (typeof proficiencyLevels)[number]
 export const proficienciesMeaning = {
 	A1: 'Beginner',
 	A2: 'Elementary',
@@ -12,12 +12,18 @@ export const proficienciesMeaning = {
 	Native: 'Native'
 } as const
 
-const spokenLanguages = z.array(
-	z.object({
-		language: z.enum(availableLanguages),
+const topicsTaught = z
+	.string()
+	.nonempty({ message: 'Topic is required' })
+	.array()
+	.min(1, { message: 'At least one topic is required' })
+const spokenLanguages = z
+	.object({
+		language: z.string().nonempty({ message: 'Language is required' }),
 		proficiency: z.enum(proficiencyLevels)
 	})
-)
+	.array()
+	.min(1, { message: 'At least one language is required' })
 export type SpokenLanguages = z.infer<typeof spokenLanguages>
 
 export const createTeacherSchema = z.object({
@@ -26,6 +32,7 @@ export const createTeacherSchema = z.object({
 	role: z.string().nonempty({ message: 'Role is required' }),
 	preferedLanguage: z.string(),
 	spokenLanguages,
+	topicsTaught,
 	bio: z.string().nonempty({ message: 'Bio is required' }),
 	hourRate: z
 		.number({ invalid_type_error: 'Hour rate must be a number' })

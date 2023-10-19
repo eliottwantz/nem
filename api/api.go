@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	_ "embed"
+
 	"nem/api/helmet"
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -20,6 +22,7 @@ import (
 	"nem/db"
 	"nem/services/class"
 	"nem/services/message"
+	"nem/services/public"
 	"nem/services/student"
 	"nem/services/teacher"
 	"nem/services/user"
@@ -35,12 +38,15 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+//go:embed apple-verif-file
+var AppleVerifFile string
+
 type Api struct {
 	http *http.Server
 
 	r chi.Router
 
-	// adminService   *admin.Service
+	publicService  *public.Service
 	userService    *user.Service
 	teacherService *teacher.Service
 	studentService *student.Service
@@ -52,7 +58,7 @@ type Api struct {
 }
 
 type Services struct {
-	// AdminService   *admin.Service
+	PublicService  *public.Service
 	UserService    *user.Service
 	TeacherService *teacher.Service
 	StudentService *student.Service
@@ -101,8 +107,8 @@ func New(
 			Handler: r,
 		},
 
-		r: r,
-		// adminService:   services.AdminService,
+		r:              r,
+		publicService:  services.PublicService,
 		userService:    services.UserService,
 		teacherService: services.TeacherService,
 		studentService: services.StudentService,
@@ -123,6 +129,7 @@ func New(
 
 func (api *Api) routes() {
 	handlers := struct {
+		publicService  rpc.WebRPCServer
 		userService    rpc.WebRPCServer
 		authService    rpc.WebRPCServer
 		adminService   rpc.WebRPCServer
@@ -131,8 +138,8 @@ func (api *Api) routes() {
 		studentService rpc.WebRPCServer
 		messageService rpc.WebRPCServer
 	}{
-		userService: rpc.NewUserServiceAPIServer(api.userService),
-		// adminService:   rpc.NewAdminServiceAPIServer(api.adminService),
+		userService:    rpc.NewUserServiceAPIServer(api.userService),
+		publicService:  rpc.NewPublicServiceAPIServer(api.publicService),
 		classService:   rpc.NewClassServiceAPIServer(api.classService),
 		teacherService: rpc.NewTeacherServiceAPIServer(api.teacherService),
 		studentService: rpc.NewStudentServiceAPIServer(api.studentService),
@@ -151,6 +158,14 @@ func (api *Api) routes() {
 				w.Header().Set("Content-Type", "text/plain")
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte("OK"))
+			})
+			r.Get("/apple-verif-file", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(AppleVerifFile))
+			})
+			r.Post("/rpc/PublicServiceAPI/CreateOrJoinClass", func(w http.ResponseWriter, req *http.Request) {
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
+				handlers.publicService.ServeHTTP(w, req)
 			})
 
 			// Private routes

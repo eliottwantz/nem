@@ -15,6 +15,7 @@ struct User
     - preferedLanguage: string
     - avatarFilePath: string
     - avatarUrl: string
+    - stripeCustomerId: string
     - createdAt: timestamp
     - updatedAt: timestamp
 
@@ -30,13 +31,14 @@ struct Teacher
     - bio: string
     - hourRate: int32
     - topAgent: bool
+    - rating: int32
     - spokenLanguages: []SpokenLanguage
-    - topicsTaught: []TopicTaught
+    - topicsTaught: []string
+    - stripeCustomerId: string
     - createdAt: timestamp
     - updatedAt: timestamp
 
 struct SpokenLanguage
-    - id: int32
     - language: string
     - proficiency: string
 
@@ -56,20 +58,21 @@ struct CreateTeacherRequest
     - bio: string
     - hourRate: int32
     - spokenLanguages: []CreateTeacherRequestSpokenLanguage
+    - topicsTaught: []string
 
 struct CreateTeacherRequestSpokenLanguage
     - language: string
     - proficiency: string
 
-struct TopicTaught
+struct Topic
     - id: int32
-    - language: string
     - topic: string
 
 
 struct Class
     - id: string
     - teacherId: string
+    - conversationId: int64
     - isPrivate: bool
     - name: string
     - hasStarted: bool
@@ -85,17 +88,17 @@ struct ClassDetails
     - teacher: Teacher
 
 
-struct Message
+struct SentMessage
     - text: string
-    - classId: string
+    - conversationId: int64
 
-struct MessageResponse
-    - id: string
+struct Message
+    - id: int64
     - text: string
-    - createdAt: timestamp
+    - sentAt: timestamp
     - updatedAt: timestamp
-    - classId: string
-    - user: User
+    - conversationId: int64
+    - sender: User
 
 struct TimesRequest
     - startAt: timestamp
@@ -119,61 +122,83 @@ struct TimeSlot
     - endAt: timestamp
 
 struct CreateClassRequest
+    - userId: string
     - name: string
     - isPrivate: bool
-    - topicTaughtId: int32
+    - language: string
+    - topic: string
     - timeSlotId: string
 
+struct ListTeachersFilters
+    - language: string
+    - topic: string
+    - topAgent: bool
+    - priceMax: int32
+    - ratingMin: int32
+    - ratingMax: int32
+    - cursor: string
+
+struct Conversation
+    - id: int64
+    - isClassChat: bool
+    - users: []User
+    - lastSent: timestamp
+    - createdAt: timestamp
 
 #################### STRUCTS ####################
 
 
 #################### SERVICES ####################
 
+service PublicServiceAPI
+    - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
+
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
-    - FindTeacherByID(id: string) => (teacher: Teacher)
+    - ListTeachers(filters: ListTeachersFilters) => (teachers: []Teacher)
     - CreateStudent(req: CreateStudentRequest) 
     - CreateTeacher(req: CreateTeacherRequest)
     - UpdatePreferedLanguage(lang: string)
     - UpdateAvatar(path: string, url: string)
     - DeleteAvatar()
     - Delete()
+    - AddStripeCustomerId(stripeId: string)
 
 service StudentServiceAPI
     - ListClasses() => (classes: []Class)
-    - ListTeachers() => (teachers: []Teacher)
-    - JoinClass(classId: string)
-    - LeaveClass(classId: string)
+    - ListTeachersOfStudent() => (teachers: []Teacher)
 
 service TeacherServiceAPI
-    - ListClasses() => (classes: []Class)
-    - ListStudents() => (students: []User)
-    - ListTopicsTaught() => (topicsTaught: []TopicTaught)
-    - Teach(language: string, topic: string) => (topicTaught: TopicTaught)
-    - ListAvailabilities() => (timeSlots: []TimeSlot)
+    - FindTeacherByID(id: string) => (teacher: Teacher)
+    - ListClassesOfTeacher(teacherId: string) => (classes: []Class)
+    - ListStudentsOfTeacher(teacherId: string) => (students: []User)
+    - FindStudentOfTeacher(studentId: string, teacherId: string) => (student: User)
+    - ListAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
+
+    - Teach(topic: string)
+    - StopTeachingTopics(topics: []string)
     - AddAvailability(req: AddAvailabilityRequest) => (timeSlots: []TimeSlot)
     - UpdateAvailability(req: EditAvailabilityRequest) => (timeSlots: []TimeSlot)
     - DeleteAvailability(id: string)
     - CancelClass(classId: string) => (usersInClass: []User, teacher: User)
-    - StartClass(classId: string)
-    - EndClass(classId: string)
 
 service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
-    - ListAvailableTopicsTaught() => (topicsTaught: []TopicTaught)
-    - ListTeachersForTopicTaught(lang: string, topic: string) => (teachers: []Teacher)
-    - ListTopicsTaughtOfTeacher(teacherId: string) => (topicsTaught: []TopicTaught)
-    - ListTeacherAvailabilities(teacherId: string) => (timeSlots: []TimeSlot)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
     - GetJoinToken(roomId: string) => (token: string)
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
-    - SendMessage(message: Message)
-
+    - CreateOneToOneConversation(recepientId: string) => (conversationId: int64)
+    - SendMessageToUser(message: SentMessage)
+    - SendMessageToClass(message: SentMessage)
+    - FindConversationById(conversationId: int64) => (conversation: Conversation)
+    - FindOneToOneConversation(user1Id: string, user2Id: string) => (conversation: Conversation)
+    - ListConversationsOfUser(userId: string) => (conversations: []Conversation)
+    - ListMessagesOfConversation(conversationId: int64) => (messages: []Message)
+    - ListMessagesOfConversationWithCursor(conversationId: int64, cursor: timestamp) => (messages: []Message, isMore: bool)
 
 #################### SERVICES ####################
 

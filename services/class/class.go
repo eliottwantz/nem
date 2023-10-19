@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"slices"
 	"time"
 
 	"nem/api/httpmw"
@@ -28,26 +27,28 @@ func NewService() *Service {
 }
 
 func (s *Service) ListLanguages(ctx context.Context) ([]string, error) {
-	return db.Languages, nil
-}
-
-func (s *Service) ListTopics(ctx context.Context) ([]string, error) {
-	return db.Topics, nil
-}
-
-func (s *Service) ListAvailableTopicsTaught(ctx context.Context) ([]*rpc.TopicTaught, error) {
-	res, err := db.Pg.ListAvailableTopicTaught(ctx)
+	res, err := db.Pg.ListLanguages(ctx)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.TopicTaught, 0, len(res))
-	for _, c := range res {
-		ret = append(ret, &rpc.TopicTaught{
-			Id:       c.ID,
-			Language: c.Language,
-			Topic:    c.Topic,
-		})
+	ret := make([]string, 0, len(res))
+	for _, l := range res {
+		ret = append(ret, l.Language)
+	}
+
+	return ret, nil
+}
+
+func (s *Service) ListTopics(ctx context.Context) ([]string, error) {
+	res, err := db.Pg.ListTopics(ctx)
+	if err != nil {
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+	}
+
+	ret := make([]string, 0, len(res))
+	for _, t := range res {
+		ret = append(ret, t.Topic)
 	}
 
 	return ret, nil
@@ -59,28 +60,17 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
 	}
 
-	tx, err := db.Pg.NewTx(ctx)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	defer tx.Rollback()
-
-	dbClass, err := tx.FindClass(ctx, cID)
+	dbClass, err := db.Pg.FindClass(ctx, cID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	dbUsers, err := tx.ListStudentsInClass(ctx, cID)
+	dbUsers, err := db.Pg.ListStudentsInClass(ctx, cID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	teacher, lang, topics, err := db.FindFullTeacher(ctx, tx.Queries, dbClass.TeacherID)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	err = tx.Commit()
+	teacher, err := db.Pg.FindTeacherByID(ctx, dbClass.TeacherID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
@@ -104,7 +94,7 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 			CreatedAt:  dbClass.CreatedAt,
 		},
 		Users:   rpcUsers,
-		Teacher: rpc.FromDbTeacher(teacher, lang, topics),
+		Teacher: rpc.FromDbTeacher(teacher),
 	}, nil
 }
 
@@ -121,98 +111,8 @@ func (s *Service) GetJoinToken(ctx context.Context, roomId string) (string, erro
 	return at.ToJWT()
 }
 
-func (s *Service) ListTeachersForTopicTaught(ctx context.Context, lang string, topic string) ([]*rpc.Teacher, error) {
-	if lang == "" {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("lang is empty"))
-	}
-	if topic == "" {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("topic is empty"))
-	}
-	teachers, err := db.Pg.ListTeachersForTopicTaught(ctx, db.ListTeachersForTopicTaughtParams{
-		Language: lang,
-		Topic:    topic,
-	})
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	ret := make([]*rpc.Teacher, 0, len(teachers))
-	for _, u := range teachers {
-		topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		ret = append(ret, rpc.FromDbTeacher(
-			&db.FindTeacherByIDRow{
-				ID:               u.ID,
-				Email:            u.Email,
-				FirstName:        u.FirstName,
-				LastName:         u.LastName,
-				Role:             u.Role,
-				PreferedLanguage: u.PreferedLanguage,
-				AvatarFilePath:   u.AvatarFilePath,
-				AvatarUrl:        u.AvatarUrl,
-				Bio:              u.Bio,
-				HourRate:         u.HourRate,
-				CreatedAt:        u.CreatedAt,
-				UpdatedAt:        u.UpdatedAt,
-			},
-			spokenLangs,
-			topicsTaught,
-		))
-	}
-
-	return ret, nil
-}
-
-func (s *Service) ListTeacherAvailabilities(ctx context.Context, teacherId string) ([]*rpc.TimeSlot, error) {
-	tID, err := uuid.Parse(teacherId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
-	}
-
-	timeSlots, err := db.Pg.ListTeachersAvailableTimeSlots(ctx, tID)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	userClasses, err := db.Pg.ListClassesOfStudent(ctx, httpmw.ContextUID(ctx))
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	userClassesTimeSlots := make([]string, 0, len(userClasses))
-	for _, c := range userClasses {
-		userClassesTimeSlots = append(userClassesTimeSlots, c.TimeSlotID.String())
-	}
-
-	now := time.Now()
-	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
-	for _, t := range timeSlots {
-		if slices.Contains(userClassesTimeSlots, t.ID.String()) {
-			continue
-		}
-		if t.NumUsers >= 4 {
-			continue
-		}
-		if t.StartAt.Before(now) || t.EndAt.Before(now) {
-			continue
-		}
-		ret = append(ret, &rpc.TimeSlot{
-			Id:        t.ID.String(),
-			TeacherId: t.TeacherID.String(),
-			StartAt:   t.StartAt,
-			EndAt:     t.EndAt,
-		})
-	}
-
-	return ret, nil
-}
-
 func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassRequest) (*rpc.Class, error) {
+	ErrorCreateJoinClass := errors.New("failed to create or join class")
 	err := req.Validate()
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, err)
@@ -220,7 +120,8 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	tx, err := db.Pg.NewTx(ctx)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to start transaction", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 	defer tx.Rollback()
 
@@ -231,23 +132,26 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	timeSlot, err := tx.FindTimeSlot(ctx, tID)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to find time slot", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	uID := httpmw.ContextUID(ctx)
-
 	{
 		exists, err := tx.FindClassByTimeslot(ctx, timeSlot.ID)
 		if err == nil {
 			// Add user to this class if there if less than 4 students in the class and not private
 			users, err := tx.ListStudentsInClass(ctx, exists.ID)
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to list students in class", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 			}
 			if len(users) >= 4 {
+				s.logger.Warn("class is full", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is full"))
 			}
 			if exists.IsPrivate {
+				s.logger.Warn("class is private", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is private"))
 			}
 			err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
@@ -255,11 +159,13 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				StudentID: uID,
 			})
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to add student to class", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 			}
 			err = tx.Commit()
 			if err != nil {
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+				s.logger.Warn("failed to commit transaction", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 			}
 			return &rpc.Class{
 				Id:         exists.ID.String(),
@@ -274,23 +180,21 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 				CreatedAt:  exists.CreatedAt,
 			}, nil
 		} else if err != sql.ErrNoRows {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+			s.logger.Warn("failed to find class by timeslot", "error", err)
+			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 		}
 	}
 
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
-		Name:          req.Name,
-		TopicTaughtID: req.TopicTaughtId,
-		TimeSlotID:    tID,
-		IsPrivate:     req.IsPrivate,
+		Name:       req.Name,
+		Language:   req.Language,
+		Topic:      req.Topic,
+		TimeSlotID: tID,
+		IsPrivate:  req.IsPrivate,
 	})
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	learnInfo, err := tx.FindTopicTaught(ctx, req.TopicTaughtId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to create class", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
@@ -298,12 +202,14 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		StudentID: uID,
 	})
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to add student to class", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, ErrorCreateJoinClass)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
+		s.logger.Warn("failed to commit transaction", "error", err)
+		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
 	return &rpc.Class{
@@ -312,33 +218,10 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		IsPrivate:  dbClass.IsPrivate,
 		HasStarted: dbClass.HasStarted,
 		Name:       dbClass.Name,
-		Language:   learnInfo.Language,
-		Topic:      learnInfo.Topic,
+		Language:   dbClass.Language,
+		Topic:      dbClass.Topic,
 		StartAt:    timeSlot.StartAt,
 		EndAt:      timeSlot.EndAt,
 		CreatedAt:  dbClass.CreatedAt,
 	}, nil
-}
-
-func (s *Service) ListTopicsTaughtOfTeacher(ctx context.Context, teacherId string) ([]*rpc.TopicTaught, error) {
-	tID, err := uuid.Parse(teacherId)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
-	}
-
-	learns, err := db.Pg.ListTopicTaughtOfTeacher(ctx, tID)
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-
-	ret := make([]*rpc.TopicTaught, 0, len(learns))
-	for _, l := range learns {
-		ret = append(ret, &rpc.TopicTaught{
-			Id:       l.ID,
-			Language: l.Language,
-			Topic:    l.Topic,
-		})
-	}
-
-	return ret, nil
 }

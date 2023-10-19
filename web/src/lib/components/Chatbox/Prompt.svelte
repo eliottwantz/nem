@@ -6,10 +6,12 @@
 	import { userStore } from '$lib/stores/user'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { page } from '$app/stores'
+	import type { User } from '$lib/api/api.gen'
 
-	export let currentRoom: string
+	export let conversationId: number | undefined // undefined if no conversation exists yet
+	export let recepient: User | undefined // undefined if group chat
+
 	const toastStore = getToastStore()
-
 	const maxChars = 1000
 
 	let prompt = ''
@@ -25,21 +27,47 @@
 	async function handleSubmit() {
 		if (!prompt || !prompt.trim()) return
 		isSubmiting = true
+
+		if (!conversationId) {
+			const res = await safeFetch(
+				fetchers.messageService(fetch, $page.data.session).createOneToOneConversation({
+					recepientId: recepient!.id
+				})
+			)
+			if (!res.ok) {
+				toastStore.trigger({
+					message: res.cause,
+					background: 'bg-error-500'
+				})
+				return
+			}
+			conversationId = res.data.conversationId
+		}
+
 		ws.send({
 			action: 'stopTyping',
-			roomId: currentRoom,
+			roomId: conversationId,
 			data: $userStore?.firstName
 		})
 		currentlyTyping = false
 
-		const res = await safeFetch(
-			fetchers.messageService(fetch, $page.data.session!).sendMessage({
-				message: {
-					classId: currentRoom,
-					text: prompt.trim()
-				}
-			})
-		)
+		const res = recepient
+			? await safeFetch(
+					fetchers.messageService(fetch, $page.data.session!).sendMessageToUser({
+						message: {
+							conversationId: conversationId,
+							text: prompt.trim()
+						}
+					})
+			  )
+			: await safeFetch(
+					fetchers.messageService(fetch, $page.data.session!).sendMessageToClass({
+						message: {
+							conversationId: conversationId,
+							text: prompt.trim()
+						}
+					})
+			  )
 
 		isSubmiting = false
 		if (!res.ok) {
@@ -56,17 +84,18 @@
 	}
 
 	function handleOnInput(): void {
+		if (!conversationId) return
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',
-				roomId: currentRoom,
+				roomId: conversationId,
 				data: $userStore?.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
-				roomId: currentRoom,
+				roomId: conversationId,
 				data: $userStore?.firstName
 			})
 			currentlyTyping = false

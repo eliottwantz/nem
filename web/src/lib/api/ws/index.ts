@@ -4,17 +4,17 @@ import { chatStore } from '$lib/stores/chatStore'
 import { userStore } from '$lib/stores/user'
 import type { Session } from '@supabase/supabase-js'
 import { derived, get, writable } from 'svelte/store'
-import type { MessageResponse } from '../api.gen'
+import type { Message } from '../api.gen'
 
 type SendPayload = {
 	action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
-	roomId: string
+	roomId: number
 	data: any
 }
 
 type ReceivePayload =
 	| { action: 'none' }
-	| { action: 'newMessage' | 'editMessage' | 'deleteMessage'; data: MessageResponse }
+	| { action: 'newMessage' | 'editMessage' | 'deleteMessage'; data: Message }
 	| { action: 'addToTyping' | 'removeFromTyping'; data: string }
 	| { action: 'classEnded' }
 
@@ -53,7 +53,7 @@ class WS {
 			const user = get(userStore)
 			switch (payload.action) {
 				case 'newMessage':
-					chatStore.addMessage(payload.data)
+					chatStore.addNewMessage(payload.data)
 					break
 				case 'addToTyping':
 					if (!user) break

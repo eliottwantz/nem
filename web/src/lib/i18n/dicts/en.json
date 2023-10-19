@@ -6,13 +6,14 @@
     "contact": "Contact",
     "login": "Login",
     "calendar": "Calendar",
-    "learn": "Learn",
+    "teachers": "Teachers",
     "teach": "Teach",
     "manage": "Manage",
     "users": "Users",
     "classes": "Classes",
     "currentClass": "Current class",
-    "myteachers": "My teachers"
+    "myteachers": "My teachers",
+    "messages": "Messages"
   },
   "home": {
     "slogan": "Our Modern Education",
@@ -37,7 +38,9 @@
     "register": "Register",
     "spokenLanguages": "Spoken Languages",
     "bio": "Biography",
-    "hourRate": "Hour Rate"
+    "hourRate": "Hour Rate",
+    "proficiencyLevel": "Proficiency",
+    "topicsTaught": "Topics you want to teach"
   },
   "login": {
     "email": "Email",
@@ -59,8 +62,8 @@
       "buttonBack": "← Back",
       "buttonNext": "Next →"
     },
-    "bookLearn": "Take a course",
-    "language-teach": "Teaching language"
+    "language-teach": "Teaching language",
+    "checkout": "Checkout"
   },
   "calendar": {
     "title": "Calendar",

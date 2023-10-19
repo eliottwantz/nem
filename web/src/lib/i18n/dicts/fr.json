@@ -19,7 +19,6 @@
     "title": "NEM Pass, votre accès à une éducation sans frontières."
   },
   "learn": {
-    "bookLearn": "Prendre un cours",
     "stepper": {
       "buttonBack": "← Retour",
       "buttonNext": "Suivant →",
@@ -27,7 +26,8 @@
     },
     "title": "Apprendre",
     "topic": "Sujet",
-    "language-teach": "Langue d'enseignement"
+    "language-teach": "Langue d'enseignement",
+    "checkout": "Prendre un cours"
   },
   "loading": "Tamponnage de votre NEM Pass. \nAttachez vos ceintures de sécurité! \nNous préparons le décollage.",
   "login": {

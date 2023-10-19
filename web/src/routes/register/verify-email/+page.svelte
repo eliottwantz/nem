@@ -23,6 +23,13 @@
 			background: 'bg-success-500'
 		})
 	}
+	$: if (data.invalidCode) {
+		toastStore.trigger({
+			message: 'This link is invalid or has expired. Please try again.',
+			background: 'bg-error-500',
+			autohide: false
+		})
+	}
 
 	onMount(() => {
 		if (data.invalidCode) {

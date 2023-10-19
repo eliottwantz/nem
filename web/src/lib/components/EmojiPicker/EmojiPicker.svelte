@@ -22,6 +22,14 @@
 <button on:click={() => emojiModal.showModal()}>Show emojis</button>
 <dialog bind:this={emojiModal}>
 	<div>
-		<unicode-emoji-picker bind:this={emojiPicker}></unicode-emoji-picker>
+		<unicode-emoji-picker version="15.0" bind:this={emojiPicker}></unicode-emoji-picker>
 	</div>
 </dialog>
+
+<style>
+	unicode-emoji-picker {
+		--emoji-font-family: 'NotoColorFlags', apple color emoji, segoe ui emoji, 'Noto Color Emoji',
+			android emoji, emojisymbols, emojione mozilla, twemoji mozilla, segoe ui symbol,
+			sans-serif;
+	}
+</style>

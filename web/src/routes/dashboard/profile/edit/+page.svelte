@@ -19,6 +19,12 @@
 
 	let files: FileList
 	let uploading = false
+	let previewSrc = ''
+	$: if (files && files.length > 0) previewSrc = URL.createObjectURL(files[0])
+	$: if (files && files.length === 0 && previewSrc) {
+		URL.revokeObjectURL(previewSrc)
+	}
+	$: console.log('preview url', previewSrc)
 	$: console.log('AVATAR PATH', data.user.avatarFilePath)
 	$: console.log('AVATAR URL', data.user.avatarUrl)
 
@@ -72,11 +78,20 @@
 				accept="image/*"
 				on:change={onChangeHandler}
 			>
-				<Avatar
-					src={data.user.avatarUrl}
-					initials={getInitials(data.user.firstName, data.user.lastName)}
-					width="w-20"
-				/>
+				{#if previewSrc}
+					<!-- Preview -->
+					<Avatar
+						src={previewSrc}
+						initials={getInitials(data.user.firstName, data.user.lastName)}
+						width="w-20"
+					/>
+				{:else}
+					<Avatar
+						src={data.user.avatarUrl}
+						initials={getInitials(data.user.firstName, data.user.lastName)}
+						width="w-20"
+					/>
+				{/if}
 			</FileButton>
 		</label>
 		<button disabled={uploading} class="variant-ghost-primary btn">Upload</button>

@@ -2,7 +2,6 @@ package student
 
 import (
 	"context"
-	"errors"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -10,7 +9,6 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -49,38 +47,7 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
 	return ret, nil
 }
 
-func (s *Service) JoinClass(ctx context.Context, classId string) error {
-	s.logger.Info("join class", "classId", classId)
-
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
-	}
-
-	class, err := db.Pg.FindClass(ctx, cID)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
-	}
-
-	return s.wsService.JoinClass(class.ID, httpmw.ContextUID(ctx))
-}
-
-func (s *Service) LeaveClass(ctx context.Context, classId string) error {
-	s.logger.Info("leave class", "classId", classId)
-
-	cID, err := uuid.Parse(classId)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty classId param"))
-	}
-	class, err := db.Pg.FindClass(ctx, cID)
-	if err != nil {
-		return rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("class not found"))
-	}
-
-	return s.wsService.LeaveClass(class.ID, httpmw.ContextUID(ctx))
-}
-
-func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
+func (s *Service) ListTeachersOfStudent(ctx context.Context) ([]*rpc.Teacher, error) {
 	res, err := db.Pg.ListTeachersOfStudent(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
@@ -88,32 +55,23 @@ func (s *Service) ListTeachers(ctx context.Context) ([]*rpc.Teacher, error) {
 
 	ret := make([]*rpc.Teacher, 0, len(res))
 	for _, u := range res {
-		topicsTaught, err := db.Pg.ListTopicTaughtOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		spokenLangs, err := db.Pg.ListSpokenLanguagesOfTeacher(ctx, u.ID)
-		if err != nil {
-			return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-		}
-		ret = append(ret, rpc.FromDbTeacher(
-			&db.FindTeacherByIDRow{
-				ID:               u.ID,
-				Email:            u.Email,
-				FirstName:        u.FirstName,
-				LastName:         u.LastName,
-				Role:             u.Role,
-				PreferedLanguage: u.PreferedLanguage,
-				AvatarFilePath:   u.AvatarFilePath,
-				Bio:              u.Bio,
-				HourRate:         u.HourRate,
-				AvatarUrl:        u.AvatarUrl,
-				CreatedAt:        u.CreatedAt,
-				UpdatedAt:        u.UpdatedAt,
-			},
-			spokenLangs,
-			topicsTaught,
-		))
+		ret = append(ret, rpc.FromDbTeacher(&db.FindTeacherByIDRow{
+			ID:               u.ID,
+			Email:            u.Email,
+			FirstName:        u.FirstName,
+			LastName:         u.LastName,
+			Role:             db.Role(u.Role),
+			PreferedLanguage: u.PreferedLanguage,
+			AvatarFilePath:   u.AvatarFilePath,
+			AvatarUrl:        u.AvatarUrl,
+			CreatedAt:        u.CreatedAt,
+			UpdatedAt:        u.UpdatedAt,
+			Bio:              u.Bio,
+			HourRate:         u.HourRate,
+			TopAgent:         u.TopAgent,
+			SpokenLanguages:  u.SpokenLanguages,
+			TopicsTaught:     u.TopicsTaught,
+		}))
 	}
 
 	return ret, nil

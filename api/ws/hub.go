@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"nem/api/httpmw"
+	"nem/db"
 	"nem/services/user"
 
 	"github.com/charmbracelet/log"
@@ -82,26 +83,61 @@ func (h *Hub) Run() {
 
 		case c := <-h.register:
 			h.clients[c] = struct{}{}
+			// Add user to all rooms he is involved in
+			convos, err := db.Pg.ListConversationsOfUser(ctx, c.id)
+			if err != nil {
+				h.logger.Warn("failed to list conversations of user", "error", err)
+			} else {
+				for _, convo := range convos {
+					room, err := h.findRoomById(convo.ID)
+					if err != nil {
+						room = h.createRoom(convo.ID)
+					}
+					room.register <- c
+				}
+			}
 			h.logger.Info("ws client connected", userIDKey, c.id)
 
 		case c := <-h.unregister:
+			for room := range c.rooms {
+				room.unregister <- c
+			}
+			close(c.send)
+			_ = c.conn.Close()
 			delete(h.clients, c)
 			h.logger.Info("ws client disconnected", userIDKey, c.id)
 		}
 	}
 }
 
-// PublishToRoom sends a message to all connected clients in a specific room.
+// PublishToRoom publishes a message to a specific room in the Hub.
 //
-// The function takes in the message to be sent as a byte array and the ID of the room.
-// It finds the room with the given ID and publishes the message to all clients in that room.
-func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId uuid.UUID) {
-	if room, err := h.findRoomById(roomId); err == nil {
-		room.broadcast <- msg
+// It takes an `EmittedMessage` object `msg` and the `roomId` of the room
+// where the message should be published. If the room does not exist, it creates
+// a new room and adds all users in the conversation to the room. It then
+// broadcasts the message to all clients in the room.
+func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId int64) {
+	room, err := h.findRoomById(roomId)
+	if err != nil {
+		// Create room and add all users in conversation to room
+		room = h.createRoom(roomId)
+		userIDs, err := db.Pg.ListUserIDsInConversation(ctx, roomId)
+		if err != nil {
+			h.logger.Warn("failed to list user ids in conversation when creating room to publish message", "error", err)
+			return
+		}
+		for _, userID := range userIDs {
+			c, err := h.findClientById(userID)
+			if err != nil {
+				continue
+			}
+			room.register <- c
+		}
 	}
+	room.broadcast <- msg
 }
 
-func (h *Hub) findRoomById(id uuid.UUID) (*Room, error) {
+func (h *Hub) findRoomById(id int64) (*Room, error) {
 	for room := range h.rooms {
 		if room.id == id {
 			return room, nil
@@ -121,7 +157,7 @@ func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
 	return nil, errors.New("ws client not found")
 }
 
-func (h *Hub) createRoom(id uuid.UUID) *Room {
+func (h *Hub) createRoom(id int64) *Room {
 	room := NewRoom(id, h.redisClient)
 	go room.Run()
 	h.rooms[room] = struct{}{}

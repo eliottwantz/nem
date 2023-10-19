@@ -40,7 +40,7 @@ tasks:
 
   gen:
     cmds:
-      - webrpc-gen -schema="main.ridl" -target=golang@v0.12.5 -pkg=rpc -server -out="./api/rpc/rpc.gen.go"
+      - webrpc-gen -schema="main.ridl" -target=golang -pkg=rpc -server -out="./api/rpc/rpc.gen.go"
       - webrpc-gen -schema="main.ridl" -target=typescript -client -out="./web/src/lib/api/api.gen.ts"
     desc: Generate webrpc files
 
@@ -60,6 +60,10 @@ tasks:
     dir: "./web"
     cmds:
       - pnpm dev
+
+  stripe:
+    cmds:
+      - stripe listen --forward-to localhost:5173/stripe/webhooks
 
   desktop:
     dir: "./web"

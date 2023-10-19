@@ -41,6 +41,7 @@ export const actions = {
 		throw redirect(302, '/dashboard/profile')
 	},
 	oauth: async ({ url, locals: { supabase } }) => {
+		console.log('oauth:', url.pathname)
 		const providerStr = url.searchParams.get('provider')
 		console.log('oauth:', url.pathname, ',provider =', providerStr)
 		if (!providerStr) {
@@ -50,7 +51,7 @@ export const actions = {
 		const { data, error } = await supabase.auth.signInWithOAuth({
 			provider,
 			options: {
-				redirectTo: `${url.origin}/auth/callback?provider=${providerStr}`
+				redirectTo: `${url.origin}/login/oauth/callback?provider=${providerStr}`
 			}
 		})
 		if (error) {

@@ -1,92 +1,77 @@
 <script lang="ts">
-	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import {
-		availableLanguages,
 		proficienciesMeaning,
 		proficiencyLevels,
 		type SpokenLanguages
 	} from '$lib/schemas/profile'
+	import { TrashIcon } from 'lucide-svelte'
+	import { t } from 'svelte-i18n'
 
+	export let availableLanguages: string[]
 	export let spokenLanguages: SpokenLanguages
-	let languages: string[] = (JSON.parse(JSON.stringify(availableLanguages)) as string[]).sort(
-		(a, b) => a.localeCompare(b)
+	let languages = (JSON.parse(JSON.stringify(availableLanguages)) as string[]).sort((a, b) =>
+		a.localeCompare(b)
+	)
+	$: selectableLanguages = languages.filter(
+		(l) => !spokenLanguages.map((l) => l.language).includes(l)
 	)
 
-	let langSelect: HTMLSelectElement
-	let profSelect: HTMLSelectElement
+	$: console.log('languages', languages)
+	$: console.log('spokenLanguages', spokenLanguages)
 
-	function addSpokenLanguage() {
-		if (!spokenLanguages) {
-			return
-		}
-		spokenLanguages = [
-			//@ts-expect-error
-			...spokenLanguages,
-			{
-				//@ts-expect-error
-				language: langSelect.value,
-				//@ts-expect-error
-				proficiency: profSelect.value
-			}
-		]
-		// Remove the added language from the available languages
-		languages = languages
-			.filter((l) => l !== langSelect.value)
-			.sort((a, b) => a.localeCompare(b))
+	function add() {
+		if (selectableLanguages.length === 0) return
+		spokenLanguages = spokenLanguages.concat({
+			language: selectableLanguages[0],
+			proficiency: proficiencyLevels[0]
+		})
 	}
 
-	function removeSpokenLanguage(index: number, lang: string) {
+	function remove(index: number, lang: string) {
 		console.log(index, lang)
-		if (!spokenLanguages) return
 		spokenLanguages.splice(index, 1)
 		spokenLanguages = spokenLanguages
-		languages = [...languages, lang].sort((a, b) => a.localeCompare(b))
 	}
 </script>
 
-{#if spokenLanguages}
-	{#each spokenLanguages as spokenL, i}
-		<ul>
-			<li class="flex items-center gap-2">
-				<div>
-					<span>{spokenL.language}</span>
-					<span class="variant-filled-success badge">{spokenL.proficiency}</span>
-				</div>
-				<button
-					on:click={() => removeSpokenLanguage(i, spokenL.language)}
-					type="button"
-					class="variant-filled-error btn-icon h-5 w-5"
-				>
-					<DeleteIcon class="h-4 w-4" />
-				</button>
-			</li>
-		</ul>
-	{/each}
-{/if}
+<div>
+	<div class="grid grid-cols-2">
+		<p>{$t('register.spokenLanguages')}</p>
+		<p>{$t('register.proficiencyLevel')}</p>
+	</div>
 
-<div class="flex gap-4">
-	<div>
-		<select bind:this={langSelect} class="select">
-			{#each languages as language}
-				<option value={language}>{language}</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<select bind:this={profSelect} class="select">
-			{#each proficiencyLevels as p}
-				{#if p === 'Native'}
-					<option value={p}>{p}</option>
-				{:else}
-					<option value={p}>{p} - {proficienciesMeaning[p]}</option>
-				{/if}
-			{/each}
-		</select>
-	</div>
-	<button
-		disabled={languages.length === 0}
-		class="variant-filled-surface btn"
-		type="button"
-		on:click={addSpokenLanguage}>Add</button
-	>
+	{#each spokenLanguages as spokenL, i}
+		<div class="grid grid-cols-2 gap-2">
+			<div>
+				<select bind:value={spokenL.language} class="select">
+					{#each languages as language}
+						<option disabled={!selectableLanguages.includes(language)} value={language}
+							>{language}</option
+						>
+					{/each}
+				</select>
+			</div>
+			<div class="flex items-center gap-2">
+				<select bind:value={spokenL.proficiency} class="select">
+					{#each proficiencyLevels as p}
+						{#if p === 'Native'}
+							<option value={p}>{p}</option>
+						{:else}
+							<option value={p}>{p} - {proficienciesMeaning[p]}</option>
+						{/if}
+					{/each}
+				</select>
+				<button
+					on:click={() => remove(i, spokenL.language)}
+					type="button"
+					class="variant-filled-error btn-icon h-8 w-8"
+				>
+					<TrashIcon />
+				</button>
+			</div>
+		</div>
+	{/each}
+	{#if selectableLanguages.length > 0}
+		<button class="mt-4 font-semibold" type="button" on:click={add}> Add a language </button>
+	{/if}
 </div>
