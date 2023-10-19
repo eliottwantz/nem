@@ -187,7 +187,6 @@ service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
-    - GetJoinToken(roomId: string) => (token: string)
     - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
