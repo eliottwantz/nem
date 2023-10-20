@@ -201,7 +201,7 @@ func (s *Service) FindOneToOneConversation(ctx context.Context, user1Id string, 
 	})
 	if err != nil {
 		s.logger.Warn("failed to find conversation", "error", err)
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("failed to find conversation"))
+		return nil, rpc.ErrorWithCause(rpc.ErrNotFound, errors.New("failed to find conversation"))
 	}
 
 	return &rpc.Conversation{

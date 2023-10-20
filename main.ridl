@@ -72,7 +72,22 @@ struct Topic
 struct Class
     - id: string
     - teacherId: string
-    - conversationId: int64
+    - isPrivate: bool
+    - name: string
+    - hasStarted: bool
+    - language: string
+    - topic: string
+    - startAt: timestamp
+    - endAt: timestamp
+    - createdAt: timestamp
+
+struct ListClass
+    - id: string
+    - teacherId: string
+    - teacherFirstName: string
+    - teacherLastName: string
+    - teacherAvatarUrl: string
+    - teacherAvatarFilePath: string
     - isPrivate: bool
     - name: string
     - hasStarted: bool
@@ -166,7 +181,7 @@ service UserServiceAPI
     - AddStripeCustomerId(stripeId: string)
 
 service StudentServiceAPI
-    - ListClasses() => (classes: []Class)
+    - ListClasses() => (classes: []ListClass)
     - ListTeachersOfStudent() => (teachers: []Teacher)
 
 service TeacherServiceAPI
@@ -206,6 +221,7 @@ service MessageServiceAPI
 
 error 401 Unauthorized "Unauthorized access" HTTP 401
 error 403 PermissionDenied "Permission denied" HTTP 403
+error 404 NotFound "Not found" HTTP 404
 error 1 UserAlreadyRegistered "User already registered" HTTP 400
 
 #################### ERRORS ####################

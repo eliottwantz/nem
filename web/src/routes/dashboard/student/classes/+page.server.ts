@@ -1,5 +1,5 @@
 import { fetchers, safeFetch } from '$lib/api'
-import type { Class } from '$lib/api/api.gen'
+import type { Class, ListClass } from '$lib/api/api.gen'
 import { redirect } from '@sveltejs/kit'
 
 export async function load({ fetch, locals: { session, user } }) {
@@ -8,11 +8,9 @@ export async function load({ fetch, locals: { session, user } }) {
 	if (!res.ok) {
 		console.log(res.error)
 		return {
-			classes: [] as Class[]
+			classes: [] as ListClass[]
 		}
 	}
-
-	console.log(res.data.classes)
 
 	return {
 		classes: res.data.classes.map((c) => ({

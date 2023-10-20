@@ -169,27 +169,36 @@ func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindC
 const listClassesOfStudent = `-- name: ListClassesOfStudent :many
 SELECT cl.id, cl.name, cl.is_private, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
     t.teacher_id,
+    u.first_name,
+    u.last_name,
+    u.avatar_url,
+    u.avatar_file_path,
     t.start_at,
     t.end_at
 FROM "class" cl
     JOIN "student_class" sc ON cl.id = sc.class_id
     JOIN "time_slots" t ON cl.time_slot_id = t.id
+    JOIN "user" u ON u.id = t.teacher_id
 WHERE sc.student_id = $1
 ORDER BY sc.created_at ASC
 `
 
 type ListClassesOfStudentRow struct {
-	ID         uuid.UUID
-	Name       string
-	IsPrivate  bool
-	Language   string
-	Topic      string
-	TimeSlotID uuid.UUID
-	HasStarted bool
-	CreatedAt  time.Time
-	TeacherID  uuid.UUID
-	StartAt    time.Time
-	EndAt      time.Time
+	ID             uuid.UUID
+	Name           string
+	IsPrivate      bool
+	Language       string
+	Topic          string
+	TimeSlotID     uuid.UUID
+	HasStarted     bool
+	CreatedAt      time.Time
+	TeacherID      uuid.UUID
+	FirstName      string
+	LastName       string
+	AvatarUrl      string
+	AvatarFilePath string
+	StartAt        time.Time
+	EndAt          time.Time
 }
 
 func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID) ([]*ListClassesOfStudentRow, error) {
@@ -211,6 +220,10 @@ func (q *Queries) ListClassesOfStudent(ctx context.Context, studentID uuid.UUID)
 			&i.HasStarted,
 			&i.CreatedAt,
 			&i.TeacherID,
+			&i.FirstName,
+			&i.LastName,
+			&i.AvatarUrl,
+			&i.AvatarFilePath,
 			&i.StartAt,
 			&i.EndAt,
 		); err != nil {

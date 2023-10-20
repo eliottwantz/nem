@@ -44,8 +44,8 @@
 				ref: TakeTrialClass,
 				props: {
 					teacher: data.teacher,
-					classes: data.classes,
-					availabilities: data.availabilities
+					classes: await data.streamed.classes,
+					availabilities: await data.streamed.availabilities
 				}
 			}
 		})

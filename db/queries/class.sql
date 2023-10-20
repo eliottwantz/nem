@@ -24,11 +24,16 @@ WHERE sc.class_id = $1;
 -- name: ListClassesOfStudent :many
 SELECT cl.*,
     t.teacher_id,
+    u.first_name,
+    u.last_name,
+    u.avatar_url,
+    u.avatar_file_path,
     t.start_at,
     t.end_at
 FROM "class" cl
     JOIN "student_class" sc ON cl.id = sc.class_id
     JOIN "time_slots" t ON cl.time_slot_id = t.id
+    JOIN "user" u ON u.id = t.teacher_id
 WHERE sc.student_id = $1
 ORDER BY sc.created_at ASC;
 -- name: ListClassesOfTeacher :many

@@ -1,5 +1,5 @@
-export function getInitials(firstName: string, lastName: string): string {
-	return `${firstName[0]}${lastName[0]}`
+export function getInitials(firstName?: string, lastName?: string): string {
+	return `${firstName?.at(0)}${lastName?.at(0)}`
 }
 
 export function getPublicName(firstname?: string, lastname?: string): string {

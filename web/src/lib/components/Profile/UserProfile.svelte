@@ -3,7 +3,7 @@
 	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import Avatar from '../Avatar.svelte'
 
-	export let user: User
+	export let user: Partial<User>
 	export let avatarWidth = 'w-28'
 	export let avatarHeight = 'h-28'
 	console.log(user.avatarUrl === '""')

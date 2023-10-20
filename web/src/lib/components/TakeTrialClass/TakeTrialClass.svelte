@@ -24,7 +24,6 @@
 	$: lockedEvent = !$takeClassStore.selectedEvent
 	$: console.log('selectedLanguage', $takeClassStore.selectedLanguage)
 	$: console.log('selectedTopic', $takeClassStore.selectedTopic)
-	$: console.log('selectedIsPrivate', $takeClassStore.selectedIsPrivate)
 	$: console.log('selectedTimeSlot', $takeClassStore.selectedEvent)
 	$: topics = teacher.topicsTaught
 	$: console.log('topics', topics)
@@ -61,6 +60,7 @@
 	async function scheduleClass() {
 		if (takeClassStore.isInValid()) return
 
+		$takeClassStore.selectedIsPrivate = true
 		try {
 			const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
 				method: 'POST',
@@ -82,34 +82,6 @@
 				background: 'bg-error-500'
 			})
 		}
-
-		// await goto(`/teachers/${teacher.id}/take-class`)
-		// await invalidateAll()
-		// modalStore.close()
-
-		// if (!$page.data.session) return
-		// const res = await safeFetch(
-		// fetchers.classService(fetch, $page.data.session).createOrJoinClass({
-		// 	req: {
-		// 		isPrivate: $takeClassStore.selectedIsPrivate,
-		// 		language: $takeClassStore.selectedLanguage!,
-		// 		topic: $takeClassStore.selectedTopic!,
-		// 		name: `${$takeClassStore.selectedLanguage} - ${$takeClassStore.selectedTopic}`,
-		// 		timeSlotId: $takeClassStore.selectedEvent!.event.id
-		// 	}
-		// })
-		// )
-		// if (!res.ok) {
-		// 	toastStore.trigger({
-		// 		message: res.cause,
-		// 		background: 'bg-error-500'
-		// 	})
-		// 	return
-		// }
-
-		// await goto('/dashboard/student/classes')
-		// await invalidateAll()
-		// modalStore.close()
 	}
 </script>
 
@@ -152,15 +124,6 @@
 				{/each}
 			</ListBox>
 		</Step>
-		<Step>
-			<svelte:fragment slot="header">Private?</svelte:fragment>
-			<input
-				class="checkbox"
-				type="checkbox"
-				name="isPrivate"
-				bind:checked={$takeClassStore.selectedIsPrivate}
-			/>
-		</Step>
 		<Step locked={lockedEvent}>
 			<svelte:fragment slot="header">Time slots</svelte:fragment>
 			{#if availabilities.length > 0}
@@ -182,7 +145,6 @@
 
 			<p>Selected language: {$takeClassStore.selectedLanguage}</p>
 			<p>Selected topic: {$takeClassStore.selectedTopic}</p>
-			<p>Private class: {$takeClassStore.selectedIsPrivate ? 'Yes' : 'No'}</p>
 			{#if $takeClassStore.selectedEvent}
 				<p>
 					Selected time slot: {new Date(

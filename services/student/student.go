@@ -23,25 +23,29 @@ func NewService(wsService *ws.Service) *Service {
 	}
 }
 
-func (s *Service) ListClasses(ctx context.Context) ([]*rpc.Class, error) {
+func (s *Service) ListClasses(ctx context.Context) ([]*rpc.ListClass, error) {
 	res, err := db.Pg.ListClassesOfStudent(ctx, httpmw.ContextUID(ctx))
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	ret := make([]*rpc.Class, 0, len(res))
+	ret := make([]*rpc.ListClass, 0, len(res))
 	for _, c := range res {
-		ret = append(ret, &rpc.Class{
-			Id:         c.ID.String(),
-			Name:       c.Name,
-			HasStarted: c.HasStarted,
-			TeacherId:  c.TeacherID.String(),
-			IsPrivate:  c.IsPrivate,
-			Language:   c.Language,
-			Topic:      c.Topic,
-			StartAt:    c.StartAt,
-			EndAt:      c.EndAt,
-			CreatedAt:  c.CreatedAt,
+		ret = append(ret, &rpc.ListClass{
+			Id:                    c.ID.String(),
+			Name:                  c.Name,
+			HasStarted:            c.HasStarted,
+			TeacherFirstName:      c.FirstName,
+			TeacherLastName:       c.LastName,
+			TeacherAvatarUrl:      c.AvatarUrl,
+			TeacherAvatarFilePath: c.AvatarFilePath,
+			TeacherId:             c.TeacherID.String(),
+			IsPrivate:             c.IsPrivate,
+			Language:              c.Language,
+			Topic:                 c.Topic,
+			StartAt:               c.StartAt,
+			EndAt:                 c.EndAt,
+			CreatedAt:             c.CreatedAt,
 		})
 	}
 	return ret, nil
