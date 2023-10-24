@@ -12,6 +12,7 @@ import (
 	"nem/services/message"
 	"nem/services/public"
 	"nem/services/student"
+	"nem/services/subscription"
 	"nem/services/teacher"
 	"nem/services/user"
 	"nem/utils"
@@ -47,9 +48,9 @@ func setup() error {
 	log.Info("Creating services...")
 
 	publicService := public.NewService()
-
 	userService := user.NewService()
 	classService := class.NewService()
+	subscriptionService := subscription.NewService()
 
 	// Endpoints layer
 	log.Info("Creating websocket hub...")
@@ -65,15 +66,16 @@ func setup() error {
 	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
 
 	api := api.New(&api.Services{
-		PublicService:  publicService,
-		UserService:    userService,
-		TeacherService: teacherService,
-		StudentService: studentService,
-		ClassService:   classService,
-		MessageService: messageService,
-		WsHub:          wsHub,
-		WsService:      wsService,
-		JWTAuth:        jwtAuth,
+		PublicService:       publicService,
+		SubscriptionService: subscriptionService,
+		UserService:         userService,
+		TeacherService:      teacherService,
+		StudentService:      studentService,
+		ClassService:        classService,
+		MessageService:      messageService,
+		WsHub:               wsHub,
+		WsService:           wsService,
+		JWTAuth:             jwtAuth,
 	})
 
 	return api.Start(ctx)

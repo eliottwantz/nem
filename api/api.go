@@ -24,6 +24,7 @@ import (
 	"nem/services/message"
 	"nem/services/public"
 	"nem/services/student"
+	"nem/services/subscription"
 	"nem/services/teacher"
 	"nem/services/user"
 	"nem/utils"
@@ -46,27 +47,29 @@ type Api struct {
 
 	r chi.Router
 
-	publicService  *public.Service
-	userService    *user.Service
-	teacherService *teacher.Service
-	studentService *student.Service
-	classService   *class.Service
-	messageService *message.Service
-	wsHub          *ws.Hub
-	wsService      *ws.Service
-	jwauth         *jwtauth.JWTAuth
+	publicService       *public.Service
+	subscriptionService *subscription.Service
+	userService         *user.Service
+	teacherService      *teacher.Service
+	studentService      *student.Service
+	classService        *class.Service
+	messageService      *message.Service
+	wsHub               *ws.Hub
+	wsService           *ws.Service
+	jwauth              *jwtauth.JWTAuth
 }
 
 type Services struct {
-	PublicService  *public.Service
-	UserService    *user.Service
-	TeacherService *teacher.Service
-	StudentService *student.Service
-	ClassService   *class.Service
-	MessageService *message.Service
-	WsHub          *ws.Hub
-	WsService      *ws.Service
-	JWTAuth        *jwtauth.JWTAuth
+	PublicService       *public.Service
+	SubscriptionService *subscription.Service
+	UserService         *user.Service
+	TeacherService      *teacher.Service
+	StudentService      *student.Service
+	ClassService        *class.Service
+	MessageService      *message.Service
+	WsHub               *ws.Hub
+	WsService           *ws.Service
+	JWTAuth             *jwtauth.JWTAuth
 }
 
 func New(
@@ -107,16 +110,17 @@ func New(
 			Handler: r,
 		},
 
-		r:              r,
-		publicService:  services.PublicService,
-		userService:    services.UserService,
-		teacherService: services.TeacherService,
-		studentService: services.StudentService,
-		classService:   services.ClassService,
-		messageService: services.MessageService,
-		wsHub:          services.WsHub,
-		wsService:      services.WsService,
-		jwauth:         services.JWTAuth,
+		r:                   r,
+		publicService:       services.PublicService,
+		userService:         services.UserService,
+		subscriptionService: services.SubscriptionService,
+		teacherService:      services.TeacherService,
+		studentService:      services.StudentService,
+		classService:        services.ClassService,
+		messageService:      services.MessageService,
+		wsHub:               services.WsHub,
+		wsService:           services.WsService,
+		jwauth:              services.JWTAuth,
 	}
 
 	api.routes()
@@ -129,21 +133,23 @@ func New(
 
 func (api *Api) routes() {
 	handlers := struct {
-		publicService  rpc.WebRPCServer
-		userService    rpc.WebRPCServer
-		authService    rpc.WebRPCServer
-		adminService   rpc.WebRPCServer
-		classService   rpc.WebRPCServer
-		teacherService rpc.WebRPCServer
-		studentService rpc.WebRPCServer
-		messageService rpc.WebRPCServer
+		publicService       rpc.WebRPCServer
+		userService         rpc.WebRPCServer
+		subscriptionService rpc.WebRPCServer
+		authService         rpc.WebRPCServer
+		adminService        rpc.WebRPCServer
+		classService        rpc.WebRPCServer
+		teacherService      rpc.WebRPCServer
+		studentService      rpc.WebRPCServer
+		messageService      rpc.WebRPCServer
 	}{
-		userService:    rpc.NewUserServiceAPIServer(api.userService),
-		publicService:  rpc.NewPublicServiceAPIServer(api.publicService),
-		classService:   rpc.NewClassServiceAPIServer(api.classService),
-		teacherService: rpc.NewTeacherServiceAPIServer(api.teacherService),
-		studentService: rpc.NewStudentServiceAPIServer(api.studentService),
-		messageService: rpc.NewMessageServiceAPIServer(api.messageService),
+		userService:         rpc.NewUserServiceAPIServer(api.userService),
+		subscriptionService: rpc.NewSubscriptionServiceAPIServer(api.subscriptionService),
+		publicService:       rpc.NewPublicServiceAPIServer(api.publicService),
+		classService:        rpc.NewClassServiceAPIServer(api.classService),
+		teacherService:      rpc.NewTeacherServiceAPIServer(api.teacherService),
+		studentService:      rpc.NewStudentServiceAPIServer(api.studentService),
+		messageService:      rpc.NewMessageServiceAPIServer(api.messageService),
 	}
 
 	api.r.Group(func(r chi.Router) {
@@ -163,9 +169,13 @@ func (api *Api) routes() {
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte(AppleVerifFile))
 			})
-			r.Post("/rpc/PublicServiceAPI/CreateOrJoinClass", func(w http.ResponseWriter, req *http.Request) {
+			r.Post("/rpc/PublicServiceAPI/*", func(w http.ResponseWriter, req *http.Request) {
 				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
 				handlers.publicService.ServeHTTP(w, req)
+			})
+			r.Post("/rpc/SubscriptionServiceAPI/*", func(w http.ResponseWriter, req *http.Request) {
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
+				handlers.subscriptionService.ServeHTTP(w, req)
 			})
 
 			// Private routes

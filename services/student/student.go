@@ -2,6 +2,7 @@ package student
 
 import (
 	"context"
+	"errors"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -9,6 +10,7 @@ import (
 	"nem/db"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -79,4 +81,23 @@ func (s *Service) ListTeachersOfStudent(ctx context.Context) ([]*rpc.Teacher, er
 	}
 
 	return ret, nil
+}
+
+func (s *Service) GetHoursBankForTeacher(ctx context.Context, teacherId string) (int32, error) {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		s.logger.Warn("could not parse teacher id", "err", err)
+		return 0, rpc.ErrWebrpcBadRequest.WithCause(errors.New("empty teacher id param"))
+	}
+
+	res, err := db.Pg.GetHoursBankForTeacher(ctx, db.GetHoursBankForTeacherParams{
+		TeacherID: tID,
+		StudentID: httpmw.ContextUID(ctx),
+	})
+	if err != nil {
+		s.logger.Warn("could not get hours bank", "err", err)
+		return 0, rpc.ErrWebrpcBadResponse
+	}
+
+	return res.Hours, nil
 }

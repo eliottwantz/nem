@@ -1,10 +1,14 @@
 import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/static/private'
 import { fetchers, safeFetch } from '$lib/api'
-import type { User } from '$lib/api/api.gen'
 import { createStripeCustomer, stripe, type TrialClassMetaData } from '$lib/server/stripe'
 import type { TakeClassStore } from '$lib/stores/takeClassStore'
 import { error, json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
+
+export type SubscriptionMetadata = {
+	userId: string
+	prodId: string
+}
 
 export async function POST({ request, locals: { session, user }, fetch, url, params }) {
 	if (!session || !user) throw redirect(307, '/login')
@@ -18,7 +22,7 @@ export async function POST({ request, locals: { session, user }, fetch, url, par
 	}
 
 	try {
-		const req = (await request.json()) as TakeClassStore
+		const req = (await request.json()) as SubscriptionMetadata
 
 		debugger
 		let customer: Stripe.Customer
@@ -31,45 +35,30 @@ export async function POST({ request, locals: { session, user }, fetch, url, par
 		const stripeSession = await stripe.checkout.sessions.create({
 			customer: customer.id,
 			invoice_creation: { enabled: true },
-			mode: 'payment',
+			mode: 'subscription',
 			payment_method_types: ['card'],
 			metadata: {
 				userId: user.id,
-				isPrivate: `${req.selectedIsPrivate}`,
-				isTrial: 'true',
-				language: req.selectedLanguage!,
-				topic: req.selectedTopic!,
-				name: `${req.selectedLanguage} - ${req.selectedTopic}`,
-				timeSlotId: req.selectedEvent!.event.id
-			} satisfies TrialClassMetaData,
+				prodId: req.prodId
+			} satisfies SubscriptionMetadata,
 			line_items: [
 				{
 					price_data: {
 						currency: 'USD',
 						unit_amount: res.data.teacher.hourRate * 100,
-						product: STRIPE_PRODUCT_ID_TRIAL
+						product: req.prodId
 					},
 					quantity: 1
 				}
 			],
-			discounts: [
-				{
-					coupon: STRIPE_TRIAL_DISCOUNT_COUPON_ID
-				}
-			],
+			payment_method_collection: 'always',
 			billing_address_collection: 'required',
 			phone_number_collection: {
 				enabled: false
 			},
 			locale: user.preferedLanguage as Stripe.Checkout.SessionCreateParams.Locale,
-			success_url: `${url.origin}${url.pathname}`.replace(
-				'take-trial-class',
-				'?take-trial-class=success'
-			),
-			cancel_url: `${url.origin}${url.pathname}`.replace(
-				'take-trial-class',
-				'?take-trial-class=cancel'
-			)
+			success_url: `${url.origin}${url.pathname}`.replace('subscribe', '?subscribe=success'),
+			cancel_url: `${url.origin}${url.pathname}`.replace('subscribe', '?subscribe=cancel')
 		})
 		if (!stripeSession.url) throw error(500, 'Something went wrong')
 		return json({ url: stripeSession.url }, { status: 200 })

@@ -1,3 +1,4 @@
+import { invalidateAll } from '$app/navigation'
 import type { ServerMessage } from '$lib/schemas/error'
 import { loginSchema } from '$lib/schemas/login'
 import { AuthApiError, type Provider } from '@supabase/supabase-js'

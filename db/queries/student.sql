@@ -23,3 +23,8 @@ WHERE s.id = $1;
 INSERT INTO "student" (id)
 VALUES ($1)
 RETURNING *;
+-- name: GetHoursBankForTeacher :one
+SELECT *
+FROM "hours_bank"
+WHERE teacher_id = $1
+    AND student_id = $2;

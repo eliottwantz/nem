@@ -126,8 +126,19 @@ FROM "time_slots" ts
     LEFT JOIN "class" c ON ts."id" = c."time_slot_id"
     LEFT JOIN "student_class" sc ON c."id" = sc."class_id"
 WHERE ts."teacher_id" = $1
+    AND (
+        c.is_private = false
+        OR c.is_private is NULL
+    )
+    AND ts.id NOT IN (
+        SELECT c.time_slot_id
+        FROM class c
+            JOIN student_class sc ON c.id = sc.class_id
+        WHERE sc.student_id = '54fa2b35-fd53-4aaa-8264-26bd738c90cc'
+    )
 GROUP BY ts."id",
     c."id"
+HAVING COUNT(sc.student_id) < 4
 `
 
 type ListTeachersAvailableTimeSlotsRow struct {

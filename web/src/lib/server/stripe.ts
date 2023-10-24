@@ -11,6 +11,7 @@ export const stripe = new Stripe(STRIPE_SECRET_KEY, {
 export type TrialClassMetaData = {
 	userId: string
 	isPrivate: string
+	isTrial: string
 	language: string
 	topic: string
 	name: string

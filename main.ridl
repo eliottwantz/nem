@@ -73,6 +73,7 @@ struct Class
     - id: string
     - teacherId: string
     - isPrivate: bool
+    - isTrial: bool
     - name: string
     - hasStarted: bool
     - language: string
@@ -140,6 +141,7 @@ struct CreateClassRequest
     - userId: string
     - name: string
     - isPrivate: bool
+    - isTrial: bool
     - language: string
     - topic: string
     - timeSlotId: string
@@ -159,6 +161,11 @@ struct Conversation
     - users: []User
     - lastSent: timestamp
     - createdAt: timestamp
+
+struct Subscription
+    - id: int32
+    - name: string
+    - hours: int32
 
 #################### STRUCTS ####################
 
@@ -183,6 +190,7 @@ service UserServiceAPI
 service StudentServiceAPI
     - ListClasses() => (classes: []ListClass)
     - ListTeachersOfStudent() => (teachers: []Teacher)
+    - GetHoursBankForTeacher(teacherId: string) => (hours: int32)
 
 service TeacherServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)
@@ -202,7 +210,6 @@ service ClassServiceAPI
     - ListLanguages() => (languages: []string)
     - ListTopics() => (topics: []string)
     - ShowClassDetails(classId: string) => (classDetails: ClassDetails)
-    - CreateOrJoinClass(req: CreateClassRequest) => (class: Class)
 
 service MessageServiceAPI
     - CreateOneToOneConversation(recepientId: string) => (conversationId: int64)
@@ -213,6 +220,9 @@ service MessageServiceAPI
     - ListConversationsOfUser(userId: string) => (conversations: []Conversation)
     - ListMessagesOfConversation(conversationId: int64) => (messages: []Message)
     - ListMessagesOfConversationWithCursor(conversationId: int64, cursor: timestamp) => (messages: []Message, isMore: bool)
+
+service SubscriptionServiceAPI
+    - ListSubscriptions() => (subscriptions: []Subscription)
 
 #################### SERVICES ####################
 

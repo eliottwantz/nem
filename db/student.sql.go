@@ -97,6 +97,25 @@ func (q *Queries) FindStudentOfTeacher(ctx context.Context, arg FindStudentOfTea
 	return &i, err
 }
 
+const getHoursBankForTeacher = `-- name: GetHoursBankForTeacher :one
+SELECT hours, student_id, teacher_id
+FROM "hours_bank"
+WHERE teacher_id = $1
+    AND student_id = $2
+`
+
+type GetHoursBankForTeacherParams struct {
+	TeacherID uuid.UUID
+	StudentID uuid.UUID
+}
+
+func (q *Queries) GetHoursBankForTeacher(ctx context.Context, arg GetHoursBankForTeacherParams) (*HoursBank, error) {
+	row := q.db.QueryRowContext(ctx, getHoursBankForTeacher, arg.TeacherID, arg.StudentID)
+	var i HoursBank
+	err := row.Scan(&i.Hours, &i.StudentID, &i.TeacherID)
+	return &i, err
+}
+
 const listStudentsOfTeacher = `-- name: ListStudentsOfTeacher :many
 SELECT u.id, u.email, u.first_name, u.last_name, u.role, u.prefered_language, u.avatar_file_path, u.avatar_url, u.stripe_customer_id, u.created_at, u.updated_at
 FROM "students_of_teacher" sot

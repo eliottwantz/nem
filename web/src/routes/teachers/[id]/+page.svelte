@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
+	import Subscription from '$lib/components/Subscription/Subscription.svelte'
 	import TakeTrialClass from '$lib/components/TakeTrialClass/TakeTrialClass.svelte'
 	import {
 		Tab,
@@ -28,27 +30,68 @@
 				message: 'Payment cancelled',
 				background: 'bg-error-500'
 			})
+			goto($page.url.pathname)
+			return
 		}
 		if ($page.url.searchParams.get('take-trial-class') === 'success') {
 			toastStore.trigger({
 				message: 'Payment successful',
 				background: 'bg-success-500'
 			})
+			goto($page.url.pathname)
+			return
+		}
+		if ($page.url.searchParams.get('subscribe') === 'success') {
+			toastStore.trigger({
+				message: 'Subscription successful',
+				background: 'bg-success-500'
+			})
+			goto($page.url.pathname)
+			return
+		}
+		if ($page.url.searchParams.get('subscribe') === 'success') {
+			toastStore.trigger({
+				message: 'Subscription successful',
+				background: 'bg-success-500'
+			})
+			goto($page.url.pathname)
+			return
 		}
 	})
 
 	async function scheduleClass() {
-		modalStore.trigger({
-			type: 'component',
-			component: {
-				ref: TakeTrialClass,
-				props: {
-					teacher: data.teacher,
-					classes: await data.streamed.classes,
-					availabilities: await data.streamed.availabilities
+		if (data.isFirstClass) {
+			modalStore.trigger({
+				type: 'component',
+				component: {
+					ref: TakeTrialClass,
+					props: {
+						teacher: data.teacher,
+						classes: await data.streamed.classes,
+						availabilities: await data.streamed.availabilities
+					}
 				}
+			})
+		} else {
+			const res = await safeFetch(fetchers.subscriptionService(fetch).listSubscriptions())
+			if (!res.ok) {
+				toastStore.trigger({
+					message: res.cause,
+					background: 'bg-error-500'
+				})
+				return
 			}
-		})
+			modalStore.trigger({
+				type: 'component',
+				component: {
+					ref: Subscription,
+					props: {
+						teacher: data.teacher,
+						subscriptions: res.data.subscriptions
+					}
+				}
+			})
+		}
 	}
 
 	async function openChat() {
@@ -77,10 +120,10 @@
 		<div class="flex flex-col items-center justify-around gap-4 md:flex-row">
 			<Profile teacher={data.teacher} />
 			<div class="flex flex-col gap-4">
-				<div class="flex items-center justify-around text-lg">
+				<div class="flex items-center justify-around gap-x-2 text-lg">
 					<div>
 						<span>Reviews</span>
-						<!-- <span>{data.teacher.reviews}</span> -->
+						<span>{data.teacher.rating}</span>
 					</div>
 					<p>
 						<span class="text-2xl font-semibold">{data.teacher.hourRate}$</span>

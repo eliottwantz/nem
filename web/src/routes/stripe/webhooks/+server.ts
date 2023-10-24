@@ -29,12 +29,12 @@ export async function POST({ request }) {
 			const stripeSession = event.data.object as Stripe.Checkout.Session & {
 				metadata: TrialClassMetaData
 			}
-			debugger
 			const res = await safeFetch(
 				fetchers.publicService(fetch).createOrJoinClass({
 					req: {
 						userId: stripeSession.metadata.userId,
 						isPrivate: Boolean(stripeSession.metadata.isPrivate),
+						isTrial: Boolean(stripeSession.metadata.isTrial),
 						language: stripeSession.metadata.language,
 						topic: stripeSession.metadata.topic,
 						name: stripeSession.metadata.name,

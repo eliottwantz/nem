@@ -148,6 +148,7 @@ CREATE TABLE "class" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "is_private" BOOLEAN NOT NULL,
+    "is_trial" BOOLEAN NOT NULL,
     "language" TEXT NOT NULL,
     "topic" TEXT NOT NULL,
     -- "conversation_id" BIGINT NOT NULL REFERENCES "conversations" ("id") ON DELETE RESTRICT,

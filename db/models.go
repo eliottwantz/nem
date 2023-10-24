@@ -78,6 +78,7 @@ type Class struct {
 	ID         uuid.UUID
 	Name       string
 	IsPrivate  bool
+	IsTrial    bool
 	Language   string
 	Topic      string
 	TimeSlotID uuid.UUID

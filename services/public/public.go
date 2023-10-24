@@ -55,6 +55,10 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 	{
 		exists, err := tx.FindClassByTimeslot(ctx, timeSlot.ID)
 		if err == nil {
+			if exists.IsPrivate {
+				s.logger.Warn("class is private", "error", err)
+				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is private"))
+			}
 			// Add user to this class if there if less than 4 students in the class and not private
 			users, err := tx.ListStudentsInClass(ctx, exists.ID)
 			if err != nil {
@@ -64,10 +68,6 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 			if len(users) >= 4 {
 				s.logger.Warn("class is full", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is full"))
-			}
-			if exists.IsPrivate {
-				s.logger.Warn("class is private", "error", err)
-				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is private"))
 			}
 			err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
 				ClassID:   exists.ID,
@@ -114,6 +114,7 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		Topic:      req.Topic,
 		TimeSlotID: timeSlotID,
 		IsPrivate:  req.IsPrivate,
+		IsTrial:    req.IsTrial,
 	})
 	if err != nil {
 		s.logger.Warn("failed to create class", "error", err)

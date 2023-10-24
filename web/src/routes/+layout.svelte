@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@event-calendar/core/index.css'
+	import '@fontsource-variable/inter'
 	import '../app.postcss'
 
 	import { browser } from '$app/environment'
@@ -152,21 +153,6 @@
 <style type="postcss">
 	#nem {
 		font-family: 'Gravitas One', cursive;
-	}
-	:global(*) {
-		font-family:
-			Roboto,
-			system-ui,
-			-apple-system,
-			BlinkMacSystemFont,
-			'Segoe UI',
-			Roboto,
-			Oxygen,
-			Ubuntu,
-			Cantarell,
-			'Open Sans',
-			'Helvetica Neue',
-			sans-serif;
 	}
 
 	#nem-rectangle-middle {

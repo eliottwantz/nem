@@ -49,11 +49,12 @@ ORDER BY t.start_at ASC;
 INSERT INTO "class" (
         name,
         is_private,
+        is_trial,
         language,
         topic,
         time_slot_id
     )
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 -- name: AddStudentToClass :exec
 INSERT INTO "student_class" (student_id, class_id)

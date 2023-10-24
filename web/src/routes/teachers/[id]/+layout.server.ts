@@ -27,6 +27,16 @@ export async function load({ params, fetch, locals: { session, user } }) {
 				else resolve(false)
 			})
 		}),
+		hoursBank: new Promise<number>((resolve) => {
+			safeFetch(
+				fetchers.studentService(fetch, session).getHoursBankForTeacher({
+					teacherId: params.id
+				})
+			).then((res) => {
+				if (res.ok) resolve(res.data.hours)
+				else resolve(0)
+			})
+		}),
 		streamed: {
 			availabilities: new Promise<TimeSlot[]>((resolve) => {
 				safeFetch(
