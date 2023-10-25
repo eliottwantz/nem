@@ -11,6 +11,24 @@ import (
 	"github.com/google/uuid"
 )
 
+const addHoursToHoursBank = `-- name: AddHoursToHoursBank :exec
+INSERT INTO "hours_bank" (student_id, teacher_id, hours)
+VALUES ($1, $2, $3) ON CONFLICT (student_id, teacher_id) DO
+UPDATE
+SET hours = hours_bank.hours + $3
+`
+
+type AddHoursToHoursBankParams struct {
+	StudentID uuid.UUID
+	TeacherID uuid.UUID
+	Hours     int32
+}
+
+func (q *Queries) AddHoursToHoursBank(ctx context.Context, arg AddHoursToHoursBankParams) error {
+	_, err := q.db.ExecContext(ctx, addHoursToHoursBank, arg.StudentID, arg.TeacherID, arg.Hours)
+	return err
+}
+
 const addToStudentsOfTeacher = `-- name: AddToStudentsOfTeacher :exec
 INSERT INTO "students_of_teacher" (teacher_id, student_id)
 VALUES ($1, $2)
@@ -36,6 +54,22 @@ func (q *Queries) CreateStudent(ctx context.Context, id uuid.UUID) (uuid.UUID, e
 	row := q.db.QueryRowContext(ctx, createStudent, id)
 	err := row.Scan(&id)
 	return id, err
+}
+
+const createSubscriptionStudent = `-- name: CreateSubscriptionStudent :exec
+INSERT INTO "subscription_student" (subscription_id, teacher_id, student_id)
+VALUES ($1, $2, $3)
+`
+
+type CreateSubscriptionStudentParams struct {
+	SubscriptionID string
+	TeacherID      uuid.UUID
+	StudentID      uuid.UUID
+}
+
+func (q *Queries) CreateSubscriptionStudent(ctx context.Context, arg CreateSubscriptionStudentParams) error {
+	_, err := q.db.ExecContext(ctx, createSubscriptionStudent, arg.SubscriptionID, arg.TeacherID, arg.StudentID)
+	return err
 }
 
 const findStudentByID = `-- name: FindStudentByID :one

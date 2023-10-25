@@ -172,7 +172,7 @@
 			/>
 			<div class="flex flex-col">
 				<div class="flex items-center gap-2">
-					<p class=" text-lg font-semibold">
+					<p class="text-2xl font-semibold">
 						{getPublicName(teacher.firstName, teacher.lastName)}
 					</p>
 					{#if teacher.topAgent}

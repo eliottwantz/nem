@@ -28,6 +28,8 @@
 	} from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import { t } from 'svelte-i18n'
+	import { page } from '$app/stores'
+	import { Hourglass } from 'lucide-svelte'
 
 	export let data
 	initializeStores()
@@ -116,6 +118,12 @@
 				<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
 			</a>
 			<svelte:fragment slot="trail">
+				{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
+					<div id="hoursBank" class="flex flex-wrap items-center justify-center">
+						<span class="text-xl">{$page.data.hoursBank}h</span>
+						<Hourglass />
+					</div>
+				{/if}
 				<div class="hidden lg:block">
 					<Locale />
 				</div>

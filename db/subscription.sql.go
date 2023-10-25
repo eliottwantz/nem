@@ -7,7 +7,25 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const addSubscriptionForStudent = `-- name: AddSubscriptionForStudent :exec
+INSERT INTO "subscription_student" (subscription_id, teacher_id, student_id)
+VALUES ($1, $2, $3)
+`
+
+type AddSubscriptionForStudentParams struct {
+	SubscriptionID string
+	TeacherID      uuid.UUID
+	StudentID      uuid.UUID
+}
+
+func (q *Queries) AddSubscriptionForStudent(ctx context.Context, arg AddSubscriptionForStudentParams) error {
+	_, err := q.db.ExecContext(ctx, addSubscriptionForStudent, arg.SubscriptionID, arg.TeacherID, arg.StudentID)
+	return err
+}
 
 const listSubscriptions = `-- name: ListSubscriptions :many
 SELECT id, name, hours

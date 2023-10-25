@@ -157,3 +157,29 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		CreatedAt:  dbClass.CreatedAt,
 	}, nil
 }
+
+func (s *Service) AddHoursToHoursBank(ctx context.Context, studentId string, teacherId string, hours int32) error {
+	tID, err := uuid.Parse(teacherId)
+	if err != nil {
+		s.logger.Warn("could not parse teacher id", "err", err)
+		return rpc.ErrWebrpcBadRequest.WithCause(errors.New("empty teacher id param"))
+	}
+
+	sID, err := uuid.Parse(studentId)
+	if err != nil {
+		s.logger.Warn("could not parse student id", "err", err)
+		return rpc.ErrWebrpcBadRequest.WithCause(errors.New("empty studentId id param"))
+	}
+
+	err = db.Pg.AddHoursToHoursBank(ctx, db.AddHoursToHoursBankParams{
+		StudentID: sID,
+		TeacherID: tID,
+		Hours:     hours,
+	})
+	if err != nil {
+		s.logger.Warn("could not add hours to hours bank", "err", err)
+		return rpc.ErrWebrpcInternalError
+	}
+
+	return nil
+}

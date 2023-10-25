@@ -1,14 +1,13 @@
-import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/static/private'
 import { fetchers, safeFetch } from '$lib/api'
-import { createStripeCustomer, stripe, type TrialClassMetaData } from '$lib/server/stripe'
-import type { TakeClassStore } from '$lib/stores/takeClassStore'
+import type { Subscription } from '$lib/api/api.gen'
+import {
+	createStripeCustomer,
+	stripe,
+	type StripeSubscriptionRequest,
+	type SubscriptionMetadata
+} from '$lib/server/stripe'
 import { error, json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
-
-export type SubscriptionMetadata = {
-	userId: string
-	prodId: string
-}
 
 export async function POST({ request, locals: { session, user }, fetch, url, params }) {
 	if (!session || !user) throw redirect(307, '/login')
@@ -20,11 +19,9 @@ export async function POST({ request, locals: { session, user }, fetch, url, par
 		console.log(res.error)
 		return json({ message: 'Teacher not Found' }, { status: res.error.status })
 	}
-
 	try {
-		const req = (await request.json()) as SubscriptionMetadata
+		const req = (await request.json()) as StripeSubscriptionRequest
 
-		debugger
 		let customer: Stripe.Customer
 		if (user.stripeCustomerId) {
 			const customerRes = await stripe.customers.retrieve(user.stripeCustomerId)
@@ -32,21 +29,35 @@ export async function POST({ request, locals: { session, user }, fetch, url, par
 			else customer = await createStripeCustomer(user, fetch, session)
 		} else customer = await createStripeCustomer(user, fetch, session)
 
+		debugger
 		const stripeSession = await stripe.checkout.sessions.create({
 			customer: customer.id,
-			invoice_creation: { enabled: true },
+			subscription_data: {
+				metadata: {
+					studentId: user.id,
+					teacherId: params.id,
+					subId: `${req.subscription.id}`,
+					hours: `${req.hours}`
+				} satisfies SubscriptionMetadata
+			},
 			mode: 'subscription',
 			payment_method_types: ['card'],
 			metadata: {
-				userId: user.id,
-				prodId: req.prodId
+				studentId: user.id,
+				teacherId: params.id,
+				subId: `${req.subscription.id}`,
+				hours: `${req.hours}`
 			} satisfies SubscriptionMetadata,
 			line_items: [
 				{
 					price_data: {
 						currency: 'USD',
-						unit_amount: res.data.teacher.hourRate * 100,
-						product: req.prodId
+						unit_amount: req.price * 100,
+						product: req.subscription.id,
+						recurring: {
+							interval: 'month',
+							interval_count: 1
+						}
 					},
 					quantity: 1
 				}

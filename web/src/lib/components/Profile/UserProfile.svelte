@@ -6,7 +6,7 @@
 	export let user: Partial<User>
 	export let avatarWidth = 'w-28'
 	export let avatarHeight = 'h-28'
-	console.log(user.avatarUrl === '""')
+	export let textClass = ''
 </script>
 
 <div class="flex items-center gap-1">
@@ -17,7 +17,7 @@
 		initials={getInitials(user.firstName, user.lastName)}
 	/>
 	<div>
-		<p class="flex-auto text-lg font-semibold">
+		<p class="flex-auto text-lg {textClass}">
 			{getPublicName(user.firstName, user.lastName)}
 		</p>
 	</div>

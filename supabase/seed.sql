@@ -382,8 +382,8 @@ VALUES (
         7
     );
 INSERT INTO "subscription" (id, name, hours)
-VALUES (1, 'Explorer', 4),
-    (2, 'Learner', 8),
-    (3, 'Voyager', 12),
-    (4, 'Trailblazer', 16),
-    (5, 'Master', 20);
+VALUES ('prod_Os2YfRsSF6IiOj', 'Explorer', 4),
+    ('prod_OspMRucxW4XnBY', 'Learner', 8),
+    ('prod_OspMsYO3WIdh4Y', 'Voyager', 12),
+    ('prod_OspNodpbmAmmUo', 'Trailblazer', 16),
+    ('prod_OspNG8yO0TLW99', 'Master', 20);

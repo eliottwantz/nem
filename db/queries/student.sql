@@ -28,3 +28,11 @@ SELECT *
 FROM "hours_bank"
 WHERE teacher_id = $1
     AND student_id = $2;
+-- name: AddHoursToHoursBank :exec
+INSERT INTO "hours_bank" (student_id, teacher_id, hours)
+VALUES ($1, $2, $3) ON CONFLICT (student_id, teacher_id) DO
+UPDATE
+SET hours = hours_bank.hours + $3;
+-- name: CreateSubscriptionStudent :exec
+INSERT INTO "subscription_student" (subscription_id, teacher_id, student_id)
+VALUES ($1, $2, $3);

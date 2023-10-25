@@ -142,7 +142,7 @@ type StudentsOfTeacher struct {
 }
 
 type Subscription struct {
-	ID    int32
+	ID    string
 	Name  string
 	Hours int32
 }
@@ -150,7 +150,7 @@ type Subscription struct {
 type SubscriptionStudent struct {
 	StudentID      uuid.UUID
 	TeacherID      uuid.UUID
-	SubscriptionID int32
+	SubscriptionID string
 }
 
 type Teacher struct {

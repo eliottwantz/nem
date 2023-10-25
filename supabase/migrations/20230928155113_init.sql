@@ -58,14 +58,14 @@ CREATE TABLE "hours_bank" (
     PRIMARY KEY ("student_id", "teacher_id")
 );
 CREATE TABLE "subscription" (
-    id SERIAL PRIMARY KEY,
+    "id" TEXT PRIMARY KEY,
     "name" TEXT NOT NULL,
     "hours" INT NOT NULL
 );
 CREATE TABLE "subscription_student" (
     "student_id" UUID NOT NULL REFERENCES "student"(id) ON DELETE CASCADE ON UPDATE CASCADE,
     "teacher_id" UUID NOT NULL REFERENCES "teacher"(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    "subscription_id" INT NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    "subscription_id" TEXT NOT NULL REFERENCES "subscription"(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY ("student_id", "teacher_id")
 );
 CREATE Table "time_slots" (

@@ -1,7 +1,6 @@
 import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/static/private'
 import { fetchers, safeFetch } from '$lib/api'
-import type { User } from '$lib/api/api.gen'
-import { createStripeCustomer, stripe, type TrialClassMetaData } from '$lib/server/stripe'
+import { createStripeCustomer, stripe, type ClassPaymentMetaData } from '$lib/server/stripe'
 import type { TakeClassStore } from '$lib/stores/takeClassStore'
 import { error, json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
@@ -41,7 +40,7 @@ export async function POST({ request, locals: { session, user }, fetch, url, par
 				topic: req.selectedTopic!,
 				name: `${req.selectedLanguage} - ${req.selectedTopic}`,
 				timeSlotId: req.selectedEvent!.event.id
-			} satisfies TrialClassMetaData,
+			} satisfies ClassPaymentMetaData,
 			line_items: [
 				{
 					price_data: {

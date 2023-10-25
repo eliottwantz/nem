@@ -4,7 +4,7 @@
 	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
-	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
+	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
 	import TakeTrialClass from '$lib/components/TakeTrialClass/TakeTrialClass.svelte'
 	import {
@@ -17,7 +17,6 @@
 	import { onMount } from 'svelte'
 
 	export let data
-	console.log('DATA', data)
 
 	const modalStore = getModalStore()
 	const drawerStore = getDrawerStore()
@@ -30,32 +29,24 @@
 				message: 'Payment cancelled',
 				background: 'bg-error-500'
 			})
-			goto($page.url.pathname)
-			return
 		}
 		if ($page.url.searchParams.get('take-trial-class') === 'success') {
 			toastStore.trigger({
 				message: 'Payment successful',
 				background: 'bg-success-500'
 			})
-			goto($page.url.pathname)
-			return
+		}
+		if ($page.url.searchParams.get('subscribe') === 'cancel') {
+			toastStore.trigger({
+				message: 'Subscription canceled',
+				background: 'bg-error-500'
+			})
 		}
 		if ($page.url.searchParams.get('subscribe') === 'success') {
 			toastStore.trigger({
 				message: 'Subscription successful',
 				background: 'bg-success-500'
 			})
-			goto($page.url.pathname)
-			return
-		}
-		if ($page.url.searchParams.get('subscribe') === 'success') {
-			toastStore.trigger({
-				message: 'Subscription successful',
-				background: 'bg-success-500'
-			})
-			goto($page.url.pathname)
-			return
 		}
 	})
 
@@ -116,9 +107,9 @@
 </script>
 
 <Layout>
-	<div class="flex w-full flex-col gap-8 p-10">
+	<div class="flex w-full flex-col gap-8 p-10 pt-0">
 		<div class="flex flex-col items-center justify-around gap-4 md:flex-row">
-			<Profile teacher={data.teacher} />
+			<TeacherProfile teacher={data.teacher} />
 			<div class="flex flex-col gap-4">
 				<div class="flex items-center justify-around gap-x-2 text-lg">
 					<div>
@@ -135,7 +126,7 @@
 						{#if data.isFirstClass}
 							Schedule a trial class
 						{:else}
-							Schedule a class
+							Subscribe
 						{/if}
 					</button>
 					<button class="variant-ghost-surface btn" on:click={openChat}>
