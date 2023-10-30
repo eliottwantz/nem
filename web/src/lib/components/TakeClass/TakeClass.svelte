@@ -3,7 +3,14 @@
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
 	import { userStore } from '$lib/stores/user'
-	import { ListBox, ListBoxItem, Step, Stepper, getToastStore } from '@skeletonlabs/skeleton'
+	import {
+		ListBox,
+		ListBoxItem,
+		Step,
+		Stepper,
+		getModalStore,
+		getToastStore
+	} from '@skeletonlabs/skeleton'
 	import { t } from 'svelte-i18n'
 	import {
 		availabilityToCalendarEntryOneHourBlock,
@@ -11,19 +18,24 @@
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
+	import { fetchers, safeFetch } from '$lib/api'
+	import { goto, invalidate, invalidateAll } from '$app/navigation'
 
 	export let teacher: Teacher
 	export let classes: Class[]
 	export let availabilities: TimeSlot[]
+	export let isTrial: boolean | undefined = undefined
+	$: if (isTrial) $takeClassStore.selectedIsPrivate = isTrial
 
 	const toastStore = getToastStore()
-	console.log('TRIAL CLASS URL', `${$page.url.pathname}/take-trial-class`)
+	const modalStore = getModalStore()
 
 	$: lockedLanguage = !$takeClassStore.selectedLanguage
 	$: lockedTopic = !$takeClassStore.selectedTopic
 	$: lockedEvent = !$takeClassStore.selectedEvent
 	$: console.log('selectedLanguage', $takeClassStore.selectedLanguage)
 	$: console.log('selectedTopic', $takeClassStore.selectedTopic)
+	$: console.log('selectedIsPrivate', $takeClassStore.selectedIsPrivate)
 	$: console.log('selectedTimeSlot', $takeClassStore.selectedEvent)
 	$: topics = teacher.topicsTaught
 	$: console.log('topics', topics)
@@ -60,27 +72,56 @@
 	async function scheduleClass() {
 		if (takeClassStore.isInValid()) return
 
-		$takeClassStore.selectedIsPrivate = true
-		try {
-			const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
-				method: 'POST',
-				body: JSON.stringify($takeClassStore)
-			})
-			const data = await res.json()
-			if (!res.ok) {
+		if (isTrial) {
+			try {
+				const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
+					method: 'POST',
+					body: JSON.stringify($takeClassStore)
+				})
+				const data = await res.json()
+				if (!res.ok) {
+					toastStore.trigger({
+						message: data.message,
+						background: 'bg-error-500'
+					})
+					return
+				}
+				window.location.replace(data.url)
+			} catch (e) {
+				console.log(e)
 				toastStore.trigger({
-					message: data.message,
+					message: e instanceof Error ? e.message : 'Failed to schedule class',
 					background: 'bg-error-500'
 				})
-				return
 			}
-			window.location.replace(data.url)
-		} catch (e) {
-			console.log(e)
-			toastStore.trigger({
-				message: e instanceof Error ? e.message : 'Failed to schedule class',
-				background: 'bg-error-500'
-			})
+		} else {
+			const res = await safeFetch(
+				fetchers.publicService(fetch).createOrJoinClass({
+					req: {
+						isPrivate: $takeClassStore.selectedIsPrivate,
+						isTrial: false,
+						language: $takeClassStore.selectedLanguage!,
+						name: `${$takeClassStore.selectedLanguage} - ${$takeClassStore.selectedTopic}`,
+						timeSlotId: $takeClassStore.selectedEvent!.event.id,
+						topic: $takeClassStore.selectedTopic!,
+						userId: $page.data.user.id
+					}
+				})
+			)
+			if (!res.ok) {
+				toastStore.trigger({
+					message: res.cause,
+					background: 'bg-error-500'
+				})
+			} else {
+				toastStore.trigger({
+					message: 'Class scheduled',
+					background: 'bg-success-500'
+				})
+			}
+			modalStore.close()
+			invalidateAll()
+			await goto('/dashboard/student/classes')
 		}
 	}
 </script>
@@ -124,6 +165,17 @@
 				{/each}
 			</ListBox>
 		</Step>
+		{#if !isTrial}
+			<Step>
+				<svelte:fragment slot="header">Private?</svelte:fragment>
+				<input
+					class="checkbox"
+					type="checkbox"
+					name="isPrivate"
+					bind:checked={$takeClassStore.selectedIsPrivate}
+				/>
+			</Step>
+		{/if}
 		<Step locked={lockedEvent}>
 			<svelte:fragment slot="header">Time slots</svelte:fragment>
 			{#if availabilities.length > 0}
@@ -138,13 +190,13 @@
 		<Step
 			locked={!$takeClassStore.selectedLanguage ||
 				!$takeClassStore.selectedTopic ||
-				$takeClassStore.selectedIsPrivate === undefined ||
 				!$takeClassStore.selectedEvent}
 		>
 			<svelte:fragment slot="header">Summary</svelte:fragment>
 
 			<p>Selected language: {$takeClassStore.selectedLanguage}</p>
 			<p>Selected topic: {$takeClassStore.selectedTopic}</p>
+			<p>Private class: {$takeClassStore.selectedIsPrivate ? 'Yes' : 'No'}</p>
 			{#if $takeClassStore.selectedEvent}
 				<p>
 					Selected time slot: {new Date(

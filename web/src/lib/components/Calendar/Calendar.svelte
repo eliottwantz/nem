@@ -20,7 +20,6 @@
 
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class } from '$lib/api/api.gen'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { locale, t } from 'svelte-i18n'
@@ -105,43 +104,6 @@
 				} else {
 					await goto(`/dashboard/student/classes/${currentClass.id}`)
 				}
-				// modalStore.trigger({
-				// 	type: 'confirm',
-				// 	title: 'Join Class',
-				// 	body: 'Are you sure you want to join the class?',
-				// 	response: async (confirmed: boolean) => {
-				// 		if (!confirmed) return
-				// 		const currentClass = $page.data.classes.find(
-				// 			(c: Class) => c.id === info.event.id
-				// 		)
-				// 		if (!currentClass) {
-				// 			toastStore.trigger({
-				// 				message: 'An error occured',
-				// 				background: 'variant-filled-error'
-				// 			})
-				// 			return
-				// 		}
-
-				// 		const res = await safeFetch(
-				// 			calendarMode === 'teacher'
-				// 				? fetchers.teacherService(fetch, $page.data.session!).startClass({
-				// 						classId: currentClass.id
-				// 				  })
-				// 				: fetchers.studentService(fetch, $page.data.session!).joinClass({
-				// 						classId: currentClass.id
-				// 				  })
-				// 		)
-				// 		if (!res.ok) {
-				// 			toastStore.trigger({
-				// 				message: res.cause,
-				// 				background: 'variant-filled-error'
-				// 			})
-				// 			return
-				// 		}
-
-				// 		await goto(`/class/${currentClass.id}`)
-				// 	}
-				// })
 			}
 		},
 		eventDrop(info: CalendarInteractEvent) {

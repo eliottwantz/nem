@@ -1,6 +1,6 @@
 import type { ModalComponent } from '@skeletonlabs/skeleton'
 import AddEvent from '../Calendar/AddCalendarEvent.svelte'
-import TakeTrialClass from '../TakeTrialClass/TakeTrialClass.svelte'
+import TakeClass from '../TakeClass/TakeClass.svelte'
 import EditClassForm from './EditClassForm.svelte'
 
 export const ModalComponents = {
@@ -19,6 +19,6 @@ export const modalComponentRegistry: Record<ModalKeys, ModalComponent> = {
 		ref: AddEvent
 	},
 	takeClass: {
-		ref: TakeTrialClass
+		ref: TakeClass
 	}
 } as const

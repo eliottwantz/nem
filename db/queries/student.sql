@@ -13,7 +13,7 @@ WHERE t.id = $1
     AND sot.student_id = $2;
 -- name: AddToStudentsOfTeacher :exec
 INSERT INTO "students_of_teacher" (teacher_id, student_id)
-VALUES ($1, $2);
+VALUES ($1, $2) ON CONFLICT (teacher_id, student_id) DO NOTHING;
 -- name: FindStudentByID :one
 SELECT u.*
 FROM "student" s
@@ -33,6 +33,11 @@ INSERT INTO "hours_bank" (student_id, teacher_id, hours)
 VALUES ($1, $2, $3) ON CONFLICT (student_id, teacher_id) DO
 UPDATE
 SET hours = hours_bank.hours + $3;
+-- name: RemoveHoursFromHoursBank :exec
+UPDATE "hours_bank"
+SET hours = hours - $3
+WHERE teacher_id = $1
+    AND student_id = $2;
 -- name: CreateSubscriptionStudent :exec
 INSERT INTO "subscription_student" (subscription_id, teacher_id, student_id)
 VALUES ($1, $2, $3);

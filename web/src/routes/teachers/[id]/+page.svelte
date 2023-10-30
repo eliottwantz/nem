@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
-	import TakeTrialClass from '$lib/components/TakeTrialClass/TakeTrialClass.svelte'
+	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
 	import {
 		Tab,
 		TabGroup,
@@ -55,7 +54,20 @@
 			modalStore.trigger({
 				type: 'component',
 				component: {
-					ref: TakeTrialClass,
+					ref: TakeClass,
+					props: {
+						teacher: data.teacher,
+						classes: await data.streamed.classes,
+						availabilities: await data.streamed.availabilities,
+						isTrial: true
+					}
+				}
+			})
+		} else {
+			modalStore.trigger({
+				type: 'component',
+				component: {
+					ref: TakeClass,
 					props: {
 						teacher: data.teacher,
 						classes: await data.streamed.classes,
@@ -63,26 +75,28 @@
 					}
 				}
 			})
-		} else {
-			const res = await safeFetch(fetchers.subscriptionService(fetch).listSubscriptions())
-			if (!res.ok) {
-				toastStore.trigger({
-					message: res.cause,
-					background: 'bg-error-500'
-				})
-				return
-			}
-			modalStore.trigger({
-				type: 'component',
-				component: {
-					ref: Subscription,
-					props: {
-						teacher: data.teacher,
-						subscriptions: res.data.subscriptions
-					}
-				}
-			})
 		}
+	}
+
+	async function subscribe() {
+		const res = await safeFetch(fetchers.subscriptionService(fetch).listSubscriptions())
+		if (!res.ok) {
+			toastStore.trigger({
+				message: res.cause,
+				background: 'bg-error-500'
+			})
+			return
+		}
+		modalStore.trigger({
+			type: 'component',
+			component: {
+				ref: Subscription,
+				props: {
+					teacher: data.teacher,
+					subscriptions: res.data.subscriptions
+				}
+			}
+		})
 	}
 
 	async function openChat() {
@@ -122,13 +136,22 @@
 					</p>
 				</div>
 				<div class="flex flex-col gap-2">
-					<button class="variant-filled-primary btn" on:click={scheduleClass}>
-						{#if data.isFirstClass}
+					{#if data.isFirstClass}
+						<button class="variant-filled-primary btn" on:click={scheduleClass}>
 							Schedule a trial class
-						{:else}
+						</button>
+					{:else}
+						<button class="variant-filled-primary btn" on:click={subscribe}>
 							Subscribe
-						{/if}
-					</button>
+						</button>
+						<button
+							disabled={data.hoursBank === 0}
+							class="variant-ghost-primary btn"
+							on:click={scheduleClass}
+						>
+							Schedule a class
+						</button>
+					{/if}
 					<button class="variant-ghost-surface btn" on:click={openChat}>
 						Send a message
 					</button>

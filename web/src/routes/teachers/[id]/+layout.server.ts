@@ -41,8 +41,8 @@ export async function load({ params, fetch, locals: { session, user } }) {
 			availabilities: new Promise<TimeSlot[]>((resolve) => {
 				safeFetch(
 					fetchers
-						.teacherService(fetch, session)
-						.listAvailabilities({ teacherId: params.id })
+						.studentService(fetch, session)
+						.listAvailabilitiesOfTeacher({ teacherId: params.id })
 				).then((res) => {
 					if (res.ok) resolve(res.data.timeSlots)
 					else resolve([])

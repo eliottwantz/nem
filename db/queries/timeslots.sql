@@ -2,6 +2,10 @@
 SELECT *
 FROM "time_slots"
 WHERE "teacher_id" = $1;
+-- name: ListTeachersTimeSlots :many
+SELECT *
+FROM "time_slots"
+WHERE "teacher_id" = $1;
 -- name: ListTeachersAvailableTimeSlots :many
 SELECT ts.*,
     c."id" AS class_id,
@@ -19,7 +23,7 @@ WHERE ts."teacher_id" = $1
         SELECT c.time_slot_id
         FROM class c
             JOIN student_class sc ON c.id = sc.class_id
-        WHERE sc.student_id = '54fa2b35-fd53-4aaa-8264-26bd738c90cc'
+        WHERE sc.student_id = $2
     )
 GROUP BY ts."id",
     c."id"

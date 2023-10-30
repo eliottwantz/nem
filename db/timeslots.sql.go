@@ -134,12 +134,17 @@ WHERE ts."teacher_id" = $1
         SELECT c.time_slot_id
         FROM class c
             JOIN student_class sc ON c.id = sc.class_id
-        WHERE sc.student_id = '54fa2b35-fd53-4aaa-8264-26bd738c90cc'
+        WHERE sc.student_id = $2
     )
 GROUP BY ts."id",
     c."id"
 HAVING COUNT(sc.student_id) < 4
 `
+
+type ListTeachersAvailableTimeSlotsParams struct {
+	TeacherID uuid.UUID
+	StudentID uuid.UUID
+}
 
 type ListTeachersAvailableTimeSlotsRow struct {
 	ID        uuid.UUID
@@ -151,8 +156,8 @@ type ListTeachersAvailableTimeSlotsRow struct {
 	NumUsers  int64
 }
 
-func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*ListTeachersAvailableTimeSlotsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachersAvailableTimeSlots, teacherID)
+func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, arg ListTeachersAvailableTimeSlotsParams) ([]*ListTeachersAvailableTimeSlotsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachersAvailableTimeSlots, arg.TeacherID, arg.StudentID)
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +173,40 @@ func (q *Queries) ListTeachersAvailableTimeSlots(ctx context.Context, teacherID 
 			&i.ClassID,
 			&i.IsPrivate,
 			&i.NumUsers,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachersTimeSlots = `-- name: ListTeachersTimeSlots :many
+SELECT id, start_at, end_at, teacher_id
+FROM "time_slots"
+WHERE "teacher_id" = $1
+`
+
+func (q *Queries) ListTeachersTimeSlots(ctx context.Context, teacherID uuid.UUID) ([]*TimeSlot, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachersTimeSlots, teacherID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*TimeSlot
+	for rows.Next() {
+		var i TimeSlot
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartAt,
+			&i.EndAt,
+			&i.TeacherID,
 		); err != nil {
 			return nil, err
 		}

@@ -13,10 +13,6 @@ export async function load({ fetch, locals: { session, user } }) {
 	}
 
 	return {
-		classes: res.data.classes.map((c) => ({
-			...c,
-			startAt: new Date(c.startAt).toLocaleString(user.preferedLanguage),
-			endAt: new Date(c.endAt).toLocaleString(user.preferedLanguage)
-		}))
+		classes: res.data.classes
 	}
 }

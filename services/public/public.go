@@ -50,7 +50,7 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 
 	uID, err := uuid.Parse(req.UserId)
 	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("empty userId param"))
+		return nil, rpc.ErrWebrpcBadRequest.WithCause(errors.New("empty userId param"))
 	}
 	{
 		exists, err := tx.FindClassByTimeslot(ctx, timeSlot.ID)
@@ -68,6 +68,15 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 			if len(users) >= 4 {
 				s.logger.Warn("class is full", "error", err)
 				return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("class is full"))
+			}
+			err = tx.RemoveHoursFromHoursBank(ctx, db.RemoveHoursFromHoursBankParams{
+				TeacherID: timeSlot.TeacherID,
+				StudentID: uID,
+				Hours:     1,
+			})
+			if err != nil {
+				s.logger.Warn("failed to remove hours from hours bank", "error", err)
+				return nil, rpc.ErrWebrpcBadResponse.WithCause(ErrorCreateJoinClass)
 			}
 			err = tx.AddStudentToClass(ctx, db.AddStudentToClassParams{
 				ClassID:   exists.ID,
@@ -108,6 +117,15 @@ func (s *Service) CreateOrJoinClass(ctx context.Context, req *rpc.CreateClassReq
 		}
 	}
 
+	err = tx.RemoveHoursFromHoursBank(ctx, db.RemoveHoursFromHoursBankParams{
+		TeacherID: timeSlot.TeacherID,
+		StudentID: uID,
+		Hours:     1,
+	})
+	if err != nil {
+		s.logger.Warn("failed to remove hours from hours bank", "error", err)
+		return nil, rpc.ErrWebrpcBadResponse.WithCause(ErrorCreateJoinClass)
+	}
 	dbClass, err := tx.CreateClass(ctx, db.CreateClassParams{
 		Name:       req.Name,
 		Language:   req.Language,

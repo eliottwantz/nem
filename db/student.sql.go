@@ -31,7 +31,7 @@ func (q *Queries) AddHoursToHoursBank(ctx context.Context, arg AddHoursToHoursBa
 
 const addToStudentsOfTeacher = `-- name: AddToStudentsOfTeacher :exec
 INSERT INTO "students_of_teacher" (teacher_id, student_id)
-VALUES ($1, $2)
+VALUES ($1, $2) ON CONFLICT (teacher_id, student_id) DO NOTHING
 `
 
 type AddToStudentsOfTeacherParams struct {
@@ -191,4 +191,22 @@ func (q *Queries) ListStudentsOfTeacher(ctx context.Context, id uuid.UUID) ([]*U
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeHoursFromHoursBank = `-- name: RemoveHoursFromHoursBank :exec
+UPDATE "hours_bank"
+SET hours = hours - $3
+WHERE teacher_id = $1
+    AND student_id = $2
+`
+
+type RemoveHoursFromHoursBankParams struct {
+	TeacherID uuid.UUID
+	StudentID uuid.UUID
+	Hours     int32
+}
+
+func (q *Queries) RemoveHoursFromHoursBank(ctx context.Context, arg RemoveHoursFromHoursBankParams) error {
+	_, err := q.db.ExecContext(ctx, removeHoursFromHoursBank, arg.TeacherID, arg.StudentID, arg.Hours)
+	return err
 }

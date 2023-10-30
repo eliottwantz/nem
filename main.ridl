@@ -192,6 +192,7 @@ service StudentServiceAPI
     - ListClasses() => (classes: []ListClass)
     - ListTeachersOfStudent() => (teachers: []Teacher)
     - GetHoursBankForTeacher(teacherId: string) => (hours: int32)
+    - ListAvailabilitiesOfTeacher(teacherId: string) => (timeSlots: []TimeSlot)
 
 service TeacherServiceAPI
     - FindTeacherByID(id: string) => (teacher: Teacher)

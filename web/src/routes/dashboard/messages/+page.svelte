@@ -11,8 +11,15 @@
 
 	{#if data.conversations.length > 0}
 		<p class="mb-8 text-2xl">Please select a conversation</p>
-	{:else}
+	{:else if data.user.role === 'teacher'}
 		<p class="mb-8 text-2xl">No student have reached out to you yet</p>
+	{:else}
+		<p class="mb-8 text-2xl">
+			You don't have any conversations yet. Start by sending a message to a <a
+				href="/teachers"
+				class="anchor">teacher</a
+			>
+		</p>
 	{/if}
 
 	<section>

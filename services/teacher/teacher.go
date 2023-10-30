@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"slices"
-	"time"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -120,35 +118,13 @@ func (s *Service) ListAvailabilities(ctx context.Context, teacherId string) ([]*
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadRequest, errors.New("teacherId is empty"))
 	}
 
-	timeSlots, err := db.Pg.ListTeachersAvailableTimeSlots(ctx, tID)
+	timeSlots, err := db.Pg.ListTeachersTimeSlots(ctx, tID)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
 	}
 
-	userClasses, err := db.Pg.ListClassesOfStudent(ctx, httpmw.ContextUID(ctx))
-	if err != nil {
-		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, err)
-	}
-	userClassesTimeSlots := make([]string, 0, len(userClasses))
-	for _, c := range userClasses {
-		userClassesTimeSlots = append(userClassesTimeSlots, c.TimeSlotID.String())
-	}
-
-	now := time.Now()
 	ret := make([]*rpc.TimeSlot, 0, len(timeSlots))
 	for _, t := range timeSlots {
-		if slices.Contains(userClassesTimeSlots, t.ID.String()) {
-			continue
-		}
-		if t.NumUsers >= 4 {
-			continue
-		}
-		if t.IsPrivate.Valid && t.IsPrivate.Bool {
-			continue
-		}
-		if t.StartAt.Before(now) || t.EndAt.Before(now) {
-			continue
-		}
 		ret = append(ret, &rpc.TimeSlot{
 			Id:        t.ID.String(),
 			TeacherId: t.TeacherID.String(),
