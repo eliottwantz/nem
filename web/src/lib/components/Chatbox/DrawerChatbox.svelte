@@ -199,7 +199,7 @@
 		{#if $chatStore.peopleTyping.length > 0}
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
-		<div class=" bg-red-400">
+		<div>
 			<Prompt {conversationId} {recepient} />
 		</div>
 	</div>

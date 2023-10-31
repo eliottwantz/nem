@@ -12,7 +12,7 @@
 	const drawerStore = getDrawerStore()
 </script>
 
-<Drawer bgDrawer="bg-surface-300-600-token">
+<Drawer bgDrawer="bg-surface-300-600-token w-5/6">
 	{#if $drawerStore.id === drawerStoreIds.sidebar}
 		{#if $userStore?.role === 'admin'}
 			<AdminSidebar />

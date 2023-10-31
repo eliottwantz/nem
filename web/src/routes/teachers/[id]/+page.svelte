@@ -2,6 +2,7 @@
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
+	import EmojiPicker from '$lib/components/EmojiPicker/EmojiPicker.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
