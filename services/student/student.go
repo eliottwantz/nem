@@ -152,3 +152,75 @@ func (s *Service) ListAvailabilitiesOfTeacher(ctx context.Context, teacherId str
 
 	return ret, nil
 }
+
+func (s *Service) CancelClass(ctx context.Context, classId string) error {
+	ErrCancelClass := errors.New("could not cancel class")
+
+	cID, err := uuid.Parse(classId)
+	if err != nil {
+		s.logger.Warn("could not parse class id", "err", err)
+		return rpc.ErrWebrpcBadRequest.WithCause(errors.New("empty class id param"))
+	}
+
+	tx, err := db.Pg.NewTx(ctx)
+	if err != nil {
+		s.logger.Warn("could not create tx", "err", err)
+		return rpc.ErrWebrpcBadResponse
+	}
+
+	s.logger.Infof("class id %s", classId)
+
+	dbClass, err := tx.FindClassDetails(ctx, cID)
+	if err != nil {
+		s.logger.Warn("could not find class", "err", err)
+		return rpc.ErrWebrpcBadResponse.WithCause(ErrCancelClass)
+	}
+
+	if dbClass.IsTrial {
+		return rpc.ErrWebrpcBadResponse.WithCause(errors.New("cannot cancel a trial class"))
+	}
+
+	timeSlot, err := tx.FindTimeSlot(ctx, dbClass.TimeSlotID)
+	if err != nil {
+		s.logger.Warn("could not find time slot", "err", err)
+		return rpc.ErrWebrpcBadResponse.WithCause(ErrCancelClass)
+	}
+
+	if time.Now().Add(-2 * time.Hour).Before(timeSlot.StartAt) {
+		// Can be refunded his hour
+		err = tx.AddHoursToHoursBank(ctx, db.AddHoursToHoursBankParams{
+			StudentID: httpmw.ContextUID(ctx),
+			TeacherID: timeSlot.TeacherID,
+			Hours:     1,
+		})
+		if err != nil {
+			s.logger.Warn("could not refund the hour", "err", err)
+			return rpc.ErrWebrpcBadResponse.WithCause(errors.New("could not refund the hour"))
+		}
+	}
+
+	err = tx.RemoveStudentFromClass(ctx, db.RemoveStudentFromClassParams{
+		StudentID: httpmw.ContextUID(ctx),
+		ClassID:   cID,
+	})
+	if err != nil {
+		s.logger.Warn("could not remove student from class", "err", err)
+		return rpc.ErrWebrpcBadResponse.WithCause(ErrCancelClass)
+	}
+
+	if dbClass.StudentCount == 1 {
+		err = tx.DeleteClass(ctx, cID)
+		if err != nil {
+			s.logger.Warn("could not remove class", "err", err)
+			return rpc.ErrWebrpcBadResponse
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		s.logger.Warn("could not commit tx", "err", err)
+		return rpc.ErrWebrpcBadResponse
+	}
+
+	return nil
+}

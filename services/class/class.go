@@ -84,6 +84,7 @@ func (s *Service) ShowClassDetails(ctx context.Context, classId string) (*rpc.Cl
 			Topic:      dbClass.Topic,
 			TeacherId:  dbClass.TeacherID.String(),
 			IsPrivate:  dbClass.IsPrivate,
+			IsTrial:    dbClass.IsTrial,
 			StartAt:    dbClass.StartAt,
 			EndAt:      dbClass.EndAt,
 			CreatedAt:  dbClass.CreatedAt,

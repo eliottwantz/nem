@@ -174,6 +174,60 @@ func (q *Queries) FindClassByTimeslot(ctx context.Context, id uuid.UUID) (*FindC
 	return &i, err
 }
 
+const findClassDetails = `-- name: FindClassDetails :one
+SELECT cl.id, cl.name, cl.is_private, cl.is_trial, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
+    ts.teacher_id,
+    ts.start_at,
+    ts.end_at,
+    COUNT(sc.class_id) AS student_count
+FROM "class" cl
+    JOIN "time_slots" ts ON cl.time_slot_id = ts.id
+    JOIN "student_class" sc ON cl.id = sc.class_id
+WHERE cl.id = $1
+GROUP BY cl.id,
+    ts.teacher_id,
+    ts.start_at,
+    ts.end_at
+ORDER BY cl.created_at ASC
+`
+
+type FindClassDetailsRow struct {
+	ID           uuid.UUID
+	Name         string
+	IsPrivate    bool
+	IsTrial      bool
+	Language     string
+	Topic        string
+	TimeSlotID   uuid.UUID
+	HasStarted   bool
+	CreatedAt    time.Time
+	TeacherID    uuid.UUID
+	StartAt      time.Time
+	EndAt        time.Time
+	StudentCount int64
+}
+
+func (q *Queries) FindClassDetails(ctx context.Context, id uuid.UUID) (*FindClassDetailsRow, error) {
+	row := q.db.QueryRowContext(ctx, findClassDetails, id)
+	var i FindClassDetailsRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsPrivate,
+		&i.IsTrial,
+		&i.Language,
+		&i.Topic,
+		&i.TimeSlotID,
+		&i.HasStarted,
+		&i.CreatedAt,
+		&i.TeacherID,
+		&i.StartAt,
+		&i.EndAt,
+		&i.StudentCount,
+	)
+	return &i, err
+}
+
 const listClassesOfStudent = `-- name: ListClassesOfStudent :many
 SELECT cl.id, cl.name, cl.is_private, cl.is_trial, cl.language, cl.topic, cl.time_slot_id, cl.has_started, cl.created_at,
     t.teacher_id,

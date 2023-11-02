@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { fetchers, safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
@@ -12,6 +12,7 @@
 	import { locale } from 'svelte-i18n'
 
 	export let data
+	console.log(data.classDetails)
 
 	const start = new Date(data.classDetails.class.startAt)
 	const end = new Date(data.classDetails.class.endAt)
@@ -34,10 +35,7 @@
 	})
 
 	$: {
-		if (
-			currentTime >= new Date(start.getTime() - 5 * 60 * 60 * 1000) &&
-			currentTime < new Date(start.getTime() - 4 * 60 * 60 * 1000)
-		) {
+		if (currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)) {
 			showTimer = true
 		} else {
 			showTimer = false
@@ -47,7 +45,7 @@
 
 	$: canSignalNotPresentTeacher = currentTime >= new Date(start.getTime() + 10 * 60 * 1000) // Only available if it's 10 minutes after the start time
 
-	$: canCancelClassWithRefund = currentTime < new Date(start.getTime() - 4 * 60 * 60 * 1000) // Can only cancel a class for free four hours before start
+	$: canCancelClassWithRefund = currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)
 
 	async function joinClass() {
 		modalStore.trigger({
@@ -69,18 +67,23 @@
 			body: 'Are you sure you want to cancel this class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-				try {
-					await fetch('/dashboard/teacher/classes/', {
-						method: 'DELETE',
-						body: JSON.stringify(data.classDetails.class)
+				const res = await safeFetch(
+					fetchers.studentService(fetch, $page.data.session).cancelClass({
+						classId: data.classDetails.class.id
 					})
-					window.location.reload()
-				} catch (error) {
+				)
+				if (!res.ok) {
 					toastStore.trigger({
-						message: error instanceof Error ? error.message : 'An error occured',
-						background: 'variant-filled-error'
+						message: res.cause,
+						background: 'bg-red-500'
 					})
+					return
 				}
+				toastStore.trigger({
+					message: 'Class cancelled with refund',
+					background: 'bg-success-500'
+				})
+				window.location.replace('/dashboard/student/classes')
 			}
 		})
 	}
@@ -98,7 +101,7 @@
 	<br />
 
 	{#if new Date() < new Date(end)}
-		<div class="flex flex-col gap-2 sm:flex-row">
+		<div class="flex flex-col items-center gap-2 sm:flex-row">
 			<button
 				class="variant-filled-primary btn"
 				disabled={!data.classDetails.class.hasStarted}
@@ -108,21 +111,28 @@
 				on:click={joinClass}>Join class</button
 			>
 			{#if canSignalNotPresentTeacher}
-				<button class="variant-filled-primary btn" title="Teacher is not there"
-					>Teacher is not there</button
-				>
+				<button class="variant-filled-primary btn" title="Teacher is not there">
+					Teacher is not there
+				</button>
 			{/if}
-			{#if showTimer}
-				<Countdown timeountSec={60 * 60 * 1} />
+			{#if !data.classDetails.class.isTrial}
+				<button on:click={cancelClass} title="Cancel class" class="variant-ghost-error btn">
+					<DeleteIcon class="h-6 w-6" />
+					{#if canCancelClassWithRefund}
+						<span>Cancel class with refund</span>
+					{:else}
+						<span>Cancel class</span>
+					{/if}
+					{#if showTimer}
+						<Countdown
+							timeountSec={(end.getTime() -
+								2 * 60 * 60 * 1000 -
+								currentTime.getTime()) /
+								1000}
+						/>
+					{/if}
+				</button>
 			{/if}
-			<button on:click={cancelClass} title="Cancel class" class="variant-filled-error btn">
-				<DeleteIcon class="h-6 w-6" />
-				{#if canCancelClassWithRefund}
-					<span>Cancel class with refund</span>
-				{:else}
-					<span>Cancel class</span>
-				{/if}
-			</button>
 		</div>
 	{:else}
 		<p class="text-xl font-semibold">Class has ended</p>
@@ -130,10 +140,10 @@
 
 	<br />
 
-	<div class="card w-full max-w-lg space-y-4 p-4">
+	<div class="card w-full max-w-xl space-y-4 p-4">
 		<h3 class="h3 mb-2">Teacher</h3>
 		<div class="flex gap-x-2">
-			<a href="/teachers/{data.classDetails.teacher.id}" class="relative inline-block">
+			<a href="/teachers/{data.classDetails.teacher.id}" class="relative flex gap-2">
 				{#if data.classDetails.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -148,17 +158,17 @@
 						data.classDetails.teacher.lastName
 					)}
 				/>
-			</a>
-			<a href="/teachers/{data.classDetails.teacher.id}">
-				<p class="font-semibold sm:text-lg">
-					{getPublicName(
-						data.classDetails.teacher.firstName,
-						data.classDetails.teacher.lastName
-					)}
-				</p>
-				{#if data.classDetails.teacher.topAgent}
-					<span class="font-bold text-primary-600"> TopAgent </span>
-				{/if}
+				<div>
+					<p class="font-semibold sm:text-lg">
+						{getPublicName(
+							data.classDetails.teacher.firstName,
+							data.classDetails.teacher.lastName
+						)}
+					</p>
+					{#if data.classDetails.teacher.topAgent}
+						<span class="font-bold text-primary-600"> TopAgent </span>
+					{/if}
+				</div>
 			</a>
 		</div>
 		<h3 class="h3">Students</h3>

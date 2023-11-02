@@ -75,6 +75,25 @@ func (q *Queries) FindTimeSlot(ctx context.Context, id uuid.UUID) (*TimeSlot, er
 	return &i, err
 }
 
+const findTimeSlotByClassId = `-- name: FindTimeSlotByClassId :one
+SELECT ts.id, ts.start_at, ts.end_at, ts.teacher_id
+FROM "time_slots" ts
+    JOIN "class" c ON ts."id" = c."time_slot_id"
+WHERE c."time_slot_id" = $1
+`
+
+func (q *Queries) FindTimeSlotByClassId(ctx context.Context, timeSlotID uuid.UUID) (*TimeSlot, error) {
+	row := q.db.QueryRowContext(ctx, findTimeSlotByClassId, timeSlotID)
+	var i TimeSlot
+	err := row.Scan(
+		&i.ID,
+		&i.StartAt,
+		&i.EndAt,
+		&i.TeacherID,
+	)
+	return &i, err
+}
+
 const findTimeSlotsTimeRange = `-- name: FindTimeSlotsTimeRange :many
 SELECT id, start_at, end_at, teacher_id
 FROM "time_slots"

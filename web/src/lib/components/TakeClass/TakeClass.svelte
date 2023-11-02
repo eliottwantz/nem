@@ -120,8 +120,7 @@
 				})
 			}
 			modalStore.close()
-			invalidateAll()
-			await goto('/dashboard/student/classes')
+			window.location.replace('/dashboard/student/classes')
 		}
 	}
 </script>

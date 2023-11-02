@@ -1,5 +1,4 @@
 <script lang="ts">
-	import EmojiPicker from '$lib/components/EmojiPicker/EmojiPicker.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import ImageNem from '$lib/icons/ImageNEM.svelte'
 	import { t } from 'svelte-i18n'
@@ -19,7 +18,6 @@
 				<a href="/register" role="button" class="variant-filled-primary btn self-center">
 					{$t('home.getNemPass')}
 				</a>
-				<EmojiPicker />
 			</div>
 			<div class="flex justify-center">
 				<ImageNem />

@@ -32,6 +32,11 @@ HAVING COUNT(sc.student_id) < 4;
 SELECT *
 FROM "time_slots"
 WHERE "id" = $1;
+-- name: FindTimeSlotByClassId :one
+SELECT ts.*
+FROM "time_slots" ts
+    JOIN "class" c ON ts."id" = c."time_slot_id"
+WHERE c."time_slot_id" = $1;
 -- name: FindTimeSlotsTimeRange :many
 SELECT *
 FROM "time_slots"

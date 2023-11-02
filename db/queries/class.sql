@@ -7,6 +7,21 @@ FROM "class" cl
     JOIN "time_slots" ts ON cl.time_slot_id = ts.id
 WHERE cl.id = $1
 ORDER BY cl.created_at ASC;
+-- name: FindClassDetails :one
+SELECT cl.*,
+    ts.teacher_id,
+    ts.start_at,
+    ts.end_at,
+    COUNT(sc.class_id) AS student_count
+FROM "class" cl
+    JOIN "time_slots" ts ON cl.time_slot_id = ts.id
+    JOIN "student_class" sc ON cl.id = sc.class_id
+WHERE cl.id = $1
+GROUP BY cl.id,
+    ts.teacher_id,
+    ts.start_at,
+    ts.end_at
+ORDER BY cl.created_at ASC;
 -- name: FindClassByTimeslot :one
 SELECT cl.*,
     t.teacher_id,

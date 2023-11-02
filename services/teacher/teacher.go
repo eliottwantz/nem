@@ -62,6 +62,7 @@ func (s *Service) ListClassesOfTeacher(ctx context.Context, teacherId string) ([
 			Id:         c.ID.String(),
 			Name:       c.Name,
 			IsPrivate:  c.IsPrivate,
+			IsTrial:    c.IsTrial,
 			HasStarted: c.HasStarted,
 			Language:   c.Language,
 			Topic:      c.Topic,
