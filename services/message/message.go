@@ -325,7 +325,7 @@ func (s *Service) FindConversationById(ctx context.Context, conversationId int64
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, errors.New("failed to find conversation"))
 	}
 
-	return rpc.FromDbConversation(&db.ListConversationsOfUserRow{
+	return rpc.FromDbConversationFind(&db.FindConversationByIdRow{
 		ID:          convo.ID,
 		IsClassChat: convo.IsClassChat,
 		CreatedAt:   convo.CreatedAt,

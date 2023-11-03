@@ -6,7 +6,6 @@
 	import { getPublicName } from '$lib/utils/initials'
 	//@ts-expect-error
 	import VideoSDKMeeting from '@videosdk.live/rtc-js-prebuilt/dist/index'
-	import { onMount } from 'svelte'
 
 	export let data
 	let hasJoined = false
@@ -14,10 +13,6 @@
 	let videoEnabled = false
 
 	let isTeacher = data.user.role === 'teacher' && data.classDetails.teacher.id === data.user.id
-
-	// onMount(() => {
-	// 	initMeeting()
-	// })
 
 	function initMeeting() {
 		hasJoined = true

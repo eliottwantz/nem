@@ -37,6 +37,8 @@
 									<th>Teacher</th>
 									<th>Start</th>
 									<th>End</th>
+									<th>Private?</th>
+									<th>Trial?</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -69,8 +71,10 @@
 										<td class="!align-middle"
 											>{new Date(row.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
-											)}</td
-										>
+											)}
+										</td>
+										<td>{row.isPrivate ? 'X' : ''}</td>
+										<td>{row.isTrial ? 'X' : ''}</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -92,6 +96,8 @@
 									<th>Teacher</th>
 									<th>Start</th>
 									<th>End</th>
+									<th>Private?</th>
+									<th>Trial?</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -124,8 +130,10 @@
 										<td class="!align-middle"
 											>{new Date(row.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
-											)}</td
-										>
+											)}
+										</td>
+										<td>{row.isPrivate ? 'X' : ''}</td>
+										<td>{row.isTrial ? 'X' : ''}</td>
 									</tr>
 								{/each}
 							</tbody>

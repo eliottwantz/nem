@@ -18,11 +18,11 @@
 	const modalStore = getModalStore()
 	const toastStore = getToastStore()
 
-	let canStartClass = false // Cannot start class if it's 10 minutes after the start time
+	let canStartClass = false
 	$: {
 		const currentTime = new Date()
 		const tenMinutesFromStart = new Date(start.getTime() + 10 * 60 * 1000)
-		canStartClass = currentTime <= tenMinutesFromStart
+		canStartClass = currentTime >= start && currentTime <= tenMinutesFromStart
 	}
 	let canCancelClass = false // Can only cancel a class ten minutes before start
 	$: {
@@ -34,7 +34,7 @@
 
 	async function startClass() {
 		if (!canStartClass) {
-			console.log('Class has ended')
+			console.log("Can't start class")
 			return
 		}
 		modalStore.trigger({
@@ -77,18 +77,24 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">Class: {data.classDetails.class.name}</h1>
+	<h1 class="h1" slot="title">
+		{data.classDetails.class.isTrial ? 'Trial' : ''} Class: {data.classDetails.class.name}
+	</h1>
 	<p class="text-xl">
 		<span>{start.toLocaleDateString(_locale)}</span>
 		{start.toLocaleTimeString(_locale)} - {end.toLocaleTimeString(_locale)}
-		<span></span>
 	</p>
 
 	<br />
 
 	{#if new Date() < new Date(end)}
 		<div class="flex gap-2">
-			<button on:click={startClass} title="Start class" class="variant-filled-primary btn">
+			<button
+				on:click={startClass}
+				disabled={!canStartClass}
+				title="Start class"
+				class="variant-filled-primary btn"
+			>
 				<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
 					><path d="M8 19V5l11 7l-11 7Z" /></svg
 				>

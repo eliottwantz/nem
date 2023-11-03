@@ -90,6 +90,7 @@ struct ListClass
     - teacherAvatarUrl: string
     - teacherAvatarFilePath: string
     - isPrivate: bool
+    - isTrial: bool
     - name: string
     - hasStarted: bool
     - language: string

@@ -13,6 +13,8 @@ export async function load({ locals: { user, session }, fetch, params }) {
 		)
 	])
 
+	console.log('is ok?', streams[0].ok)
+
 	if (!streams[0].ok) throw redirect(302, '/dashboard/messages')
 
 	return {

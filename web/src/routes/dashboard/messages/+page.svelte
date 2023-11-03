@@ -27,7 +27,6 @@
 			{#each data.conversations as convo}
 				{@const recipient =
 					convo.users[0].id !== data.user.id ? convo.users[0] : convo.users[1]}
-				{@debug convo}
 				<a href="/dashboard/messages/{convo.id}">
 					<UserProfile user={recipient} avatarHeight="h-12" avatarWidth="w-12" />
 					<small class="opacity-50">

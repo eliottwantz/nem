@@ -45,6 +45,7 @@ func (s *Service) ListClasses(ctx context.Context) ([]*rpc.ListClass, error) {
 			TeacherAvatarFilePath: c.AvatarFilePath,
 			TeacherId:             c.TeacherID.String(),
 			IsPrivate:             c.IsPrivate,
+			IsTrial:               c.IsTrial,
 			Language:              c.Language,
 			Topic:                 c.Topic,
 			StartAt:               c.StartAt,

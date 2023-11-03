@@ -15,10 +15,6 @@ export async function load({ locals: { session, user }, fetch }) {
 	}
 	console.log(res.data.classes)
 	return {
-		classes: res.data.classes.map((c) => ({
-			...c,
-			startAt: new Date(c.startAt).toLocaleString(user.preferedLanguage),
-			endAt: new Date(c.endAt).toLocaleString(user.preferedLanguage)
-		}))
+		classes: res.data.classes
 	}
 }

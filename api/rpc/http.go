@@ -109,6 +109,15 @@ func FromDbConversation(c *db.ListConversationsOfUserRow) *Conversation {
 	}
 }
 
+func FromDbConversationFind(c *db.FindConversationByIdRow) *Conversation {
+	return &Conversation{
+		Id:          c.ID,
+		IsClassChat: c.IsClassChat,
+		Users:       pgRowToUsers(c.Users),
+		CreatedAt:   c.CreatedAt,
+	}
+}
+
 func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 	var rating int32 = 0
 	if t.Rating.Valid {
