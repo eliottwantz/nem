@@ -111,47 +111,25 @@
 	<section
 		bind:this={elemChat}
 		on:wheel={fetchOlderMessage}
-		class="flex flex-1 flex-col overflow-y-auto sm:p-4"
+		class="flex flex-1 flex-col gap-y-1 overflow-y-auto sm:p-4"
 	>
 		{#each $chatStore.messages as msg}
 			{#if msg.sender.id !== $userStore?.id}
 				<!-- Got message from someone else -->
 				<div id="message">
-					<div id="outer" class="flex">
-						<div id="avatar" class="self-end">
-							<Avatar
-								initials={getInitials(msg.sender.firstName, msg.sender.lastName)}
-								src={msg.sender.avatarUrl}
-								width="w-8"
-							/>
+					<div id="inner" class="flex flex-1 items-center pl-2">
+						<div
+							id="bubble"
+							class="card variant-filled-surface max-w-[75%] break-words px-2 py-1"
+						>
+							<header class="flex items-center justify-between gap-x-1">
+								<small class="opacity-50">
+									{stringToLocalTime(msg.sentAt)}
+								</small>
+							</header>
+							<p>{msg.text}</p>
 						</div>
-						<div id="inner" class="flex flex-1 items-center pl-2">
-							<div
-								id="bubble"
-								class="wrap-bal card variant-filled-surface max-w-[75%] break-words px-2"
-							>
-								<header class="flex items-center justify-between gap-x-1">
-									<p class="font-bold">
-										{getPublicName(msg.sender.firstName, msg.sender.lastName)}
-									</p>
-									<small class="opacity-50">
-										{stringToLocalTime(msg.sentAt)}
-									</small>
-								</header>
-								<p>{msg.text}</p>
-							</div>
-							<!-- <div id="actions" class="pl-2 min-w-fit shrink-0">
-										<div class="hidden sm:flex items-center space-x-2 flex-row-reverse">
-											<TrippleDots />
-											<ShareIcon />
-											<ReactionIcon />
-										</div>
-										<div class="sm:hidden">
-											<TrippleDots />
-										</div>
-									</div> -->
-							<div id="spacer" class="flex-grow"></div>
-						</div>
+						<div id="spacer" class="flex-grow" />
 					</div>
 				</div>
 			{:else}
@@ -161,28 +139,15 @@
 						<div id="inner" class="flex flex-1 flex-row-reverse items-center">
 							<div
 								id="bubble"
-								class="wrap-bal card variant-filled-primary max-w-[75%] break-words px-2"
+								class="card max-w-[75%] break-words bg-primary-400 px-2 py-1"
 							>
 								<header class="flex items-center justify-between">
 									<small class="opacity-50">{stringToLocalTime(msg.sentAt)}</small
 									>
 								</header>
-								<p>{msg.text}</p>
+								<p class="text-right">{msg.text}</p>
 							</div>
-							<!-- <div id="actions" class="pr-2 min-w-fit">
-										<div class="hidden sm:flex items-center space-x-2">
-											<TrippleDots />
-											<ShareIcon />
-											<ReactionIcon />
-										</div>
-										<div class="sm:hidden">
-											<TrippleDots />
-										</div>
-									</div> -->
 							<div id="spacer" class="flex-grow"></div>
-						</div>
-						<div id="status" class="flex w-5 flex-col items-center justify-center">
-							<small class="opacity-50"></small>
 						</div>
 					</div>
 				</div>

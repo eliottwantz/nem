@@ -33,10 +33,10 @@
 	}
 
 	async function startClass() {
-		if (!canStartClass) {
-			console.log("Can't start class")
-			return
-		}
+		// if (!canStartClass) {
+		// 	console.log("Can't start class")
+		// 	return
+		// }
 		modalStore.trigger({
 			type: 'confirm',
 			title: 'Start Class',
@@ -89,12 +89,7 @@
 
 	{#if new Date() < new Date(end)}
 		<div class="flex gap-2">
-			<button
-				on:click={startClass}
-				disabled={!canStartClass}
-				title="Start class"
-				class="variant-filled-primary btn"
-			>
+			<button on:click={startClass} title="Start class" class="variant-filled-primary btn">
 				<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
 					><path d="M8 19V5l11 7l-11 7Z" /></svg
 				>

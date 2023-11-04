@@ -104,7 +104,6 @@
 		<div class="flex flex-col items-center gap-2 sm:flex-row">
 			<button
 				class="variant-filled-primary btn"
-				disabled={!data.classDetails.class.hasStarted}
 				title={data.classDetails.class.hasStarted
 					? 'Join Class'
 					: 'Wait for the teacher to start the class'}
