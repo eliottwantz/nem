@@ -188,3 +188,9 @@
 		</div>
 	</form>
 </section>
+
+<style>
+	input {
+		font-family: 'Noto Color Emoji', sans-serif;
+	}
+</style>

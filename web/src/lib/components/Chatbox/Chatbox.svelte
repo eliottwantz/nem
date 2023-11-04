@@ -161,3 +161,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	#bubble p {
+		font-family: 'Noto Color Emoji', sans-serif;
+	}
+</style>

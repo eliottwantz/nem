@@ -1,29 +1,29 @@
 <script lang="ts">
+	import { page } from '$app/stores'
+	import type { Picker } from 'emoji-picker-element'
+	import type { EmojiClickEvent } from 'emoji-picker-element/shared'
 	import { SmilePlus } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import type { EmojiPickerElement, EmojiPickEvent } from 'unicode-emoji-picker'
 
 	export let promptToPasteTo: string
-	let emojiPicker: EmojiPickerElement
+	let emojiPicker: Picker
+	let btn: HTMLButtonElement
 	let show = false
 
 	onMount(() => {
-		const emojiPickedEvent = async (event: EmojiPickEvent) => {
-			console.log('emoji picked', event.detail.emoji)
-			promptToPasteTo += event.detail.emoji
+		const emojiPickedEvent = async (event: EmojiClickEvent) => {
+			promptToPasteTo += event.detail.unicode
 		}
-		emojiPicker.addEventListener('emoji-pick', emojiPickedEvent)
+		emojiPicker.addEventListener('emoji-click', emojiPickedEvent)
 
 		return () => {
-			emojiPicker.removeEventListener('emoji-pick', emojiPickedEvent)
+			emojiPicker.removeEventListener('emoji-click', emojiPickedEvent)
 		}
 	})
 
 	function clickOutside(node: HTMLElement) {
-		console.log('click outside')
 		const handleClick = (event: MouseEvent) => {
-			console.log('click emoji shit', event.target)
-			if (node && !node.contains(event.target as Node)) {
+			if (!node.contains(event.target as Node) && !btn.contains(event.target as Node)) {
 				show = false
 			}
 		}
@@ -39,18 +39,34 @@
 </script>
 
 <div class="relative">
-	<button type="button" class="variant-glass-surface btn px-1" on:click={() => (show = !show)}>
+	<button
+		bind:this={btn}
+		type="button"
+		class="variant-glass-surface btn px-1"
+		on:click={() => (show = !show)}
+	>
 		<SmilePlus class="h-5 w-5" />
 	</button>
-	<div use:clickOutside class="absolute bottom-12 left-0" class:hidden={!show} class:block={show}>
-		<unicode-emoji-picker version="15.0" bind:this={emojiPicker}></unicode-emoji-picker>
-	</div>
+	<emoji-picker
+		use:clickOutside
+		bind:this={emojiPicker}
+		class="light absolute bottom-12 left-0 right-0"
+		class:hidden={!show}
+		class:block={show}
+		emoji-version="15.0"
+		locale={$page.data.user.preferedLanguage}
+	>
+	</emoji-picker>
 </div>
 
 <style>
-	unicode-emoji-picker {
-		--emoji-font-family: 'NotoColorFlags', apple color emoji, segoe ui emoji, 'Noto Color Emoji',
-			android emoji, emojisymbols, emojione mozilla, twemoji mozilla, segoe ui symbol,
-			sans-serif;
+	@media screen and (max-width: 320px) {
+		emoji-picker {
+			--num-columns: 6;
+			--category-emoji-size: 1.125rem;
+		}
+	}
+	emoji-picker {
+		--emoji-font-family: 'Noto Color Emoji', sans-serif;
 	}
 </style>

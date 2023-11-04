@@ -20,6 +20,7 @@
 		"@event-calendar/list": "^2.3.3",
 		"@event-calendar/time-grid": "^2.3.3",
 		"@fontsource-variable/inter": "^5.0.15",
+		"@fontsource/noto-color-emoji": "^5.0.16",
 		"@skeletonlabs/skeleton": "^2.2.0",
 		"@skeletonlabs/tw-plugin": "^0.2.1",
 		"@supabase/auth-helpers-sveltekit": "^0.10.3",
@@ -37,6 +38,7 @@
 		"@videosdk.live/js-sdk": "^0.0.73",
 		"@videosdk.live/rtc-js-prebuilt": "0.3.34",
 		"autoprefixer": "^10.4.16",
+		"emoji-picker-element": "^1.18.4",
 		"jsonwebtoken": "^9.0.2",
 		"jsrsasign": "^10.8.6",
 		"kysely": "^0.26.3",
@@ -58,7 +60,6 @@
 		"tailwindcss": "^3.3.3",
 		"tslib": "^2.6.2",
 		"typescript": "^5.2.2",
-		"unicode-emoji-picker": "^1.3.0",
 		"vite": "^4.4.9",
 		"vite-plugin-tailwind-purgecss": "^0.1.3",
 		"zod": "^3.22.2"
