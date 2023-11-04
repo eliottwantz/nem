@@ -90,71 +90,72 @@
 	}
 </script>
 
-<section class="flex h-full flex-col p-2">
-	<div>
-		<div class="sm:p-4">
-			<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
-		</div>
-		{#if !$chatStore.isMore}
-			<div class="text-center">
-				<p>You reached the start of the conversation</p>
-			</div>
-		{/if}
-		{#if isFetching}
-			<div class="flex items-center justify-center">
-				<div
-					class="h-8 w-8 animate-spin rounded-full border-b-4 border-t-4 border-surface-800"
-				></div>
-			</div>
-		{/if}
+<div class="flex h-full flex-col">
+	<div class="sm:p-4">
+		<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 	</div>
-	<section
-		bind:this={elemChat}
-		on:wheel={fetchOlderMessage}
-		class="flex flex-1 flex-col gap-y-1 overflow-y-auto sm:p-4"
-	>
-		{#each $chatStore.messages as msg}
-			{#if msg.sender.id !== $userStore?.id}
-				<!-- Got message from someone else -->
-				<div id="message">
-					<div id="inner" class="flex flex-1 items-center pl-2">
-						<div
-							id="bubble"
-							class="card variant-filled-surface max-w-[75%] break-words px-2 py-1"
-						>
-							<header class="flex items-center justify-between gap-x-1">
-								<small class="opacity-50">
-									{stringToLocalTime(msg.sentAt)}
-								</small>
-							</header>
-							<p>{msg.text}</p>
-						</div>
-						<div id="spacer" class="flex-grow" />
-					</div>
-				</div>
-			{:else}
-				<!-- Current User sent message -->
-				<div id="message">
-					<div id="outer" class="flex">
-						<div id="inner" class="flex flex-1 flex-row-reverse items-center">
+	{#if !$chatStore.isMore}
+		<div class="text-center">
+			<p>You reached the start of the conversation</p>
+		</div>
+	{/if}
+	{#if isFetching}
+		<div class="flex items-center justify-center">
+			<div
+				class="h-8 w-8 animate-spin rounded-full border-b-4 border-t-4 border-surface-800"
+			></div>
+		</div>
+	{/if}
+	<section class="relative flex-1 bg-red-400 p-2">
+		<div
+			bind:this={elemChat}
+			on:wheel={fetchOlderMessage}
+			class="absolute inset-0 flex flex-1 flex-col gap-y-1 overflow-y-scroll bg-green-400 sm:p-4"
+		>
+			{#each $chatStore.messages as msg}
+				{#if msg.sender.id !== $userStore?.id}
+					<!-- Got message from someone else -->
+					<div id="message">
+						<div id="inner" class="flex flex-1 items-center pl-2">
 							<div
 								id="bubble"
-								class="card max-w-[75%] break-words bg-primary-400 px-2 py-1"
+								class="card variant-filled-surface max-w-[75%] break-words px-2 py-1"
 							>
-								<header class="flex items-center justify-between">
-									<small class="opacity-50">{stringToLocalTime(msg.sentAt)}</small
-									>
+								<header class="flex items-center justify-between gap-x-1">
+									<small class="opacity-50">
+										{stringToLocalTime(msg.sentAt)}
+									</small>
 								</header>
-								<p class="text-right">{msg.text}</p>
+								<p>{msg.text}</p>
 							</div>
-							<div id="spacer" class="flex-grow"></div>
+							<div id="spacer" class="flex-grow" />
 						</div>
 					</div>
-				</div>
-			{/if}
-		{/each}
+				{:else}
+					<!-- Current User sent message -->
+					<div id="message">
+						<div id="outer" class="flex">
+							<div id="inner" class="flex flex-1 flex-row-reverse items-center">
+								<div
+									id="bubble"
+									class="card max-w-[75%] break-words bg-primary-400 px-2 py-1"
+								>
+									<header class="flex items-center justify-between">
+										<small class="opacity-50"
+											>{stringToLocalTime(msg.sentAt)}</small
+										>
+									</header>
+									<p class="text-right">{msg.text}</p>
+								</div>
+								<div id="spacer" class="flex-grow"></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+			{/each}
+		</div>
 	</section>
-	<div>
+	<div class="bg-blue-400">
 		{#if $chatStore.peopleTyping.length > 0}
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
@@ -162,4 +163,4 @@
 			<Prompt {conversationId} {recepient} />
 		</div>
 	</div>
-</section>
+</div>
