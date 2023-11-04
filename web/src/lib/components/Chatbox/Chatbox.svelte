@@ -3,14 +3,11 @@
 	import { fetchers, safeFetch } from '$lib/api'
 	import type { User } from '$lib/api/api.gen'
 	import { chatStore } from '$lib/stores/chatStore'
-	import { userStore } from '$lib/stores/user'
 	import { stringToLocalTime } from '$lib/utils/datetime'
-	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import Avatar from '../Avatar.svelte'
 	import Profile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
-	import { getToastStore } from '@skeletonlabs/skeleton'
 
 	export let conversationId: number
 	export let recepient: User
@@ -91,7 +88,7 @@
 </script>
 
 <div class="flex h-full flex-col">
-	<div class="sm:p-4">
+	<div class="p-2 sm:p-4">
 		<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 	</div>
 	{#if !$chatStore.isMore}
@@ -106,14 +103,14 @@
 			></div>
 		</div>
 	{/if}
-	<section class="relative flex-1 bg-red-400 p-2">
+	<section class="relative flex-1 p-2">
 		<div
 			bind:this={elemChat}
 			on:wheel={fetchOlderMessage}
-			class="absolute inset-0 flex flex-1 flex-col gap-y-1 overflow-y-scroll bg-green-400 sm:p-4"
+			class="absolute inset-0 flex flex-1 flex-col gap-y-1 overflow-y-scroll p-2 sm:p-4"
 		>
 			{#each $chatStore.messages as msg}
-				{#if msg.sender.id !== $userStore?.id}
+				{#if msg.sender.id !== $page.data.user.id}
 					<!-- Got message from someone else -->
 					<div id="message">
 						<div id="inner" class="flex flex-1 items-center pl-2">
@@ -155,7 +152,7 @@
 			{/each}
 		</div>
 	</section>
-	<div class="bg-blue-400">
+	<div>
 		{#if $chatStore.peopleTyping.length > 0}
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
