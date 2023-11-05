@@ -90,7 +90,7 @@
 	<!-- Show for tablet and laptops -->
 	<div class="card hidden flex-row gap-4 p-4 shadow-md md:flex">
 		<div class="flex flex-col items-center">
-			<a href="/teachers/{teacher.id}" class="relative inline-block">
+			<a href="/teachers/{teacher.id}" class="relative">
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-2 z-10 h-8 w-8">
 						<img class="h-6 w-8" src="/topagent.png" alt="TopAgent" />

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 
 	"nem/api/httpmw"
 	"nem/api/rpc"
@@ -56,15 +57,37 @@ func (s *Service) FindUserByID(ctx context.Context, id string) (*rpc.User, error
 	return rpc.FromDbUser(u), nil
 }
 
-func (s *Service) ListTeachers(ctx context.Context, filters *rpc.ListTeachersFilters) ([]*rpc.Teacher, error) {
-	teachers, err := db.Pg.ListTeachers(ctx)
+func (s *Service) ListTeachers(ctx context.Context, filters *rpc.ListTeachersFilters) ([]*rpc.ListTeacher, error) {
+	params := db.ListTeachersParams{
+		HourRate:   filters.PriceMax,
+		TopAgent:   filters.TopAgent,
+		TopAgent_2: filters.TopAgent,
+		Topic:      filters.Topic,
+		Topic_2:    filters.Topic,
+		Language:   filters.Language,
+		Language_2: filters.Language,
+		Rating:     strconv.Itoa(int(filters.RatingMin)),
+	}
+	if !filters.TopAgent {
+		params.TopAgent_2 = true
+	}
+	if filters.Topic == "" {
+		params.Topic_2 = "%"
+	}
+	if filters.Language == "" {
+		params.Language_2 = "%"
+	}
+	if params.HourRate == 45 {
+		params.HourRate = 1000
+	}
+	teachers, err := db.Pg.ListTeachers(ctx, params)
 	if err != nil {
 		return nil, rpc.ErrorWithCause(rpc.ErrWebrpcBadResponse, utils.ErrInternalServer)
 	}
 
-	ret := make([]*rpc.Teacher, 0, len(teachers))
+	ret := make([]*rpc.ListTeacher, 0, len(teachers))
 	for _, t := range teachers {
-		ret = append(ret, rpc.FromDbTeacher(&db.FindTeacherByIDRow{
+		ret = append(ret, rpc.FromDbListTeachers(&db.ListTeachersRow{
 			ID:               t.ID,
 			Email:            t.Email,
 			FirstName:        t.FirstName,
@@ -84,6 +107,41 @@ func (s *Service) ListTeachers(ctx context.Context, filters *rpc.ListTeachersFil
 	}
 
 	return ret, nil
+}
+
+func (s *Service) TeachersCount(ctx context.Context) (int64, error) {
+	count, err := db.Pg.TeachersCount(ctx)
+	if err != nil {
+		return 0, rpc.ErrWebrpcBadResponse.WithCause(utils.ErrInternalServer)
+	}
+
+	return count, nil
+}
+
+func (s *Service) ListTopicsTaught(ctx context.Context) ([]*rpc.Topic, error) {
+	res, err := db.Pg.ListTopicsTaughtByAllTeachers(ctx)
+	if err != nil {
+		return nil, rpc.ErrWebrpcBadResponse.WithCause(utils.ErrInternalServer)
+	}
+
+	ret := make([]*rpc.Topic, 0, len(res))
+	for _, t := range res {
+		ret = append(ret, &rpc.Topic{
+			Id:    t.ID,
+			Topic: t.Topic,
+		})
+	}
+
+	return ret, nil
+}
+
+func (s *Service) ListLanguagesTaught(ctx context.Context) ([]string, error) {
+	res, err := db.Pg.ListLanguagesOfAllTeachers(ctx)
+	if err != nil {
+		return nil, rpc.ErrWebrpcBadResponse.WithCause(utils.ErrInternalServer)
+	}
+
+	return res, nil
 }
 
 func (s *Service) CreateStudent(ctx context.Context, req *rpc.CreateStudentRequest) error {

@@ -23,7 +23,6 @@ export async function load({ locals: { session, user }, fetch }) {
 export const actions = {
 	async default({ request, locals: { session }, fetch }) {
 		if (!session) throw redirect(302, '/login')
-		debugger
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,
 			teachNewTopicSchema

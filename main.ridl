@@ -38,6 +38,26 @@ struct Teacher
     - createdAt: timestamp
     - updatedAt: timestamp
 
+struct ListTeacher
+    - rowId: int64
+    - id: string
+    - email: string
+    - firstName: string
+    - lastName: string
+    - role: string
+    - preferedLanguage: string
+    - avatarFilePath: string
+    - avatarUrl: string
+    - bio: string
+    - hourRate: int32
+    - topAgent: bool
+    - rating: int32
+    - spokenLanguages: []SpokenLanguage
+    - topicsTaught: []string
+    - stripeCustomerId: string
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
 struct SpokenLanguage
     - language: string
     - proficiency: string
@@ -153,8 +173,7 @@ struct ListTeachersFilters
     - topAgent: bool
     - priceMax: int32
     - ratingMin: int32
-    - ratingMax: int32
-    - cursor: string
+    - cursor: int32
 
 struct Conversation
     - id: int64
@@ -180,7 +199,10 @@ service PublicServiceAPI
 service UserServiceAPI
     - Get() => (user: User)
     - FindUserByID(id: string) => (user: User)
-    - ListTeachers(filters: ListTeachersFilters) => (teachers: []Teacher)
+    - ListTeachers(filters: ListTeachersFilters) => (teachers: []ListTeacher)
+    - TeachersCount() => (count: int64)
+    - ListTopicsTaught() => (topics: []Topic)
+    - ListLanguagesTaught() => (languages: []string)
     - CreateStudent(req: CreateStudentRequest) 
     - CreateTeacher(req: CreateTeacherRequest)
     - UpdatePreferedLanguage(lang: string)

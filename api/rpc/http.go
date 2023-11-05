@@ -148,3 +148,33 @@ func FromDbTeacher(t *db.FindTeacherByIDRow) *Teacher {
 		TopicsTaught:     pgArrayToStringArray(t.TopicsTaught),
 	}
 }
+
+func FromDbListTeachers(t *db.ListTeachersRow) *ListTeacher {
+	var rating int32 = 0
+	r, err := strconv.Atoi(t.Rating)
+	if err != nil {
+		rating = 0
+	} else {
+		rating = int32(r)
+	}
+	return &ListTeacher{
+		RowId:            t.RowID,
+		Id:               t.ID.String(),
+		Email:            t.Email,
+		FirstName:        t.FirstName,
+		LastName:         t.LastName,
+		Role:             string(t.Role),
+		PreferedLanguage: t.PreferedLanguage,
+		AvatarFilePath:   t.AvatarFilePath,
+		AvatarUrl:        t.AvatarUrl,
+		CreatedAt:        t.CreatedAt,
+		UpdatedAt:        t.UpdatedAt,
+		StripeCustomerId: t.StripeCustomerID.String,
+		Bio:              t.Bio,
+		HourRate:         t.HourRate,
+		TopAgent:         t.TopAgent,
+		Rating:           rating,
+		SpokenLanguages:  pgRowToSpokenLang(t.SpokenLanguages),
+		TopicsTaught:     pgArrayToStringArray(t.TopicsTaught),
+	}
+}
