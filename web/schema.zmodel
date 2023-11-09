@@ -133,11 +133,21 @@ model Topic {
     teachers Teacher[]
 }
 
+enum Proficiency {
+    a1
+    a2
+    b1
+    b2
+    c1
+    c2
+    native
+}
+
 model SpokenLanguage {
-    id          String    @id
-    proficiency String
+    id          Int         @id @default(autoincrement())
+    proficiency Proficiency
     languageId  String
-    language    Language  @relation(fields: [languageId], references: [language], onDelete: Cascade)
+    language    Language    @relation(fields: [languageId], references: [language], onDelete: Cascade)
     teachers    Teacher[]
 
     @@index([languageId, proficiency])
@@ -174,7 +184,7 @@ model StudentSubscription {
 }
 
 model TimeSlot {
-    id        String   @id @default(uuid())
+    id        String   @id @default(cuid())
     startAt   DateTime
     endAt     DateTime
     teacherId String
@@ -196,7 +206,7 @@ model Review {
 }
 
 model Class {
-    id         String    @id @default(uuid())
+    id         String    @id @default(cuid())
     name       String
     isPrivate  Boolean
     isTrial    Boolean
@@ -212,7 +222,7 @@ model Class {
 }
 
 model Chat {
-    id        Int       @id @default(autoincrement())
+    id        String    @id @default(cuid())
     createdAt DateTime  @default(now())
     updatedAt DateTime? @updatedAt
     messages  Message[]
@@ -226,7 +236,7 @@ model Message {
     updatedAt      DateTime? @updatedAt
     senderId       String
     sender         User      @relation("SentMessages", fields: [senderId], references: [id])
-    conversationId Int
+    conversationId String
     conversation   Chat      @relation(fields: [conversationId], references: [id])
     readBy         User[]    @relation("ReceivedMessages")
     deliveredTo    User[]    @relation("DeliveredMessages")

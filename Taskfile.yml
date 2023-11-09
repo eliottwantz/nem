@@ -81,49 +81,21 @@ tasks:
 
   up:
     cmds:
-      - docker compose up -d
+      - docker compose -f web/compose.yaml up -d
     desc: Start containers
 
   down:
     cmds:
-      - docker compose down
+      - docker compose -f web/compose.yaml down
     desc: Stop containers
-
-  migu:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations up
-    desc: Migrate up
-    silent: true
-
-  migd:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations down
-    desc: Migrate down
-    silent: true
-
-  migr:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations drop
-      - migrate -database $DATABASE_URL -path db/migrations up
-      - task: seed
-    desc: Migrate down then up
-    silent: true
-
-  mignew:
-    cmds:
-      - migrate create -ext sql -dir db/migrations/ -seq {{.name}}
-    desc: Create a migration
-
-  seed:
-    cmd: go run cmd/seed/seed.go
 
   resetdb:
     cmds:
-      # - supabse stop
-      - supabase db reset
-      # - docker compose down -v
-      # - task: up
-    desc: Reset db
+      - docker compose -f web/compose.yaml down -v
+      - task: up
+      - cd web &&pnpm db:push
+      - cd web && pnpm db:seed
+    desc: Reset db with seed
 
   certs:
     cmd: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/localhost.key -out certs/localhost.crt
