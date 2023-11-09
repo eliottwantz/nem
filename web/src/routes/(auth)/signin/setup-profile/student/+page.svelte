@@ -26,7 +26,7 @@
 			return
 		}
 		try {
-			const res = await fetch('/register/setup-profile/student', {
+			const res = await fetch('/signin/setup-profile/student', {
 				method: 'POST',
 				body: JSON.stringify($superF)
 			})

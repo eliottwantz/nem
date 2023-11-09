@@ -167,13 +167,24 @@ struct CreateClassRequest
     - topic: string
     - timeSlotId: string
 
+enum SortTypeEnum: uint32
+    - Popularity
+    - Newest
+    - Oldest
+    - BestRating
+    - NumberOfRatings
+    - ClassesTaught
+    - PriceLowest
+    - PriceHighest
+
 struct ListTeachersFilters
     - language: string
     - topic: string
     - topAgent: bool
     - priceMax: int32
     - ratingMin: int32
-    - cursor: int32
+    - page: int32
+    - sortBy: SortTypeEnum
 
 struct Conversation
     - id: int64

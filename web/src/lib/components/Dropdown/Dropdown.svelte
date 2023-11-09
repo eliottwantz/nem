@@ -1,19 +1,11 @@
 <script lang="ts">
 	import type { AutocompleteOption } from '@skeletonlabs/skeleton'
-	import { Autocomplete } from '@skeletonlabs/skeleton'
 	import { ArrowDown, X } from 'lucide-svelte'
-
-	export let rawData: string[]
-	export let placeholder: string
-	let options: AutocompleteOption<string>[] = rawData.map((s) => ({
-		label: s.at(0)?.toUpperCase() + s.slice(1),
-		value: s
-	}))
 
 	let val = ''
 	let oldVal = ''
-	export let selectedVal: string
-	let input: HTMLInputElement
+	let selectedVal: string
+	let self: HTMLElement
 	let showDropdown = false
 
 	$: console.log('selectedVal', selectedVal)
@@ -36,7 +28,7 @@
 		const handleClick = (event: MouseEvent) => {
 			if (
 				!node.contains(event.target as Node) &&
-				!input.contains(event.target as Node) &&
+				!self.contains(event.target as Node) &&
 				showDropdown
 			) {
 				showDropdown = false
@@ -58,15 +50,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class="input-group grid-cols-[1fr_auto]">
-		<input
-			class="input lg:p-4"
-			type="search"
-			name="topic"
-			on:pointerdown={onClick}
-			bind:this={input}
-			bind:value={val}
-			{placeholder}
-		/>
+		<input class="input lg:p-4" on:pointerdown={onClick} bind:this={self} />
 		{#if val}
 			<div on:click={() => (selectedVal = '')}>
 				<X />
@@ -84,6 +68,6 @@
 		tabindex="-1"
 		use:clickOutside
 	>
-		<Autocomplete bind:input={val} {options} on:selection={onSelect} />
+		<slot />
 	</div>
 </div>

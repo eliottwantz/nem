@@ -18,6 +18,7 @@
 	import Logo from '$lib/icons/Logo.svelte'
 	import { userStore } from '$lib/stores/user'
 	import { getInitials } from '$lib/utils/initials'
+	import { signIn } from '@auth/sveltekit/client'
 	import {
 		AppBar,
 		AppShell,
@@ -35,18 +36,8 @@
 	initializeStores()
 	const drawerStore = getDrawerStore()
 
-	let { supabase, session } = data
-	$: ({ supabase, session } = data)
-
 	onMount(() => {
 		import('emoji-picker-element')
-		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth')
-			}
-		})
-
-		return () => data.subscription.unsubscribe()
 	})
 
 	onNavigate((navigation) => {
@@ -128,15 +119,15 @@
 					<Locale />
 				</div>
 				{#if !$userStore}
-					<a href="/login" role="button" class="variant-filled-primary btn">
+					<a href="/signin" role="button" class="variant-filled-primary btn">
 						{$t('nav.login')}
 					</a>
 				{:else}
 					<a href="/dashboard/profile">
 						<Avatar
 							class="cursor-pointer hover:border-primary-500"
-							src={$userStore.avatarUrl}
-							initials={getInitials($userStore.firstName, $userStore.lastName)}
+							src={$userStore.image ?? ''}
+							initials={getInitials($userStore.name, $userStore.name)}
 						/>
 					</a>
 				{/if}

@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { fetchers, safeFetch } from '$lib/api'
-import { sendClassCanceledEmail } from '$lib/server/email'
+import { sendClassCanceledEmail } from '$lib/server/email/email'
 import type { Class } from '$lib/api/api.gen'
 
 export const DELETE: RequestHandler = async ({ locals: { session }, request }) => {

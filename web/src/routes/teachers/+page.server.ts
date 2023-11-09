@@ -1,16 +1,20 @@
 import { fetchers, safeFetch } from '$lib/api'
-import type { ListTeacher } from '$lib/api/api.gen'
+import { SortTypeEnum, type ListTeacher } from '$lib/api/api.gen'
+import type { SortType } from '$lib/stores/teachersFiltersStore'
 import { redirect } from '@sveltejs/kit'
 
 export async function load({ fetch, locals: { session, user }, url }) {
 	if (!session || !user) throw redirect(302, '/login')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
-	const cursor = Number(url.searchParams.get('cursor'))
+	const page = Number(url.searchParams.get('page'))
 	const topic = url.searchParams.get('topic') ?? ''
 	const language = url.searchParams.get('language') ?? ''
 	const ratingMin = Number(url.searchParams.get('ratingMin'))
 	const topAgent = Boolean(url.searchParams.get('topAgent') === 'true')
 	const priceMax = Number(url.searchParams.get('priceMax') || 1000)
+	const sortBy: SortType = url.searchParams.get('sortBy')
+		? (url.searchParams.get('sortBy') as SortType)
+		: 'Popularity'
 
 	return {
 		user,
@@ -18,12 +22,13 @@ export async function load({ fetch, locals: { session, user }, url }) {
 			safeFetch(
 				fetchers.userService(fetch, session).listTeachers({
 					filters: {
-						cursor,
+						page,
 						language,
 						priceMax,
 						ratingMin,
 						topAgent,
-						topic
+						topic,
+						sortBy: SortTypeEnum[sortBy]
 					}
 				})
 			).then((res) => {

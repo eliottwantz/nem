@@ -7,10 +7,8 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Hi {user.firstName} !</h1>
-	<form method="post" action="/logout">
-		<button class="variant-filled-surface btn">Logout</button>
-	</form>
+	<h1 slot="title" class="h1">Hi {user.name} !</h1>
+	<a class="variant-filled-primary btn" href="/signout">Sign out</a>
 	<a href="/dashboard/profile/edit" class="variant-ghost-surface btn">Edit Profile</a>
 	<span>NEM Pass</span>
 </Layout>

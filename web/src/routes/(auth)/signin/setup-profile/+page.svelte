@@ -15,7 +15,7 @@
 	<div
 		class="grid max-w-2xl grid-rows-2 space-y-4 md:grid-cols-2 md:grid-rows-1 md:space-x-4 md:space-y-0"
 	>
-		<a href="/register/setup-profile/student">
+		<a href="/signin/setup-profile/student">
 			<RoleCard
 				desc={$t('register.roles.studentMessage')}
 				title={$t('register.roles.student')}
@@ -23,7 +23,7 @@
 				<StudentIcon />
 			</RoleCard>
 		</a>
-		<a href="/register/setup-profile/teacher">
+		<a href="/signin/setup-profile/teacher">
 			<RoleCard
 				desc={$t('register.roles.teacherMessage')}
 				title={$t('register.roles.teacher')}

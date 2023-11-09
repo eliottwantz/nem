@@ -14,28 +14,28 @@
 		ar: Arabic
 	} as const
 
-	async function updateLang(lang: string) {
-		if (!$userStore) return
-		const user = $userStore
+	// async function updateLang(lang: string) {
+	// 	if (!$userStore) return
+	// 	const user = $userStore
 
-		if (user.preferedLanguage === lang) return
+	// 	if (user.preferedLanguage === lang) return
 
-		try {
-			const res = await fetch('/dashboard/profile/updatePreferedLanguage/' + lang, {
-				method: 'POST'
-			})
-			const data = await res.text()
-			if (!res.ok) console.log(data)
-		} catch (error) {
-			console.log(error)
-		}
-	}
+	// 	try {
+	// 		const res = await fetch('/dashboard/profile/updatePreferedLanguage/' + lang, {
+	// 			method: 'POST'
+	// 		})
+	// 		const data = await res.text()
+	// 		if (!res.ok) console.log(data)
+	// 	} catch (error) {
+	// 		console.log(error)
+	// 	}
+	// }
 
 	$: console.log('$locale', $locale)
 	$: console.log('Locale uiLang', selectedLang)
 	$: {
 		locale.set(selectedLang)
-		updateLang(selectedLang)
+		// updateLang(selectedLang)
 	}
 </script>
 

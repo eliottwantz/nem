@@ -1,9 +1,10 @@
-import { GMAIL_PASSWORD, GMAIL_SENDER_EMAIL, GMAIL_USER } from '$env/static/private'
+import { SMTP_PASSWORD, EMAIL_FROM, SMTP_USER } from '$env/static/private'
 import { PUBLIC_ENV } from '$env/static/public'
 import type { Class, User } from '$lib/api/api.gen'
 import ClassCanceled from '$lib/emails/ClassCanceled.svelte'
 import { createTransport } from 'nodemailer'
 import { render } from 'svelte-email'
+import { sendEmail } from './send'
 
 export async function sendClassCanceledEmail(classs: Class, teacher: User, email: string) {
 	try {
@@ -16,17 +17,8 @@ export async function sendClassCanceledEmail(classs: Class, teacher: User, email
 			}
 		})
 
-		const transporter = createTransport({
-			host: PUBLIC_ENV === 'DEV' ? 'smtp.ethereal.email' : 'smtp.gmail.com',
-			port: 587,
-			secure: false,
-			auth: {
-				user: PUBLIC_ENV === 'DEV' ? 'adelle.cartwright@ethereal.email' : GMAIL_USER,
-				pass: PUBLIC_ENV === 'DEV' ? 'tb3bUQ1UUFMEPTFWST' : GMAIL_PASSWORD
-			}
-		})
-		const res = await transporter.sendMail({
-			from: GMAIL_SENDER_EMAIL,
+		const res = await sendEmail({
+			from: EMAIL_FROM,
 			to: email,
 			subject: 'Class canceled by ' + teacherName,
 			html

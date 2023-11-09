@@ -1,28 +1,12 @@
 import { browser } from '$app/environment'
-import { PUBLIC_SUPABASE_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public'
-import type { User } from '$lib/api/api.gen'
 import { defaultLocale } from '$lib/i18n'
-import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit'
 import { locale, waitLocale } from 'svelte-i18n'
 import { get } from 'svelte/store'
 
-export async function load({ data, depends, fetch }) {
-	depends('supabase:auth')
-
+export async function load({ data }) {
 	console.log('layout.ts ran')
 
-	const supabase = createSupabaseLoadClient({
-		supabaseUrl: PUBLIC_SUPABASE_URL,
-		supabaseKey: PUBLIC_SUPABASE_KEY,
-		event: { fetch },
-		serverSession: data.session
-	})
-
-	const {
-		data: { session }
-	} = await supabase.auth.getSession()
-
-	const user: User | null = data.user
+	const user = data.user
 	if (browser) {
 		let lang = defaultLocale
 		if (user && user.preferedLanguage) {
@@ -37,5 +21,5 @@ export async function load({ data, depends, fetch }) {
 	await waitLocale()
 	console.log('layout.ts locale after wait', get(locale))
 
-	return { supabase, session, user }
+	return { user, session: data.session }
 }

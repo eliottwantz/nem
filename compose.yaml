@@ -12,13 +12,25 @@ services:
       timeout: 3s
     volumes:
       - redis:/data
-    networks:
-      - supabase_network_nem
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  mail:
+    image: marlonb/mailcrab:latest
+    restart: always
+    ports:
+      - 1025:1025
+      - 1080:1080
 
 volumes:
   postgres:
   redis:
-
-networks:
-  supabase_network_nem:
-    external: true

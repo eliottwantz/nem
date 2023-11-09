@@ -81,13 +81,11 @@ tasks:
 
   up:
     cmds:
-      - supabase start
-      - docker compose up redis -d
+      - docker compose up -d
     desc: Start containers
 
   down:
     cmds:
-      - supabase stop
       - docker compose down
     desc: Stop containers
 

@@ -1,22 +1,34 @@
-import type { User } from '$lib/api/api.gen'
-import { SupabaseClient, Session, type User as AuthUser } from '@supabase/supabase-js'
+import type { AdapterUser } from '@auth/core/adapters'
+import type { DefaultSession } from '@auth/core/types'
+import type { PrismaClient, Profile, User } from '@prisma/client'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			supabase: SupabaseClient
-			session: Session | null
-			user: User | null
+			// haveSession: () => Promise<SessionResult>
+			session: {
+				user: AdapterUser & DefaultSession['user'] // To keep the default types
+			} | null
+			userProfile: Profile | null
+			db: PrismaClient
 		}
 		interface PageData {
-			supabase: SupabaseClient
-			session: Session
 			user: User
 		}
 		// interface Platform {}
 	}
 }
+
+type SessionResult = HaveSession | NoSession
+type HaveSession = {
+	ok: true
+	session: {
+		user: AdapterUser & DefaultSession['user'] // To keep the default types
+	}
+	getUser: () => Promise<User>
+}
+type NoSession = { ok: false }
 
 export {}
