@@ -30,8 +30,8 @@ export const sendEmail = async (options: {
 		return getFeedbackObjects([
 			{
 				type: 'success',
-				title: 'Test email sent successfully',
-				message: 'Check your inbox for the test email.'
+				title: 'Email sent successfully',
+				message: 'Check your inbox for the email.'
 			}
 		])
 	} catch (e) {
@@ -40,9 +40,9 @@ export const sendEmail = async (options: {
 		return getFeedbackObjects([
 			{
 				type: 'error',
-				title: 'Error sending test email',
+				title: 'Error sending email',
 				message:
-					'An unknown error occurred while sending the test email. Please try again later.'
+					'An unknown error occurred while sending the email. Please try again later.'
 			}
 		])
 	}

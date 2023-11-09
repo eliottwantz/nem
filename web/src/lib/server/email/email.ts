@@ -1,10 +1,9 @@
-import { SMTP_PASSWORD, EMAIL_FROM, SMTP_USER } from '$env/static/private'
-import { PUBLIC_ENV } from '$env/static/public'
+import { EMAIL_FROM } from '$env/static/private'
 import type { Class, User } from '$lib/api/api.gen'
 import ClassCanceled from '$lib/emails/ClassCanceled.svelte'
-import { createTransport } from 'nodemailer'
 import { render } from 'svelte-email'
 import { sendEmail } from './send'
+import { getFeedbackObjects } from '$lib/utils/feedback.ts'
 
 export async function sendClassCanceledEmail(classs: Class, teacher: User, email: string) {
 	try {
@@ -26,5 +25,13 @@ export async function sendClassCanceledEmail(classs: Class, teacher: User, email
 		return res
 	} catch (error) {
 		console.error(error)
+		return getFeedbackObjects([
+			{
+				type: 'error',
+				title: 'Error sending test email',
+				message:
+					'An unknown error occurred while sending the test email. Please try again later.'
+			}
+		])
 	}
 }
