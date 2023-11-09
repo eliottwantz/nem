@@ -15,7 +15,7 @@
 					{$t('home.title')}
 				</h1>
 				<h4 class="h3">{$t('home.subtitle')}</h4>
-				<a href="/register" role="button" class="variant-filled-primary btn self-center">
+				<a href="/signin" role="button" class="variant-filled-primary btn self-center">
 					{$t('home.getNemPass')}
 				</a>
 			</div>

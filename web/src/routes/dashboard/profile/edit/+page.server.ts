@@ -6,7 +6,7 @@ import { fail, redirect, type Actions } from '@sveltejs/kit'
 
 export async function load({ locals: { user } }) {
 	console.log('profile edit server load')
-	if (!user) throw redirect(302, '/login')
+	if (!user) throw redirect(302, '/signin')
 	return {
 		user
 	}
@@ -41,7 +41,7 @@ export const actions = {
 		} satisfies ServerMessage
 	},
 	updateAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
-		if (!user || !session) throw redirect(302, '/login')
+		if (!user || !session) throw redirect(302, '/signin')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
 		if (!avatar) {
@@ -109,7 +109,7 @@ export const actions = {
 		}
 	},
 	deleteAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
-		if (!session || !user) throw redirect(302, '/login')
+		if (!session || !user) throw redirect(302, '/signin')
 		try {
 			await Promise.all([
 				supabase.storage.from('avatars').remove([user.avatarFilePath]),

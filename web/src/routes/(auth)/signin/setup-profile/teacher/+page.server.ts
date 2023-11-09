@@ -29,7 +29,7 @@ export const load = async ({ locals: { session, user }, fetch }) => {
 
 export const actions = {
 	default: async ({ request, fetch, locals: { session } }) => {
-		if (!session) throw redirect(302, '/login')
+		if (!session) throw redirect(302, '/signin')
 		debugger
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
 			request,

@@ -101,7 +101,7 @@ export const handle = sequence(
 		)
 
 		if (isProtectedRoute && !session) {
-			throw redirect(302, '/login?unauthicated=true&next=' + event.url.pathname)
+			throw redirect(302, '/signin')
 		}
 
 		const handleNoProfile = () => {
@@ -135,9 +135,9 @@ export const handle = sequence(
 			}
 			if (
 				!event.locals.userProfile &&
-				!event.url.pathname.startsWith('/register/setup-profile')
+				!event.url.pathname.startsWith('/signin/setup-profile')
 			) {
-				// handleNoProfile()
+				handleNoProfile()
 			}
 		}
 

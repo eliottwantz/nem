@@ -5,7 +5,7 @@ import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
 export async function load({ locals: { session, user }, fetch }) {
-	if (!session || !user) throw redirect(302, '/login')
+	if (!session || !user) throw redirect(302, '/signin')
 	const streams = await Promise.all([
 		safeFetch(fetchers.classService(fetch, session).listTopics()),
 		safeFetch(fetchers.teacherService(fetch, session).findTeacherByID({ id: user.id }))
@@ -22,7 +22,7 @@ export async function load({ locals: { session, user }, fetch }) {
 
 export const actions = {
 	async default({ request, locals: { session }, fetch }) {
-		if (!session) throw redirect(302, '/login')
+		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,
 			teachNewTopicSchema

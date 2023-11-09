@@ -4,7 +4,7 @@ import type { SortType } from '$lib/stores/teachersFiltersStore'
 import { redirect } from '@sveltejs/kit'
 
 export async function load({ fetch, locals: { session, user }, url }) {
-	if (!session || !user) throw redirect(302, '/login')
+	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
 	const page = Number(url.searchParams.get('page'))
 	const topic = url.searchParams.get('topic') ?? ''

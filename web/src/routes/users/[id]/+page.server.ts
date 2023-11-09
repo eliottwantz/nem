@@ -2,7 +2,7 @@ import { fetchers, safeFetch } from '$lib/api'
 import { error, redirect } from '@sveltejs/kit'
 
 export async function load({ params, fetch, locals: { session, user } }) {
-	if (!session || !user) throw redirect(302, '/login')
+	if (!session || !user) throw redirect(302, '/signin')
 	const res = await safeFetch(
 		fetchers.userService(fetch, session).findUserByID({ id: params.id })
 	)

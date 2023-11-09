@@ -5,7 +5,7 @@ import { issuesToString } from '$lib/utils/zodError'
 import { json, redirect } from '@sveltejs/kit'
 
 export async function POST({ request, fetch, locals: { session } }) {
-	if (!session) throw redirect(302, '/login')
+	if (!session) throw redirect(302, '/signin')
 	try {
 		const req = await request.json()
 		console.log('POST setup-profile', req)

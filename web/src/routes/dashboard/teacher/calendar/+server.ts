@@ -7,7 +7,7 @@ import { dayFromDate, hourNumToTimeFormat, timeFromDateHHMM } from '$lib/utils/d
 import type { TimesRequest } from '$lib/api/api.gen'
 
 export const POST: RequestHandler = async ({ request, locals: { session }, fetch }) => {
-	if (!session) throw redirect(302, '/login')
+	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as CreateCalendarAvailability
 		console.log('POST ' + request.url, body)

@@ -10,7 +10,7 @@ import { error, json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
 export async function POST({ request, locals: { session, user }, fetch, url, params }) {
-	if (!session || !user) throw redirect(307, '/login')
+	if (!session || !user) throw redirect(307, '/signin')
 
 	const res = await safeFetch(
 		fetchers.teacherService(fetch, session).findTeacherByID({ id: params.id })

@@ -10,7 +10,7 @@ import { issuesToString } from '$lib/utils/zodError'
 import { type RequestHandler, redirect } from '@sveltejs/kit'
 
 export const PUT: RequestHandler = async ({ request, locals: { session }, fetch }) => {
-	if (!session) throw redirect(302, '/login')
+	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as UpdateCalendarAvailability
 		console.log('PUT ' + request.url, body)
@@ -89,7 +89,7 @@ export const PUT: RequestHandler = async ({ request, locals: { session }, fetch 
 }
 
 export const DELETE: RequestHandler = async ({ request, locals: { session }, fetch }) => {
-	if (!session) throw redirect(302, '/login')
+	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as DeleteCalendarAvailability
 		console.log('PUT ' + request.url, body)
