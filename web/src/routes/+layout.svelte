@@ -4,7 +4,8 @@
 	import '../app.postcss'
 
 	import { browser } from '$app/environment'
-	import { invalidate, onNavigate } from '$app/navigation'
+	import { onNavigate } from '$app/navigation'
+	import { page } from '$app/stores'
 	import { ws } from '$lib/api/ws'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import { drawerStoreIds } from '$lib/components/Drawer'
@@ -18,7 +19,6 @@
 	import Logo from '$lib/icons/Logo.svelte'
 	import { userStore } from '$lib/stores/user'
 	import { getInitials } from '$lib/utils/initials'
-	import { signIn } from '@auth/sveltekit/client'
 	import {
 		AppBar,
 		AppShell,
@@ -27,10 +27,9 @@
 		getDrawerStore,
 		initializeStores
 	} from '@skeletonlabs/skeleton'
+	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
 	import { t } from 'svelte-i18n'
-	import { page } from '$app/stores'
-	import { Hourglass } from 'lucide-svelte'
 
 	export let data
 	initializeStores()
@@ -126,8 +125,8 @@
 					<a href="/dashboard/profile">
 						<Avatar
 							class="cursor-pointer hover:border-primary-500"
-							src={$userStore.image ?? ''}
-							initials={getInitials($userStore.name, $userStore.name)}
+							src={$userStore.avatarUrl ?? ''}
+							initials={getInitials($userStore.firstName, $userStore.lastName)}
 						/>
 					</a>
 				{/if}

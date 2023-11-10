@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client'
+import type { Profile } from '@prisma/client'
 import { writable } from 'svelte/store'
 
-export const userStore = writable<User | null>(null)
+export const userStore = writable<Profile | null>(null)

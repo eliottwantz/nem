@@ -11,11 +11,11 @@ declare global {
 			session: {
 				user: AdapterUser & DefaultSession['user'] // To keep the default types
 			} | null
-			userProfile: Profile | null
+			user: Profile | null
 			db: PrismaClient
 		}
 		interface PageData {
-			user: User
+			user: Profile
 		}
 		// interface Platform {}
 	}

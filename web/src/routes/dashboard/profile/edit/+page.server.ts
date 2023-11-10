@@ -1,46 +1,15 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { invalidateAll } from '$app/navigation'
 import type { ServerMessage } from '$lib/schemas/error'
-import { newPasswordSchema } from '$lib/schemas/newPasswordSchema'
-import { issuesToString } from '$lib/utils/zodError'
-import { fail, redirect, type Actions } from '@sveltejs/kit'
+import { deleteAvatar, uploadAvatar } from '$lib/server/backblaze'
+import { fail, redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { user } }) {
+export async function load({ locals: { session } }) {
 	console.log('profile edit server load')
-	if (!user) throw redirect(302, '/signin')
-	return {
-		user
-	}
+	if (!session) throw redirect(302, '/signin')
 }
 
 export const actions = {
-	changePass: async ({ request, locals: { supabase, user, session } }) => {
-		debugger
-		const formData = Object.fromEntries(await request.formData())
-
-		const parseRes = newPasswordSchema.safeParse(formData)
-		if (!parseRes.success) {
-			return fail(400, {
-				text: issuesToString(parseRes.error.issues),
-				type: 'error'
-			} satisfies ServerMessage)
-		}
-
-		const { error } = await supabase.auth.updateUser({
-			password: parseRes.data.newPassword
-		})
-		if (error) {
-			return fail(500, {
-				text: error.message,
-				type: 'error'
-			} satisfies ServerMessage)
-		}
-
-		return {
-			text: 'Password changed',
-			type: 'success'
-		} satisfies ServerMessage
-	},
-	updateAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
+	updateAvatar: async ({ request, locals: { db, user, session } }) => {
 		if (!user || !session) throw redirect(302, '/signin')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
@@ -63,41 +32,33 @@ export const actions = {
 				} satisfies ServerMessage)
 			}
 			const fileExt = avatar.name.split('.').pop()
-			const filePath = `${user.id}/${user.id}__${Math.random()}.${fileExt}`
+			const filePath = `avatars/${user.id}__${Math.random()}.${fileExt}`
 
 			if (user.avatarFilePath) {
 				// Delete old avatar
-				const { error } = await supabase.storage
-					.from('avatars')
-					.remove([user.avatarFilePath])
-				if (error) {
-					return fail(500, {
-						text: error.message,
-						type: 'error'
-					} satisfies ServerMessage)
-				}
+				await deleteAvatar(user.avatarFilePath)
 			}
 
 			// Create new avatar
-			const { error } = await supabase.storage.from('avatars').upload(filePath, avatar)
-			if (error) {
+			const avatarUrl = await uploadAvatar(avatar, filePath)
+			if (!avatarUrl) {
 				return fail(500, {
-					text: error.message,
+					text: 'Error uploading avatar',
 					type: 'error'
 				} satisfies ServerMessage)
 			}
 
-			const {
-				data: { publicUrl }
-			} = supabase.storage.from('avatars').getPublicUrl(filePath)
-			const res = await safeFetch(
-				fetchers
-					.userService(fetch, session)
-					.updateAvatar({ path: filePath, url: publicUrl })
-			)
-			if (!res.ok) {
+			try {
+				await db.profile.update({
+					where: { id: user.id },
+					data: {
+						avatarUrl,
+						avatarFilePath: filePath
+					}
+				})
+			} catch (e) {
 				return fail(500, {
-					text: res.cause,
+					text: e instanceof Error ? e.message : 'Something went wrong',
 					type: 'error'
 				} satisfies ServerMessage)
 			}
@@ -108,12 +69,16 @@ export const actions = {
 			} satisfies ServerMessage
 		}
 	},
-	deleteAvatar: async ({ request, fetch, locals: { supabase, user, session } }) => {
+	deleteAvatar: async ({ locals: { db, user, session } }) => {
 		if (!session || !user) throw redirect(302, '/signin')
+		if (!user.avatarFilePath) return
 		try {
 			await Promise.all([
-				supabase.storage.from('avatars').remove([user.avatarFilePath]),
-				fetchers.userService(fetch, session).deleteAvatar({ path: user.avatarFilePath })
+				deleteAvatar(user.avatarFilePath),
+				db.profile.update({
+					where: { id: user.id },
+					data: { avatarFilePath: null, avatarUrl: null }
+				})
 			])
 			return {
 				text: 'Avatar deleted',

@@ -119,7 +119,7 @@ export const handle = sequence(
 				const profile = await event.locals.db.profile.findUnique({
 					where: { id: session.user.id }
 				})
-				if (profile) event.locals.userProfile = profile
+				if (profile) event.locals.user = profile
 			} catch (e) {
 				if (e instanceof Prisma.PrismaClientKnownRequestError) {
 					if (
@@ -133,10 +133,7 @@ export const handle = sequence(
 					}
 				}
 			}
-			if (
-				!event.locals.userProfile &&
-				!event.url.pathname.startsWith('/signin/setup-profile')
-			) {
+			if (!event.locals.user && !event.url.pathname.startsWith('/signin/setup-profile')) {
 				handleNoProfile()
 			}
 		}

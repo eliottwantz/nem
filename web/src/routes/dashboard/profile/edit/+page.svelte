@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms'
+	import { page } from '$app/stores'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import { getInitials } from '$lib/utils/initials'
 	import { FileButton, getToastStore } from '@skeletonlabs/skeleton'
 
-	export let data
 	export let form
+
+	$: ({ user } = $page.data)
+	$: console.log('Got user data', user)
 
 	const toastStore = getToastStore()
 	$: if (form) {
@@ -25,8 +28,8 @@
 		URL.revokeObjectURL(previewSrc)
 	}
 	$: console.log('preview url', previewSrc)
-	$: console.log('AVATAR PATH', data.user.avatarFilePath)
-	$: console.log('AVATAR URL', data.user.avatarUrl)
+	$: console.log('AVATAR PATH', user.avatarFilePath)
+	$: console.log('AVATAR URL', user.avatarUrl)
 
 	function onChangeHandler(e: Event): void {
 		console.log('file data:', e)
@@ -35,18 +38,6 @@
 
 <Layout>
 	<h1 slot="title" class="h1">Edit Your Profile</h1>
-	<form method="post" class="mb-4 space-y-2" use:enhance action="?/changePass">
-		<label>
-			<span>New Password</span>
-			<input class="input" type="password" name="newPassword" />
-		</label>
-		<label>
-			<span>Confirm New Password</span>
-			<input class="input" type="password" name="newPasswordConfirm" />
-		</label>
-		<button class="variant-filled-surface btn">Change Password</button>
-	</form>
-
 	<form
 		class="space-y-2"
 		method="post"
@@ -75,6 +66,7 @@
 				button="variant-glass p-0"
 				name="avatar"
 				bind:files
+				required
 				accept="image/*"
 				on:change={onChangeHandler}
 			>
@@ -82,13 +74,13 @@
 					<!-- Preview -->
 					<Avatar
 						src={previewSrc}
-						initials={getInitials(data.user.firstName, data.user.lastName)}
+						initials={getInitials(user.firstName, user.lastName)}
 						width="w-20"
 					/>
 				{:else}
 					<Avatar
-						src={data.user.avatarUrl}
-						initials={getInitials(data.user.firstName, data.user.lastName)}
+						src={user.avatarUrl ? user.avatarUrl : undefined}
+						initials={getInitials(user.firstName, user.lastName)}
 						width="w-20"
 					/>
 				{/if}
