@@ -77,7 +77,6 @@
 			{#if $errors.lastName}
 				<p class="text-error-500">{$errors.lastName}</p>
 			{/if}
-			<input type="text" name="role" value={$superF.role} hidden />
 		</div>
 
 		<button class="btn bg-primary-active-token">

@@ -107,7 +107,6 @@ export const handle = sequence(
 		const handleNoProfile = () => {
 			console.log('User needs to create his profile')
 			if (
-				!event.url.pathname.startsWith('/signin') &&
 				!event.url.pathname.startsWith('/signout') &&
 				!event.url.pathname.startsWith('/verifyRequest')
 			)

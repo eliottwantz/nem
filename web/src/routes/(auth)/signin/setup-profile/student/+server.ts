@@ -26,7 +26,7 @@ export async function POST({ request, fetch, locals: { session } }) {
 				req: {
 					firstName: parseRes.data.firstName,
 					lastName: parseRes.data.lastName,
-					email: session.user.email!,
+					email: session.user.email,
 					role: parseRes.data.role,
 					preferedLanguage: parseRes.data.preferedLanguage
 				}

@@ -29,7 +29,6 @@ export type SpokenLanguages = z.infer<typeof spokenLanguages>
 export const createTeacherSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	role: z.string().nonempty({ message: 'Role is required' }),
 	preferedLanguage: z.string(),
 	spokenLanguages,
 	topicsTaught,
@@ -42,6 +41,5 @@ export const createTeacherSchema = z.object({
 export const createStudentSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	role: z.string().nonempty({ message: 'Role is required' }),
 	preferedLanguage: z.string()
 })

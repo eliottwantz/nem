@@ -24,15 +24,12 @@
 		errors,
 		enhance,
 		message,
-		submitting,
-		tainted,
-		fields
+		submitting
 	} = superForm<typeof createTeacherSchema, ServerMessage>(data.form, {
 		validators: createTeacherSchema,
 		dataType: 'json'
 	})
 
-	$: console.log('fields', fields)
 	$: $superF.preferedLanguage = $locale ?? 'en'
 </script>
 
@@ -55,7 +52,6 @@
 			{#if $errors.lastName}
 				<p class="text-error-500">{$errors.lastName}</p>
 			{/if}
-			<input type="text" name="role" value={$superF.role} hidden />
 
 			<label class="label">
 				<span>{$t('register.bio')}</span>

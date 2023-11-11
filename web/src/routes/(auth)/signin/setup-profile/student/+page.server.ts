@@ -11,6 +11,5 @@ export const load = async ({ locals: { session, user } }) => {
 	}
 
 	const form = await superValidate(createStudentSchema)
-	form.data.role = 'student'
 	return { form }
 }

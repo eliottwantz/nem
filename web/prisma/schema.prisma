@@ -75,7 +75,15 @@ model User {
     readMessages Message[] @relation("ReceivedMessages")
 }
 
-/// @@allow('all', user == auth())
+model VerificationToken {
+    identifier String
+    token String @unique()
+    expires DateTime
+
+    @@unique([identifier, token])
+}
+
+/// @@allow('all', true)
 model Profile {
     id String @id()
     user User @relation(fields: [id], references: [id], onDelete: Cascade)
@@ -90,14 +98,7 @@ model Profile {
     updatedAt DateTime? @updatedAt()
 }
 
-model VerificationToken {
-    identifier String
-    token String @unique()
-    expires DateTime
-
-    @@unique([identifier, token])
-}
-
+/// @@allow('all', true)
 model Student {
     id String @id()
     createdAt DateTime @default(now())
@@ -110,6 +111,7 @@ model Student {
     subscriptions StudentSubscription[]
 }
 
+/// @@allow('all', true)
 model Teacher {
     id String @id()
     bio String
@@ -129,16 +131,19 @@ model Teacher {
     studentSubscriptions StudentSubscription[]
 }
 
+/// @@allow('all', true)
 model Language {
     language String @id()
     spokenLanguages SpokenLanguage[]
 }
 
+/// @@allow('all', true)
 model Topic {
     topic String @id()
     teachers Teacher[]
 }
 
+/// @@allow('all', true)
 model SpokenLanguage {
     id Int @id() @default(autoincrement())
     proficiency Proficiency
@@ -149,6 +154,7 @@ model SpokenLanguage {
     @@index([languageId, proficiency])
 }
 
+/// @@allow('all', true)
 model HoursBank {
     hours Int
     createdAt DateTime @default(now())
@@ -161,6 +167,7 @@ model HoursBank {
     @@id([studenId, teacherId])
 }
 
+/// @@allow('all', true)
 model Subscription {
     id String @id()
     name String
@@ -168,6 +175,7 @@ model Subscription {
     students StudentSubscription[]
 }
 
+/// @@allow('all', true)
 model StudentSubscription {
     studentId String
     teacherId String
@@ -179,6 +187,7 @@ model StudentSubscription {
     @@id([studentId, teacherId])
 }
 
+/// @@allow('all', true)
 model TimeSlot {
     id String @id() @default(cuid())
     startAt DateTime
@@ -191,6 +200,7 @@ model TimeSlot {
     @@index([teacherId])
 }
 
+/// @@allow('all', true)
 model Review {
     id Int @id() @default(autoincrement())
     rating Int
@@ -201,6 +211,7 @@ model Review {
     teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
+/// @@allow('all', true)
 model Class {
     id String @id() @default(cuid())
     name String
@@ -217,6 +228,7 @@ model Class {
     timeSlot TimeSlot @relation(fields: [timeSlotId], references: [id], onUpdate: NoAction)
 }
 
+/// @@allow('all', true)
 model Chat {
     id String @id() @default(cuid())
     createdAt DateTime @default(now())
@@ -225,6 +237,7 @@ model Chat {
     users User[]
 }
 
+/// @@allow('all', true)
 model Message {
     id Int @id() @default(autoincrement())
     text String

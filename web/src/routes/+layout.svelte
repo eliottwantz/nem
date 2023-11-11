@@ -55,7 +55,7 @@
 	$: if (browser && data.user) userStore.set(data.user)
 	$: console.log('LAYOUT userStore', $userStore)
 	$: if (browser) document.dir = $dir
-	$: if (browser && data.session && !ws.socket) ws.Connect()
+	// $: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 
 <Drawer />
@@ -117,9 +117,11 @@
 				<div class="hidden lg:block">
 					<Locale />
 				</div>
-				{#if !$userStore}
-					<a href="/signin" role="button" class="variant-filled-primary btn">
-						{$t('nav.login')}
+				{#if !data.session}
+					<a href="/signin" role="button" class="variant-filled-primary btn"> Signin </a>
+				{:else if !$userStore}
+					<a href="/signout" role="button" class="variant-filled-primary btn">
+						Signout
 					</a>
 				{:else}
 					<a href="/dashboard/profile">
