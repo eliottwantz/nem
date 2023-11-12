@@ -18,7 +18,7 @@
 	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
 	import { dir } from '$lib/utils/i18n'
 	import { getInitials } from '$lib/utils/initials'
-	import { href } from '$lib/utils/redirect'
+
 	import {
 		AppBar,
 		AppShell,
@@ -90,7 +90,7 @@
 								/>
 							</svg>
 						</button>
-						<a href={href('/')}>
+						<a href=".">
 							<div class="flex items-center space-x-4">
 								<Logo />
 								<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
@@ -103,7 +103,7 @@
 				<div class="hidden lg:block">
 					<Navigation horizontal />
 				</div>
-				<a href={href('/')}>
+				<a href=".">
 					<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
 				</a>
 				<svelte:fragment slot="trail">
@@ -117,15 +117,15 @@
 						<Locale />
 					</div>
 					{#if !data.session}
-						<a href={href('/signin')} role="button" class="variant-filled-primary btn">
+						<a href="signin" role="button" class="variant-filled-primary btn">
 							Signin
 						</a>
 					{:else if !data.user}
-						<a href={href('/signout')} role="button" class="variant-filled-primary btn">
+						<a href="signout" role="button" class="variant-filled-primary btn">
 							Signout
 						</a>
 					{:else}
-						<a href={href('/dashboard/profile')}>
+						<a href="dashboard/profile">
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
 								src={data.user.avatarUrl ?? ''}

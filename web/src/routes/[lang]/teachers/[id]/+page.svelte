@@ -7,7 +7,7 @@
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
-	import { href } from '$lib/utils/redirect'
+
 	import {
 		Tab,
 		TabGroup,
@@ -166,7 +166,7 @@
 				<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
 				<p>
 					This teacher is a NEM
-					<a href={href('/top-agent')} class="anchor font-bold text-primary-600">
+					<a href="top-agent" class="anchor font-bold text-primary-600">
 						<span> TopAgent </span>
 					</a>
 				</p>

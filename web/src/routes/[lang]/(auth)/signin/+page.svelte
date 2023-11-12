@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/stores'
 	import Layout from '$lib/components/Layout.svelte'
 	import OauthLogin from '$lib/components/Oauth/OauthLogin.svelte'
-	import { href } from '$lib/utils/redirect'
 
 	export let data
 </script>
@@ -15,7 +15,7 @@
 		<form
 			class="space-y-2"
 			method="post"
-			action="/auth/signin/email?callbackUrl={href('/signin/setup-profile')}"
+			action="/auth/signin/email?callbackUrl=/{$page.data.locale}/signin/setup-profile"
 		>
 			<input type="hidden" name="csrfToken" value={data.csrfToken} />
 			<label class="label">

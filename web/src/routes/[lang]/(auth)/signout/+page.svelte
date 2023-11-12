@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
-	import { href } from '$lib/utils/redirect'
+
 	import { signOut } from '@auth/sveltekit/client'
 
 	export let data
 
 	async function signout() {
-		await signOut({ callbackUrl: href('/') })
+		await signOut({ callbackUrl: `/${data.locale}` })
 	}
 </script>
 
