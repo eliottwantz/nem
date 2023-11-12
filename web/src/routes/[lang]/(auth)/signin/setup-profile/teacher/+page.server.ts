@@ -57,7 +57,6 @@ export const load = async ({ locals: { session, user, db }, fetch }) => {
 export const actions = {
 	default: async ({ request, locals: { session, db } }) => {
 		if (!session) throw redirect(302, '/signin')
-		debugger
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
 			request,
 			createTeacherSchema
@@ -86,9 +85,9 @@ export const actions = {
 				}),
 				db.teacher.create({
 					data: {
+						id: session.user.id,
 						bio: form.data.bio,
-						hourRate: form.data.hourRate,
-						user: { connect: { id: session.user.id } }
+						hourRate: form.data.hourRate
 					}
 				})
 			])

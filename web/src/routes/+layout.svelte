@@ -30,6 +30,7 @@
 	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
 	import { dir } from '$lib/utils/i18n'
 	import { languageTag } from 'i18n/runtime'
+	import { href } from '$lib/utils/redirect'
 
 	export let data
 	initializeStores()
@@ -97,7 +98,7 @@
 								/>
 							</svg>
 						</button>
-						<a href="/">
+						<a href={href('/')}>
 							<div class="flex items-center space-x-4">
 								<Logo />
 								<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
@@ -110,7 +111,7 @@
 				<div class="hidden lg:block">
 					<Navigation horizontal />
 				</div>
-				<a href="/">
+				<a href={href('/')}>
 					<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
 				</a>
 				<svelte:fragment slot="trail">
@@ -124,7 +125,7 @@
 						<Locale />
 					</div>
 					{#if !data.session}
-						<a href="/signin" role="button" class="variant-filled-primary btn">
+						<a href={href('/signin')} role="button" class="variant-filled-primary btn">
 							Signin
 						</a>
 					{:else if !$userStore}

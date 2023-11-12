@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
 	import OauthLogin from '$lib/components/Oauth/OauthLogin.svelte'
+	import { href } from '$lib/utils/redirect'
 
 	export let data
 </script>
@@ -14,9 +15,9 @@
 		<form
 			class="space-y-2"
 			method="post"
-			action="/auth/signin/email?callbackUrl=/dashboard/profile"
+			action="/auth/signin/email?callbackUrl={href('/signin/setup-profile')}"
 		>
-			<input type="text" name="csrfToken" value={data.csrfToken} class="hidden" />
+			<input type="hidden" name="csrfToken" value={data.csrfToken} />
 			<label class="label">
 				<span>Email</span>
 				<input placeholder="email@example.com" class="input" name="email" type="email" />

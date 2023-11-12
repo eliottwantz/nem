@@ -64,9 +64,15 @@ export const handle = sequence(
 	}),
 	async function ({ event, resolve }) {
 		const { url } = event
-		const withLocale = urlWithLocale(url)
-		if (withLocale !== url) throw redirect(302, withLocale)
+		const withLocale = urlWithLocale(url, event.cookies)
+		if (withLocale !== url) {
+			throw redirect(302, withLocale)
+		}
 		event.locals.locale = localeFromURL(url)
+		if (event.cookies.get('locale') !== event.locals.locale) {
+			event.cookies.set('locale', event.locals.locale, { path: '/' })
+		}
+		event.locals.redirect = appRedirect
 		const session = await event.locals.getSession()
 		event.locals.session = session
 		console.log('######')
@@ -87,7 +93,7 @@ export const handle = sequence(
 		)
 
 		if (isProtectedRoute && !session) {
-			throw appRedirect(302, '/signin', event.url)
+			throw event.locals.redirect(302, '/signin', event.locals.locale)
 		}
 
 		const handleNoProfile = () => {

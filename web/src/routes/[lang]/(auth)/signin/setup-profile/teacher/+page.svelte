@@ -29,8 +29,6 @@
 		validators: createTeacherSchema,
 		dataType: 'json'
 	})
-
-	$: $superF.preferedLanguage = languageTag()
 </script>
 
 <Layout>

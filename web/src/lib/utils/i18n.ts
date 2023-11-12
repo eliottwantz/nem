@@ -1,10 +1,12 @@
+import { page } from '$app/stores'
+import type { Cookies } from '@sveltejs/kit'
 import {
 	availableLanguageTags,
 	type AvailableLanguageTag,
 	sourceLanguageTag,
 	languageTag
 } from 'i18n/runtime'
-import { readable, writable } from 'svelte/store'
+import { get, readable, writable } from 'svelte/store'
 
 export function localeFromURL(url: URL): AvailableLanguageTag {
 	const urlParts = url.pathname.split('/').splice(1)
@@ -12,11 +14,16 @@ export function localeFromURL(url: URL): AvailableLanguageTag {
 	return locale as AvailableLanguageTag
 }
 
-export function urlWithLocale(url: URL): URL {
+export function urlWithLocale(url: URL, cookies: Cookies): URL {
 	const urlParts = url.pathname.split('/').splice(1)
 	const locale = urlParts[0]
 	if (!availableLanguageTags.includes(locale as AvailableLanguageTag)) {
-		urlParts.unshift(sourceLanguageTag)
+		const localeCookie = cookies.get('locale')
+		if (!localeCookie) {
+			urlParts.unshift(sourceLanguageTag)
+		} else {
+			urlParts.unshift(localeCookie)
+		}
 		return new URL(`${url.origin}/${urlParts.join('/')}${url.search}`)
 	} else {
 		return url
