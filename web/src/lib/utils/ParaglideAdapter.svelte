@@ -4,7 +4,6 @@
 	import { getContext, setContext } from 'svelte'
 
 	setContext('languageTag', $page.params.lang)
-
 	setLanguageTag(() => getContext('languageTag'))
 
 	if (import.meta.env.SSR === false) {

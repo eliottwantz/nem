@@ -5,19 +5,7 @@
 
 	const updateLang: ChangeEventHandler<HTMLSelectElement> = (e) => {
 		const lang = e.currentTarget.value as AvailableLanguageTag
-		setLanguageTag(lang)
-		// if (!$userStore) return
-		// const user = $userStore
-		// if (user.preferedLanguage === lang) return
-		// try {
-		// 	const res = await fetch('/dashboard/profile/updatePreferedLanguage/' + lang, {
-		// 		method: 'POST'
-		// 	})
-		// 	const data = await res.text()
-		// 	if (!res.ok) console.log(data)
-		// } catch (error) {
-		// 	console.log(error)
-		// }
+		setLanguageTag(() => lang)
 	}
 </script>
 

@@ -19,6 +19,7 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
+import { setLanguageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -68,7 +69,7 @@ export const handle = sequence(
 		if (withLocale !== url) {
 			throw redirect(302, withLocale)
 		}
-		event.locals.locale = localeFromURL(url)
+		event.locals.locale = localeFromURL(withLocale)
 		if (event.cookies.get('locale') !== event.locals.locale) {
 			event.cookies.set('locale', event.locals.locale, { path: '/' })
 		}
@@ -113,13 +114,12 @@ export const handle = sequence(
 				if (profile) {
 					event.locals.user = profile
 					if (profile.preferedLanguage !== event.locals.locale) {
-						const res = await safeDBCall(
+						await safeDBCall(
 							event.locals.db.profile.update({
 								where: { id: profile.id },
 								data: { preferedLanguage: event.locals.locale }
 							})
 						)
-						if (res.ok) event.locals.locale = profile.preferedLanguage
 					}
 				}
 			} catch (e) {

@@ -1,12 +1,6 @@
-import { page } from '$app/stores'
 import type { Cookies } from '@sveltejs/kit'
-import {
-	availableLanguageTags,
-	type AvailableLanguageTag,
-	sourceLanguageTag,
-	languageTag
-} from 'i18n/runtime'
-import { get, readable, writable } from 'svelte/store'
+import { availableLanguageTags, sourceLanguageTag, type AvailableLanguageTag } from 'i18n/runtime'
+import { writable } from 'svelte/store'
 
 export function localeFromURL(url: URL): AvailableLanguageTag {
 	const urlParts = url.pathname.split('/').splice(1)
