@@ -11,9 +11,11 @@ class AppError extends Error {
 	}
 }
 
-export async function safeDBCall<T>(prismaPromise: Promise<T>): Promise<DBResult<T>> {
+export async function safeDBCall<T>(prismaPromise: Promise<T | null>): Promise<DBResult<T>> {
 	try {
-		return { ok: true, value: await prismaPromise }
+		const res = await prismaPromise
+		if (!res) return { ok: false, error: new AppError(new Error('Not found')) }
+		else return { ok: true, value: res }
 	} catch (e) {
 		return { ok: false, error: new AppError(e as Error) }
 	}

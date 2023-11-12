@@ -27,6 +27,7 @@
 	} from '@skeletonlabs/skeleton'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
+	import ParaglideAdapter from '$lib/ParaglideAdapter.svelte'
 
 	export let data
 	initializeStores()
@@ -55,97 +56,101 @@
 	// $: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 
-<Drawer />
+<ParaglideAdapter>
+	<Drawer />
 
-<Toast />
+	<Toast />
 
-<Modal zIndex="z-[9999]" components={modalComponentRegistry} />
+	<Modal zIndex="z-[9999]" components={modalComponentRegistry} />
 
-<div id="nem-rectangle-middle"></div>
-<AppShell slotSidebarLeft="lg:block hidden">
-	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		<AppBar shadow="shadow-lg">
-			<svelte:fragment slot="lead">
-				<div class="flex items-center space-x-4">
-					<!-- Leftslider Menu Icon -->
-					<button
-						class="btn-icon btn-icon-sm lg:!hidden"
-						on:click={() =>
-							drawerStore.open({
-								id: drawerStoreIds.sidebar
-							})}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="32"
-							height="32"
-							viewBox="0 0 24 24"
+	<div id="nem-rectangle-middle"></div>
+	<AppShell slotSidebarLeft="lg:block hidden">
+		<svelte:fragment slot="header">
+			<!-- App Bar -->
+			<AppBar shadow="shadow-lg">
+				<svelte:fragment slot="lead">
+					<div class="flex items-center space-x-4">
+						<!-- Leftslider Menu Icon -->
+						<button
+							class="btn-icon btn-icon-sm lg:!hidden"
+							on:click={() =>
+								drawerStore.open({
+									id: drawerStoreIds.sidebar
+								})}
 						>
-							<path
-								fill="currentColor"
-								d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"
-							/>
-						</svg>
-					</button>
-					<a href="/">
-						<div class="flex items-center space-x-4">
-							<Logo />
-							<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
-						</div>
-					</a>
-				</div>
-			</svelte:fragment>
-
-			<!-- Main part -->
-			<div class="hidden lg:block">
-				<Navigation horizontal />
-			</div>
-			<a href="/">
-				<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
-			</a>
-			<svelte:fragment slot="trail">
-				{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
-					<div id="hoursBank" class="flex flex-wrap items-center justify-center">
-						<span class="text-xl">{$page.data.hoursBank}h</span>
-						<Hourglass />
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="32"
+								height="32"
+								viewBox="0 0 24 24"
+							>
+								<path
+									fill="currentColor"
+									d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"
+								/>
+							</svg>
+						</button>
+						<a href="/">
+							<div class="flex items-center space-x-4">
+								<Logo />
+								<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
+							</div>
+						</a>
 					</div>
-				{/if}
+				</svelte:fragment>
+
+				<!-- Main part -->
 				<div class="hidden lg:block">
-					<Locale />
+					<Navigation horizontal />
 				</div>
-				{#if !data.session}
-					<a href="/signin" role="button" class="variant-filled-primary btn"> Signin </a>
-				{:else if !$userStore}
-					<a href="/signout" role="button" class="variant-filled-primary btn">
-						Signout
-					</a>
+				<a href="/">
+					<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
+				</a>
+				<svelte:fragment slot="trail">
+					{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
+						<div id="hoursBank" class="flex flex-wrap items-center justify-center">
+							<span class="text-xl">{$page.data.hoursBank}h</span>
+							<Hourglass />
+						</div>
+					{/if}
+					<div class="hidden lg:block">
+						<Locale />
+					</div>
+					{#if !data.session}
+						<a href="/signin" role="button" class="variant-filled-primary btn">
+							Signin
+						</a>
+					{:else if !$userStore}
+						<a href="/signout" role="button" class="variant-filled-primary btn">
+							Signout
+						</a>
+					{:else}
+						<a href="/dashboard/profile">
+							<Avatar
+								class="cursor-pointer hover:border-primary-500"
+								src={$userStore.avatarUrl ?? ''}
+								initials={getInitials($userStore.firstName, $userStore.lastName)}
+							/>
+						</a>
+					{/if}
+				</svelte:fragment>
+			</AppBar>
+		</svelte:fragment>
+
+		<svelte:fragment slot="sidebarLeft">
+			{#if $userStore}
+				{#if $userStore?.role === 'teacher'}
+					<TeacherSidebar />
 				{:else}
-					<a href="/dashboard/profile">
-						<Avatar
-							class="cursor-pointer hover:border-primary-500"
-							src={$userStore.avatarUrl ?? ''}
-							initials={getInitials($userStore.firstName, $userStore.lastName)}
-						/>
-					</a>
+					<StudentSidebar />
 				{/if}
-			</svelte:fragment>
-		</AppBar>
-	</svelte:fragment>
-
-	<svelte:fragment slot="sidebarLeft">
-		{#if $userStore}
-			{#if $userStore?.role === 'teacher'}
-				<TeacherSidebar />
-			{:else}
-				<StudentSidebar />
 			{/if}
-		{/if}
-	</svelte:fragment>
+		</svelte:fragment>
 
-	<!-- Router Slot -->
-	<slot />
-</AppShell>
+		<!-- Router Slot -->
+		<slot />
+	</AppShell>
+</ParaglideAdapter>
 
 <style type="postcss">
 	#nem {

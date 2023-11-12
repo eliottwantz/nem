@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { User } from '$lib/api/api.gen'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import type { Profile } from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
 
-	export let user: Partial<User>
+	export let user: Profile
 	export let avatarWidth = 'w-28'
 	export let avatarHeight = 'h-28'
 	export let textClass = ''
@@ -13,7 +13,7 @@
 	<Avatar
 		width={avatarWidth}
 		height={avatarHeight}
-		src={user.avatarUrl === '""' ? undefined : user.avatarUrl}
+		src={user.avatarUrl ?? undefined}
 		initials={getInitials(user.firstName, user.lastName)}
 	/>
 	<div>

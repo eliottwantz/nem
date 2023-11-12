@@ -17,7 +17,7 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { availableLanguageTags } from 'i18n/runtime'
+import { availableLanguageTags, languageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -76,6 +76,7 @@ export const handle = sequence(
 			const newUrl = `${url.origin}/${urlParts.join('/')}${url.search}`
 			throw redirect(307, newUrl)
 		}
+		console.log('LOCALE:', languageTag())
 		const urlWithoutLocale = urlParts.splice(1).join('/')
 		const isProtectedRoute = urlWithoutLocale.startsWith('/dashboard')
 		console.log(
