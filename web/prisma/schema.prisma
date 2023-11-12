@@ -12,6 +12,12 @@ generator client {
     provider = "prisma-client-js"
 }
 
+enum Locale {
+    en
+    fr
+    ar
+}
+
 enum Role {
     student
     teacher
@@ -90,7 +96,7 @@ model Profile {
     firstName String
     lastName String
     role Role
-    preferedLanguage String @default("en")
+    preferedLanguage Locale @default(en)
     avatarFilePath String?
     avatarUrl String?
     stripeCustomerId String?

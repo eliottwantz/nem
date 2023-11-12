@@ -1,7 +1,8 @@
-export async function load({ locals: { session, user } }) {
+export async function load({ locals: { session, user, locale } }) {
 	console.log('layout.server.ts ran')
 	return {
 		session,
-		user
+		user,
+		locale
 	}
 }

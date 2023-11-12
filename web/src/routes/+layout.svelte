@@ -27,7 +27,9 @@
 	} from '@skeletonlabs/skeleton'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import ParaglideAdapter from '$lib/ParaglideAdapter.svelte'
+	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
+	import { dir } from '$lib/utils/i18n'
+	import { languageTag } from 'i18n/runtime'
 
 	export let data
 	initializeStores()
@@ -52,7 +54,12 @@
 
 	$: if (browser && data.user) userStore.set(data.user)
 	$: console.log('LAYOUT userStore', $userStore)
-	// $: if (browser) document.dir = $dir
+	$: if (browser) {
+		if (languageTag() === 'ar') {
+			$dir = 'rtl'
+		}
+	}
+	$: if (browser) document.dir = $dir
 	// $: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 

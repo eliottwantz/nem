@@ -8,6 +8,8 @@ import {
 	SMTP_USER
 } from '$env/static/private'
 import { getEnhancedPrisma, prisma } from '$lib/server/prisma'
+import { safeDBCall } from '$lib/utils/error'
+import { localeFromURL, pathNameWithoutLocale, urlWithLocale } from '$lib/utils/i18n'
 import { appRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import Email from '@auth/core/providers/email'
@@ -17,7 +19,6 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { availableLanguageTags, languageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -62,22 +63,18 @@ export const handle = sequence(
 		}
 	}),
 	async function ({ event, resolve }) {
+		const { url } = event
+		const withLocale = urlWithLocale(url)
+		if (withLocale !== url) throw redirect(302, withLocale)
+		event.locals.locale = localeFromURL(url)
 		const session = await event.locals.getSession()
 		event.locals.session = session
-		console.log('\nHave session:', session !== null)
+		console.log('######')
+		console.log('Have session:', session !== null)
 		console.log('Session:', session)
 		event.locals.db = getEnhancedPrisma(session?.user ? session.user.id : undefined)
 
-		const { url } = event
-		const urlParts = url.pathname.split('/').splice(1)
-		const locale = urlParts[0]
-		if (!availableLanguageTags.includes(locale as (typeof availableLanguageTags)[number])) {
-			urlParts.unshift(availableLanguageTags['0'])
-			const newUrl = `${url.origin}/${urlParts.join('/')}${url.search}`
-			throw redirect(307, newUrl)
-		}
-		console.log('LOCALE:', languageTag())
-		const urlWithoutLocale = urlParts.splice(1).join('/')
+		const urlWithoutLocale = pathNameWithoutLocale(url)
 		const isProtectedRoute = urlWithoutLocale.startsWith('/dashboard')
 		console.log(
 			'REQ. Method:',
@@ -96,8 +93,8 @@ export const handle = sequence(
 		const handleNoProfile = () => {
 			console.log('User needs to create his profile')
 			if (
-				!event.url.pathname.startsWith('/signout') &&
-				!event.url.pathname.startsWith('/verifyRequest')
+				!urlWithoutLocale.startsWith('/signout') &&
+				!urlWithoutLocale.startsWith('/verifyRequest')
 			)
 				throw redirect(302, '/signin/setup-profile')
 		}
@@ -107,13 +104,21 @@ export const handle = sequence(
 				const profile = await event.locals.db.profile.findUnique({
 					where: { id: session.user.id }
 				})
-				if (profile) event.locals.user = profile
+				if (profile) {
+					event.locals.user = profile
+					if (profile.preferedLanguage !== event.locals.locale) {
+						const res = await safeDBCall(
+							event.locals.db.profile.update({
+								where: { id: profile.id },
+								data: { preferedLanguage: event.locals.locale }
+							})
+						)
+						if (res.ok) event.locals.locale = profile.preferedLanguage
+					}
+				}
 			} catch (e) {
 				if (e instanceof Prisma.PrismaClientKnownRequestError) {
-					if (
-						e.code === 'P2025' &&
-						!event.url.pathname.startsWith('/signin/setup-profile')
-					)
+					if (e.code === 'P2025' && !urlWithoutLocale.startsWith('/signin/setup-profile'))
 						handleNoProfile()
 					else {
 						console.log('Cannot get user profile from db')
@@ -121,7 +126,7 @@ export const handle = sequence(
 					}
 				}
 			}
-			if (!event.locals.user && !event.url.pathname.startsWith('/signin/setup-profile')) {
+			if (!event.locals.user && !urlWithoutLocale.startsWith('/signin/setup-profile')) {
 				handleNoProfile()
 			}
 		}

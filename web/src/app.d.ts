@@ -1,6 +1,7 @@
 import type { AdapterUser } from '@auth/core/adapters'
 import type { DefaultSession } from '@auth/core/types'
 import type { PrismaClient, Profile, User } from '@prisma/client'
+import type { AvailableLanguageTag } from 'i18n/runtime'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
@@ -13,9 +14,11 @@ declare global {
 			} | null
 			user: Profile | null
 			db: PrismaClient
+			locale: AvailableLanguageTag
 		}
 		interface PageData {
 			user: Profile
+			locale: AvailableLanguageTag
 		}
 		// interface Platform {}
 	}
