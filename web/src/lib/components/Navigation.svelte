@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { href } from '$lib/utils/redirect'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	const drawerStore = getDrawerStore()
 
@@ -12,7 +13,7 @@
 	<ul class={horizontal ? 'flex items-center justify-center space-x-8' : 'space-y-4'}>
 		<li>
 			<a
-				href="/"
+				href={href('/')}
 				class="flex"
 				class:active={activeUrl === '/' && !horizontal}
 				on:click={() => drawerStore.close()}
@@ -22,7 +23,7 @@
 		</li>
 		<li>
 			<a
-				href="/about"
+				href={href('/about')}
 				class="flex"
 				class:active={activeUrl === '/about' && !horizontal}
 				on:click={() => drawerStore.close()}
@@ -32,7 +33,7 @@
 		</li>
 		<li>
 			<a
-				href="/contact"
+				href={href('/contact')}
 				class="flex"
 				class:active={activeUrl === '/contact' && !horizontal}
 				on:click={() => drawerStore.close()}

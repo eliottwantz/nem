@@ -7,6 +7,7 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import { href } from '$lib/utils/redirect'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { languageTag } from 'i18n/runtime'
 	import { onMount } from 'svelte'
@@ -142,7 +143,7 @@
 	<div class="card w-full max-w-xl space-y-4 p-4">
 		<h3 class="h3 mb-2">Teacher</h3>
 		<div class="flex gap-x-2">
-			<a href="/teachers/{data.classDetails.teacher.id}" class="relative flex gap-2">
+			<a href={href('/teachers/{data.classDetails.teacher.id}')} class="relative flex gap-2">
 				{#if data.classDetails.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -174,7 +175,7 @@
 		<ul class="list grid grid-cols-2">
 			{#each data.classDetails.users as user}
 				<li>
-					<a class="flex items-center gap-2 p-2" href="/users/{user.id}">
+					<a class="flex items-center gap-2 p-2" href={href('/users/{user.id}')}>
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"

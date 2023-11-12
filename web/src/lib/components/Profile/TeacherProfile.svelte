@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Teacher } from '$lib/api/api.gen'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import { href } from '$lib/utils/redirect'
 	import Avatar from '../Avatar.svelte'
 
 	export let teacher: Teacher
@@ -22,7 +23,7 @@
 	<!-- Show only mobile -->
 	<div class="card flex flex-col gap-y-4 p-2 shadow-md sm:p-4 md:hidden md:flex-row">
 		<div class="flex items-center gap-3">
-			<a href="/teachers/{teacher.id}" class="relative inline-block">
+			<a href={href('/teachers/{teacher.id}')} class="relative inline-block">
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -35,7 +36,7 @@
 					initials={getInitials(teacher.firstName, teacher.lastName)}
 				/>
 			</a>
-			<a href="/teachers/{teacher.id}">
+			<a href={href('/teachers/{teacher.id}')}>
 				<p class="font-semibold sm:text-lg">
 					{getPublicName(teacher.firstName, teacher.lastName)}
 				</p>
@@ -90,7 +91,7 @@
 	<!-- Show for tablet and laptops -->
 	<div class="card hidden flex-row gap-4 p-4 shadow-md md:flex">
 		<div class="flex flex-col items-center">
-			<a href="/teachers/{teacher.id}" class="relative">
+			<a href={href('/teachers/{teacher.id}')} class="relative">
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-2 z-10 h-8 w-8">
 						<img class="h-6 w-8" src="/topagent.png" alt="TopAgent" />
@@ -103,7 +104,7 @@
 					initials={getInitials(teacher.firstName, teacher.lastName)}
 				/>
 			</a>
-			<a href="/teachers/{teacher.id}" class="flex flex-col items-center">
+			<a href={href('/teachers/{teacher.id}')} class="flex flex-col items-center">
 				<p class="font-semibold sm:text-lg">
 					{getPublicName(teacher.firstName, teacher.lastName)}
 				</p>
@@ -157,7 +158,9 @@
 				</div>
 			</div>
 			<div class="self-end">
-				<a href="/teachers/{teacher.id}" class="variant-filled-primary btn">Show more</a>
+				<a href={href('/teachers/{teacher.id}')} class="variant-filled-primary btn"
+					>Show more</a
+				>
 			</div>
 		</div>
 	</div>

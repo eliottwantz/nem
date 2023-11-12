@@ -2,6 +2,7 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import UserProfile from '$lib/components/Profile/UserProfile.svelte'
 	import { stringToLocalTime } from '$lib/utils/datetime'
+	import { href } from '$lib/utils/redirect'
 
 	export let data
 </script>
@@ -16,7 +17,7 @@
 	{:else}
 		<p class="mb-8 text-2xl">
 			You don't have any conversations yet. Start by sending a message to a <a
-				href="/teachers"
+				href={href('/teachers')}
 				class="anchor">teacher</a
 			>
 		</p>
@@ -27,7 +28,7 @@
 			{#each data.conversations as convo}
 				{@const recipient =
 					convo.users[0].id !== data.user.id ? convo.users[0] : convo.users[1]}
-				<a href="/dashboard/messages/{convo.id}">
+				<a href={href('/dashboard/messages/{convo.id}')}>
 					<UserProfile user={recipient} avatarHeight="h-12" avatarWidth="w-12" />
 					<small class="opacity-50">
 						{stringToLocalTime(convo.lastSent)}

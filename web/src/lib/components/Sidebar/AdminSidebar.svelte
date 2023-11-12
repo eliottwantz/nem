@@ -7,6 +7,7 @@
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
+	import { href } from '$lib/utils/redirect'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -25,7 +26,7 @@
 			<ul>
 				<li>
 					<a
-						href="/admin/list-users"
+						href={href('/admin/list-users')}
 						class="flex {$page.url.pathname === '/admin/list-users'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -37,7 +38,7 @@
 				</li>
 				<li>
 					<a
-						href="/admin/list-classes"
+						href={href('/admin/list-classes')}
 						class="flex {$page.url.pathname === '/admin/list-classes'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -49,7 +50,7 @@
 				</li>
 				<li>
 					<a
-						href="/admin/manage"
+						href={href('/admin/manage')}
 						class="flex {$page.url.pathname === '/admin/manage'
 							? 'bg-primary-active-token'
 							: ''}"

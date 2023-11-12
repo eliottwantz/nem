@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import Layout from '$lib/components/Layout.svelte'
+	import { href } from '$lib/utils/redirect'
 </script>
 
 <Layout>
@@ -8,7 +9,7 @@
 		<span class="h1 text-error-500">{$page.status}</span>: {$page.error?.message}
 	</h1>
 	{#if $page.status === 404}
-		<p>There's nothing here. <a href="/" class="anchor">Go back home</a></p>
+		<p>There's nothing here. <a href={href('/')} class="anchor">Go back home</a></p>
 	{:else}
 		<p>There was an unexpected error. Please try again.</p>
 	{/if}

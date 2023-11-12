@@ -3,6 +3,7 @@
 	import RoleCard from '$lib/components/RoleCard.svelte'
 	import StudentIcon from '$lib/icons/StudentIcon.svelte'
 	import TeacherIcon from '$lib/icons/TeacherIcon.svelte'
+	import { href } from '$lib/utils/redirect'
 </script>
 
 <Layout>
@@ -13,12 +14,12 @@
 	<div
 		class="grid max-w-2xl grid-rows-2 space-y-4 md:grid-cols-2 md:grid-rows-1 md:space-x-4 md:space-y-0"
 	>
-		<a href="/signin/setup-profile/student">
+		<a href={href('/signin/setup-profile/student')}>
 			<RoleCard desc="Become a NEM Student now." title="NEM Student">
 				<StudentIcon />
 			</RoleCard>
 		</a>
-		<a href="/signin/setup-profile/teacher">
+		<a href={href('/signin/setup-profile/teacher')}>
 			<RoleCard desc="Become a NEM Agent now." title="NEM Agent">
 				<TeacherIcon />
 			</RoleCard>

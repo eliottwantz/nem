@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/UserProfile.svelte'
+	import { href } from '$lib/utils/redirect'
 
 	export let data
 </script>
@@ -9,7 +10,7 @@
 	<Profile user={data.userToShow} />
 	{#if data.user.role === 'student' && data.userToShow.role === 'teacher'}
 		<a
-			href="/dashboard/student/learn?teacherId={data.userToShow.id}"
+			href={href('/dashboard/student/learn?teacherId={data.userToShow.id}')}
 			class="variant-filled-primary btn">Schedule a class with this teacher</a
 		>
 	{/if}

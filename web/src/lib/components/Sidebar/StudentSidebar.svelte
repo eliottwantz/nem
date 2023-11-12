@@ -10,6 +10,7 @@
 	import { MessagesSquare } from 'lucide-svelte'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
+	import { href } from '$lib/utils/redirect'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -36,7 +37,7 @@
 			<ul>
 				<li>
 					<a
-						href="/teachers"
+						href={href('/teachers')}
 						class="flex {$page.url.pathname === '/teachers'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -48,7 +49,7 @@
 				</li>
 				<li>
 					<a
-						href="/dashboard/student/classes"
+						href={href('/dashboard/student/classes')}
 						class="flex {$page.url.pathname === '/dashboard/student/classes'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -60,7 +61,7 @@
 				</li>
 				<li>
 					<a
-						href="/dashboard/student/calendar"
+						href={href('/dashboard/student/calendar')}
 						class="flex {$page.url.pathname === '/dashboard/student/calendar'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -72,7 +73,7 @@
 				</li>
 				<li>
 					<a
-						href="/dashboard/messages"
+						href={href('/dashboard/messages')}
 						class="flex {$page.url.pathname.startsWith('/dashboard/messages')
 							? 'bg-primary-active-token'
 							: ''}"
@@ -85,7 +86,7 @@
 				{#if $currentClassDetailsStore}
 					<li>
 						<a
-							href="/class/{$currentClassDetailsStore?.class.id}"
+							href={href('/class/{$currentClassDetailsStore?.class.id}')}
 							class="flex {$page.url.pathname ===
 							`/class/${$currentClassDetailsStore?.class.id}`
 								? 'bg-primary-active-token'

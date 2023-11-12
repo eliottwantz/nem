@@ -129,11 +129,11 @@
 							Signin
 						</a>
 					{:else if !$userStore}
-						<a href="/signout" role="button" class="variant-filled-primary btn">
+						<a href={href("/signout")} role="button" class="variant-filled-primary btn">
 							Signout
 						</a>
 					{:else}
-						<a href="/dashboard/profile">
+						<a href={href("/dashboard/profile")}>
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
 								src={$userStore.avatarUrl ?? ''}
