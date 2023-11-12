@@ -1,7 +1,6 @@
 import { page } from '$app/stores'
 import { PUBLIC_ENV, PUBLIC_GO_SERVER_HOST } from '$env/static/public'
 import { chatStore } from '$lib/stores/chatStore'
-import { userStore } from '$lib/stores/user'
 import type { Session } from '@supabase/supabase-js'
 import { derived, get, writable } from 'svelte/store'
 import type { Message } from '../api.gen'
@@ -50,7 +49,7 @@ class WS {
 		this.socket.addEventListener('message', (ev) => {
 			const payload: ReceivePayload = JSON.parse(ev.data)
 			wsPayloadStore.set(payload)
-			const user = get(userStore)
+			const user = get(page).data.user
 			switch (payload.action) {
 				case 'newMessage':
 					chatStore.addNewMessage(payload.data)

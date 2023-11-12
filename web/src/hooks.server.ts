@@ -19,7 +19,7 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { setLanguageTag } from 'i18n/runtime'
+import { languageTag, setLanguageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -137,6 +137,8 @@ export const handle = sequence(
 			}
 		}
 
-		return await resolve(event)
+		return await resolve(event, {
+			transformPageChunk: ({ html }) => html.replace('%%lang%%', event.locals.locale)
+		})
 	}
 )

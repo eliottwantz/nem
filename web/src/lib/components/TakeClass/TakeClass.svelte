@@ -3,7 +3,6 @@
 	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
-	import { userStore } from '$lib/stores/user'
 	import {
 		ListBox,
 		ListBoxItem,
@@ -196,9 +195,9 @@
 				<p>
 					Selected time slot: {new Date(
 						$takeClassStore.selectedEvent.event.start
-					).toLocaleString($userStore?.preferedLanguage)} - {new Date(
+					).toLocaleString($page.data.user.preferedLanguage)} - {new Date(
 						$takeClassStore.selectedEvent.event.end
-					).toLocaleString($userStore?.preferedLanguage)}
+					).toLocaleString($page.data.user.preferedLanguage)}
 				</p>
 			{/if}
 		</Step>

@@ -15,8 +15,10 @@
 	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
 	import Logo from '$lib/icons/Logo.svelte'
-	import { userStore } from '$lib/stores/user'
+	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
+	import { dir } from '$lib/utils/i18n'
 	import { getInitials } from '$lib/utils/initials'
+	import { href } from '$lib/utils/redirect'
 	import {
 		AppBar,
 		AppShell,
@@ -25,12 +27,9 @@
 		getDrawerStore,
 		initializeStores
 	} from '@skeletonlabs/skeleton'
+	import { languageTag } from 'i18n/runtime'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
-	import { dir } from '$lib/utils/i18n'
-	import { languageTag } from 'i18n/runtime'
-	import { href } from '$lib/utils/redirect'
 
 	export let data
 	initializeStores()
@@ -53,8 +52,7 @@
 		})
 	})
 
-	$: if (browser && data.user) userStore.set(data.user)
-	$: console.log('LAYOUT userStore', $userStore)
+	$: console.log('LAYOUT user', $page.data.user)
 	$: if (browser) {
 		if (languageTag() === 'ar') {
 			$dir = 'rtl'
@@ -128,16 +126,16 @@
 						<a href={href('/signin')} role="button" class="variant-filled-primary btn">
 							Signin
 						</a>
-					{:else if !$userStore}
-						<a href={href("/signout")} role="button" class="variant-filled-primary btn">
+					{:else if !data.user}
+						<a href={href('/signout')} role="button" class="variant-filled-primary btn">
 							Signout
 						</a>
 					{:else}
-						<a href={href("/dashboard/profile")}>
+						<a href={href('/dashboard/profile')}>
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
-								src={$userStore.avatarUrl ?? ''}
-								initials={getInitials($userStore.firstName, $userStore.lastName)}
+								src={data.user.avatarUrl ?? ''}
+								initials={getInitials(data.user.firstName, data.user.lastName)}
 							/>
 						</a>
 					{/if}
@@ -146,8 +144,8 @@
 		</svelte:fragment>
 
 		<svelte:fragment slot="sidebarLeft">
-			{#if $userStore}
-				{#if $userStore?.role === 'teacher'}
+			{#if data.user}
+				{#if data.user.role === 'teacher'}
 					<TeacherSidebar />
 				{:else}
 					<StudentSidebar />

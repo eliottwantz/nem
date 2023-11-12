@@ -3,7 +3,7 @@
 	import { onSetLanguageTag, setLanguageTag } from 'i18n/runtime'
 	import { getContext, setContext } from 'svelte'
 
-	setContext('languageTag', $page.params.lang)
+	setContext('languageTag', $page.data.locale)
 	setLanguageTag(() => getContext('languageTag'))
 
 	if (import.meta.env.SSR === false) {
@@ -11,8 +11,7 @@
 			const urlParts = $page.url.pathname.split('/').splice(1)
 			urlParts.shift()
 			urlParts.unshift(newLanguageTag)
-			const newUrl = `${$page.url.origin}/${urlParts.join('/')}${$page.url.search}`
-			window.location.href = newUrl
+			window.location.href = `${$page.url.origin}/${urlParts.join('/')}${$page.url.search}`
 		})
 	}
 </script>

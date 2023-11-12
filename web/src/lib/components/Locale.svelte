@@ -13,7 +13,7 @@
 	<div>
 		<select class="select" on:change={updateLang} value={$page.data.locale}>
 			{#each availableLanguageTags as locale}
-				<option value={locale}>
+				<option selected={locale === $page.data.locale} value={locale}>
 					{locale}
 				</option>
 			{/each}

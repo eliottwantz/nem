@@ -5,7 +5,6 @@
 	import { ws } from '$lib/api/ws'
 	import AttachmentIcon from '$lib/icons/AttachmentIcon.svelte'
 	import SendIcon from '$lib/icons/SendIcon.svelte'
-	import { userStore } from '$lib/stores/user'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { Plus, X } from 'lucide-svelte'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
@@ -51,7 +50,7 @@
 		ws.send({
 			action: 'stopTyping',
 			roomId: conversationId,
-			data: $userStore?.firstName
+			data: $page.data.user.firstName
 		})
 		currentlyTyping = false
 
@@ -93,14 +92,14 @@
 			ws.send({
 				action: 'startTyping',
 				roomId: conversationId,
-				data: $userStore?.firstName
+				data: $page.data.user.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
 				roomId: conversationId,
-				data: $userStore?.firstName
+				data: $page.data.user.firstName
 			})
 			currentlyTyping = false
 		}
