@@ -16,4 +16,7 @@
 	}
 </script>
 
+<svelte:head>
+	<base href="http://localhost:5173/{$page.data.locale}/" />
+</svelte:head>
 <slot />
