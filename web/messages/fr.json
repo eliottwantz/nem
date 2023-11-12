@@ -1,0 +1,6 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"home": "Accueil",
+	"about": "À propos",
+	"contact": "Contact"
+}

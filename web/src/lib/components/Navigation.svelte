@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { m } from '$lib/utils/i18n'
 	import { href } from '$lib/utils/redirect'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	const drawerStore = getDrawerStore()
@@ -18,7 +19,7 @@
 				class:active={activeUrl === '/' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				Home
+				{m.home()}
 			</a>
 		</li>
 		<li>
@@ -28,7 +29,7 @@
 				class:active={activeUrl === '/about' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				About
+				{m.about()}
 			</a>
 		</li>
 		<li>
@@ -38,7 +39,7 @@
 				class:active={activeUrl === '/contact' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				Contact
+				{m.contact()}
 			</a>
 		</li>
 	</ul>

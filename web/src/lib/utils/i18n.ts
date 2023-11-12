@@ -2,6 +2,9 @@ import type { Cookies } from '@sveltejs/kit'
 import { availableLanguageTags, sourceLanguageTag, type AvailableLanguageTag } from 'i18n/runtime'
 import { writable } from 'svelte/store'
 
+import * as m from 'i18n/messages'
+export { m }
+
 export function localeFromURL(url: URL): AvailableLanguageTag {
 	const urlParts = url.pathname.split('/').splice(1)
 	const locale = urlParts[0]

@@ -138,7 +138,10 @@ export const handle = sequence(
 		}
 
 		return await resolve(event, {
-			transformPageChunk: ({ html }) => html.replace('%%lang%%', event.locals.locale)
+			transformPageChunk: ({ html }) => {
+				html = html.replace('%%lang%%', event.locals.locale)
+				return html.replace('%%dir%%', event.locals.locale === 'ar' ? 'rtl' : 'ltr')
+			}
 		})
 	}
 )

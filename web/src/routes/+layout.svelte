@@ -53,12 +53,6 @@
 	})
 
 	$: console.log('LAYOUT user', $page.data.user)
-	$: if (browser) {
-		if (languageTag() === 'ar') {
-			$dir = 'rtl'
-		}
-	}
-	$: if (browser) document.dir = $dir
 	// $: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 
