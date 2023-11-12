@@ -1,12 +1,10 @@
 import { fetchers, safeFetch } from '$lib/api'
+import type { TimesRequest } from '$lib/api/api.gen'
 import { createAvailabilitySchema, type CreateCalendarAvailability } from '$lib/schemas/calendar'
 import { issuesToString } from '$lib/utils/zodError'
-import { redirect } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
-import { dayFromDate, hourNumToTimeFormat, timeFromDateHHMM } from '$lib/utils/datetime'
-import type { TimesRequest } from '$lib/api/api.gen'
 
-export const POST: RequestHandler = async ({ request, locals: { session }, fetch }) => {
+export const POST: RequestHandler = async ({ request, locals: { session, redirect }, fetch }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as CreateCalendarAvailability

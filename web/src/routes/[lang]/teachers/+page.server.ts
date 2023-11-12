@@ -1,9 +1,8 @@
 import { fetchers, safeFetch } from '$lib/api'
 import { SortTypeEnum, type ListTeacher } from '$lib/api/api.gen'
 import type { SortType } from '$lib/stores/teachersFiltersStore'
-import { redirect } from '@sveltejs/kit'
 
-export async function load({ fetch, locals: { session, user }, url }) {
+export async function load({ fetch, locals: { session, user, redirect }, url }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
 	const page = Number(url.searchParams.get('page'))

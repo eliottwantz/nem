@@ -4,12 +4,12 @@ import { safeDBCall } from '$lib/utils/error'
 import { fail } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 
-export const load = async ({ locals: { session, user, locale, redirect } }) => {
+export const load = async ({ locals: { session, user, redirect } }) => {
 	console.log('setup profile page.server load')
-	if (!session) throw redirect(302, '/', locale)
+	if (!session) throw redirect(302, '/')
 	if (user) {
 		console.log('user already created his profile')
-		throw redirect(302, '/dashboard/profile', locale)
+		throw redirect(302, '/dashboard/profile')
 	}
 
 	const form = await superValidate(createStudentSchema)
@@ -17,8 +17,8 @@ export const load = async ({ locals: { session, user, locale, redirect } }) => {
 }
 
 export const actions = {
-	default: async ({ request, locals: { session, db, locale, redirect } }) => {
-		if (!session) throw redirect(302, '/signin', locale)
+	default: async ({ request, locals: { session, db, redirect, locale } }) => {
+		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof createStudentSchema, ServerMessage>(
 			request,
 			createStudentSchema
@@ -29,7 +29,6 @@ export const actions = {
 			return fail(400, { form })
 		}
 
-		// Use interactive transaction: https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions
 		const res = await safeDBCall(
 			db.$transaction(async (tx) => {
 				await tx.profile.create({
@@ -49,6 +48,6 @@ export const actions = {
 			return message(form, { type: 'error', text: res.error.message })
 		}
 
-		throw redirect(302, '/dashboard/profile', locale)
+		throw redirect(302, '/dashboard/profile')
 	}
 }

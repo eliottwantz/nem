@@ -19,7 +19,6 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { languageTag, setLanguageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -73,7 +72,7 @@ export const handle = sequence(
 		if (event.cookies.get('locale') !== event.locals.locale) {
 			event.cookies.set('locale', event.locals.locale, { path: '/' })
 		}
-		event.locals.redirect = appRedirect
+		event.locals.redirect = appRedirect(event.locals.locale)
 		const session = await event.locals.getSession()
 		event.locals.session = session
 		console.log('######')
@@ -94,7 +93,7 @@ export const handle = sequence(
 		)
 
 		if (isProtectedRoute && !session) {
-			throw event.locals.redirect(302, '/signin', event.locals.locale)
+			throw event.locals.redirect(302, '/signin')
 		}
 
 		const handleNoProfile = () => {
@@ -103,7 +102,7 @@ export const handle = sequence(
 				!urlWithoutLocale.startsWith('/signout') &&
 				!urlWithoutLocale.startsWith('/verifyRequest')
 			)
-				throw redirect(302, '/signin/setup-profile')
+				throw event.locals.redirect(302, '/signin/setup-profile')
 		}
 
 		if (session) {

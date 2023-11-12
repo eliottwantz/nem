@@ -1,15 +1,14 @@
-import { invalidateAll } from '$app/navigation'
 import type { ServerMessage } from '$lib/schemas/error'
 import { deleteAvatar, uploadAvatar } from '$lib/server/backblaze'
-import { fail, redirect } from '@sveltejs/kit'
+import { fail } from '@sveltejs/kit'
 
-export async function load({ locals: { session } }) {
+export async function load({ locals: { session, redirect } }) {
 	console.log('profile edit server load')
 	if (!session) throw redirect(302, '/signin')
 }
 
 export const actions = {
-	updateAvatar: async ({ request, locals: { db, user, session } }) => {
+	updateAvatar: async ({ request, locals: { db, user, session, redirect } }) => {
 		if (!user || !session) throw redirect(302, '/signin')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
@@ -69,7 +68,7 @@ export const actions = {
 			} satisfies ServerMessage
 		}
 	},
-	deleteAvatar: async ({ locals: { db, user, session } }) => {
+	deleteAvatar: async ({ locals: { db, user, session, redirect } }) => {
 		if (!session || !user) throw redirect(302, '/signin')
 		if (!user.avatarFilePath) return
 		try {

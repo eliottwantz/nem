@@ -1,7 +1,6 @@
 import { fetchers, safeFetch } from '$lib/api'
-import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session }, fetch }) {
+export async function load({ locals: { session, redirect }, fetch }) {
 	if (!session) throw redirect(302, '/signin')
 
 	const res = await safeFetch(fetchers.studentService(fetch, session).listClasses())

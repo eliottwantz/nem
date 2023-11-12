@@ -1,11 +1,10 @@
-import { fetchers, safeFetch } from '$lib/api'
 import type { ServerMessage } from '$lib/schemas/error'
 import { createTeacherSchema } from '$lib/schemas/profile'
 import { safeDBCall } from '$lib/utils/error'
-import { fail, redirect } from '@sveltejs/kit'
+import { fail } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 
-export const load = async ({ locals: { session, user, db }, fetch }) => {
+export const load = async ({ locals: { session, user, db, redirect } }) => {
 	console.log('setup profile page.server load')
 	if (!session) throw redirect(302, '/')
 	if (user) {
@@ -55,7 +54,7 @@ export const load = async ({ locals: { session, user, db }, fetch }) => {
 }
 
 export const actions = {
-	default: async ({ request, locals: { session, db } }) => {
+	default: async ({ request, locals: { session, db, locale, redirect } }) => {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
 			request,
@@ -67,38 +66,24 @@ export const actions = {
 			return fail(400, { form })
 		}
 
-		if (form.data.spokenLanguages.length === 0) {
-			return message(form, { type: 'error', text: 'Please select your spoken languages' })
-		}
-
-		// Use interactive transaction: https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions
 		const res = await safeDBCall(
-			db.$transaction([
-				db.profile.create({
-					data: {
-						firstName: form.data.firstName,
-						lastName: form.data.lastName,
-						role: 'teacher',
-						preferedLanguage: form.data.preferedLanguage,
-						user: { connect: { id: session.user.id } }
-					}
-				}),
-				db.teacher.create({
+			db.$transaction(async (tx) => {
+				await tx.profile.create({
 					data: {
 						id: session.user.id,
-						bio: form.data.bio,
-						hourRate: form.data.hourRate
+						firstName: form.data.firstName,
+						lastName: form.data.lastName,
+						role: 'student',
+						preferedLanguage: locale
 					}
 				})
-			])
+				await tx.student.create({ data: { id: session.user.id } })
+			})
 		)
 		if (!res.ok) {
 			console.log(res.error)
 			return message(form, { type: 'error', text: res.error.message })
 		}
-
-		const [profileRes, teacherRes] = res.value
-		console.log('profileRes:', profileRes, 'teacherRes:', teacherRes)
 
 		throw redirect(302, '/dashboard/profile')
 	}

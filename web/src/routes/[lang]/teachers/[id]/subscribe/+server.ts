@@ -6,10 +6,10 @@ import {
 	type StripeSubscriptionRequest,
 	type SubscriptionMetadata
 } from '$lib/server/stripe'
-import { error, json, redirect } from '@sveltejs/kit'
+import { error, json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request, locals: { session, user }, fetch, url, params }) {
+export async function POST({ request, locals: { session, user, redirect }, fetch, url, params }) {
 	if (!session || !user) throw redirect(307, '/signin')
 
 	const res = await safeFetch(

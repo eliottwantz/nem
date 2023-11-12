@@ -1,6 +1,4 @@
-import { redirect } from '@sveltejs/kit'
-
-export const load = async ({ locals: { session }, fetch }) => {
+export const load = async ({ locals: { session, redirect }, fetch }) => {
 	console.log('login ran')
 	if (session) {
 		throw redirect(302, '/')

@@ -1,8 +1,8 @@
 import { fetchers, safeFetch } from '$lib/api'
 import type { Class, TimeSlot } from '$lib/api/api.gen'
-import { error, redirect } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 
-export async function load({ params, fetch, locals: { session, user } }) {
+export async function load({ params, fetch, locals: { session, user, redirect } }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
 

@@ -1,7 +1,7 @@
 import { safeDBCall } from '$lib/utils/error'
-import { error, redirect } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 
-export async function load({ params, locals: { db, session, user } }) {
+export async function load({ params, locals: { db, session, user, redirect } }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	const res = await safeDBCall(db.profile.findUnique({ where: { id: params.id } }))
 

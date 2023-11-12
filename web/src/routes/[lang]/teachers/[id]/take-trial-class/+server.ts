@@ -2,10 +2,10 @@ import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/s
 import { fetchers, safeFetch } from '$lib/api'
 import { createStripeCustomer, stripe, type ClassPaymentMetaData } from '$lib/server/stripe'
 import type { TakeClassStore } from '$lib/stores/takeClassStore'
-import { error, json, redirect } from '@sveltejs/kit'
+import { error, json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request, locals: { session, user }, fetch, url, params }) {
+export async function POST({ request, locals: { session, user, redirect }, fetch, url, params }) {
 	if (!session || !user) throw redirect(307, '/signin')
 
 	const res = await safeFetch(

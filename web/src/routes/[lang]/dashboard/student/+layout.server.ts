@@ -1,6 +1,4 @@
-import { redirect } from '@sveltejs/kit'
-
-export async function load({ locals: { user }, url }) {
+export async function load({ locals: { user, redirect }, url }) {
 	if (!user) throw redirect(302, '/signin')
 	console.log('student layout.server.ts')
 	if (user.role !== 'student') {

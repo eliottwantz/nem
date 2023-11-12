@@ -1,9 +1,8 @@
 import { fetchers, safeFetch } from '$lib/api'
-import { redirect } from '@sveltejs/kit'
 
 export const ssr = false
 
-export async function load({ locals: { session, user }, params, fetch }) {
+export async function load({ locals: { session, user, redirect }, params, fetch }) {
 	console.log('In class load')
 	if (!session || !user) throw redirect(302, '/')
 

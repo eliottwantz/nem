@@ -1,7 +1,6 @@
 import { fetchers, safeFetch } from '$lib/api'
-import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { user, session }, fetch }) {
+export async function load({ locals: { user, session, redirect }, fetch }) {
 	if (!session || !user) throw redirect(302, '/signin')
 
 	const streams = await Promise.all([

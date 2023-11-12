@@ -7,9 +7,8 @@ import {
 	deleteAvailabilitySchema
 } from '$lib/schemas/calendar'
 import { issuesToString } from '$lib/utils/zodError'
-import { type RequestHandler, redirect } from '@sveltejs/kit'
 
-export const PUT: RequestHandler = async ({ request, locals: { session }, fetch }) => {
+export const PUT = async ({ request, locals: { session, redirect }, fetch }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as UpdateCalendarAvailability
@@ -88,7 +87,7 @@ export const PUT: RequestHandler = async ({ request, locals: { session }, fetch 
 	}
 }
 
-export const DELETE: RequestHandler = async ({ request, locals: { session }, fetch }) => {
+export const DELETE = async ({ request, locals: { session, redirect }, fetch }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as DeleteCalendarAvailability

@@ -1,10 +1,10 @@
 import { fetchers, safeFetch } from '$lib/api'
 import type { ServerMessage } from '$lib/schemas/error'
 import { teachNewTopicSchema } from '$lib/schemas/teach'
-import { fail, redirect } from '@sveltejs/kit'
+import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
-export async function load({ locals: { session, user }, fetch }) {
+export async function load({ locals: { session, user, redirect }, fetch }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	const streams = await Promise.all([
 		safeFetch(fetchers.classService(fetch, session).listTopics()),
@@ -21,7 +21,7 @@ export async function load({ locals: { session, user }, fetch }) {
 }
 
 export const actions = {
-	async default({ request, locals: { session }, fetch }) {
+	async default({ request, locals: { session, redirect }, fetch }) {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,
