@@ -7,8 +7,8 @@ import {
 	SMTP_PORT,
 	SMTP_USER
 } from '$env/static/private'
-import { defaultLocale } from '$lib/i18n'
 import { getEnhancedPrisma, prisma } from '$lib/server/prisma'
+import { appRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import Email from '@auth/core/providers/email'
 import Google from '@auth/core/providers/google'
@@ -17,9 +17,7 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { locale } from 'svelte-i18n'
-import { get } from 'svelte/store'
-import { t } from 'svelte-i18n'
+import { availableLanguageTags } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -70,26 +68,16 @@ export const handle = sequence(
 		console.log('Session:', session)
 		event.locals.db = getEnhancedPrisma(session?.user ? session.user.id : undefined)
 
-		// event.locals.haveSession = async () => {
-		// 	if (!session) return { ok: false }
-		// 	return {
-		// 		ok: true,
-		// 		session: {
-		// 			user: session.user
-		// 		},
-		// 		async getUser() {
-		// 			const user = await event.locals.db.user.findUnique({
-		// 				where: { id: session.user.id }
-		// 			})
-		// 			if (user) return user
-		// 			console.warn('User not found:', session.user.id)
-		// 			throw new Error('User not found')
-		// 		}
-		// 	}
-		// }
-		let lang = defaultLocale
-
-		const isProtectedRoute = event.url.pathname.startsWith('/dashboard')
+		const { url } = event
+		const urlParts = url.pathname.split('/').splice(1)
+		const locale = urlParts[0]
+		if (!availableLanguageTags.includes(locale as (typeof availableLanguageTags)[number])) {
+			urlParts.unshift(availableLanguageTags['0'])
+			const newUrl = `${url.origin}/${urlParts.join('/')}${url.search}`
+			throw redirect(307, newUrl)
+		}
+		const urlWithoutLocale = urlParts.splice(1).join('/')
+		const isProtectedRoute = urlWithoutLocale.startsWith('/dashboard')
 		console.log(
 			'REQ. Method:',
 			event.request.method,
@@ -101,7 +89,7 @@ export const handle = sequence(
 		)
 
 		if (isProtectedRoute && !session) {
-			throw redirect(302, '/signin')
+			throw appRedirect(302, '/signin', event.url)
 		}
 
 		const handleNoProfile = () => {
@@ -136,8 +124,6 @@ export const handle = sequence(
 				handleNoProfile()
 			}
 		}
-
-		locale.set(lang)
 
 		return await resolve(event)
 	}

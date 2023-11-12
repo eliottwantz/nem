@@ -4,15 +4,12 @@
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
 	import CurrentClass from '$lib/icons/CurrentClass.svelte'
-	import LearnIcon from '$lib/icons/LearnIcon.svelte'
+	import TeachIcon from '$lib/icons/TeachIcon.svelte'
 	import { currentClassDetailsStore } from '$lib/stores/currentClass'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
+	import { MessagesSquare } from 'lucide-svelte'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
-	import TeachIcon from '$lib/icons/TeachIcon.svelte'
-	import { MessageCircle, MessagesSquare } from 'lucide-svelte'
-	import { getPublicName } from '$lib/utils/initials'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -46,9 +43,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<TeachIcon />
-						<span>
-							{$t('nav.teachers')}
-						</span>
+						<span> Teachers </span>
 					</a>
 				</li>
 				<li>
@@ -60,9 +55,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<ClassesIcon />
-						<span>
-							{$t('nav.classes')}
-						</span>
+						<span> Classes </span>
 					</a>
 				</li>
 				<li>
@@ -74,9 +67,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<CalendarIcon />
-						<span>
-							{$t('nav.calendar')}
-						</span>
+						<span> Calendar </span>
 					</a>
 				</li>
 				<li>
@@ -88,9 +79,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<MessagesSquare size="32" />
-						<span>
-							{$t('nav.messages')}
-						</span>
+						<span> Messages </span>
 					</a>
 				</li>
 				{#if $currentClassDetailsStore}
@@ -104,9 +93,7 @@
 							on:click={() => drawerStore.close()}
 						>
 							<CurrentClass />
-							<span>
-								{$t('nav.currentClass')}
-							</span>
+							<span> Current Class </span>
 						</a>
 					</li>
 				{/if}

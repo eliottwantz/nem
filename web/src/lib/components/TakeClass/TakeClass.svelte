@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { fetchers, safeFetch } from '$lib/api'
 	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
 	import { userStore } from '$lib/stores/user'
@@ -11,15 +12,12 @@
 		getModalStore,
 		getToastStore
 	} from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
 	import {
 		availabilityToCalendarEntryOneHourBlock,
 		type CalendarEvent,
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
-	import { fetchers, safeFetch } from '$lib/api'
-	import { goto, invalidate, invalidateAll } from '$app/navigation'
 
 	export let teacher: Teacher
 	export let classes: Class[]
@@ -128,14 +126,14 @@
 <div class="card text-token mt-2 w-full max-w-3xl p-4">
 	<Stepper
 		on:step={console.log}
-		stepTerm={$t('learn.stepper.stepTerm')}
-		buttonBackLabel={$t('learn.stepper.buttonBack')}
-		buttonNextLabel={$t('learn.stepper.buttonNext')}
-		buttonCompleteLabel={$t('learn.checkout')}
+		stepTerm="->"
+		buttonBackLabel="Previous"
+		buttonNextLabel="Next"
+		buttonCompleteLabel="Checkout"
 		on:complete={scheduleClass}
 	>
 		<Step locked={lockedLanguage}>
-			<svelte:fragment slot="header">{$t('learn.language-teach')}</svelte:fragment>
+			<svelte:fragment slot="header">Teaching Language</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
 				{#each new Set(teacher.spokenLanguages.map((l) => l.language)) as language}
 					<ListBoxItem
@@ -149,9 +147,7 @@
 			</ListBox>
 		</Step>
 		<Step locked={lockedTopic}>
-			<svelte:fragment slot="header">
-				{$t('learn.topic')}
-			</svelte:fragment>
+			<svelte:fragment slot="header">Topic</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
 				{#each topics.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
 					<ListBoxItem

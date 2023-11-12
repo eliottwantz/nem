@@ -1,3 +1,4 @@
+import { availableLanguageTags } from 'i18n/runtime'
 import { z } from 'zod'
 
 export const proficiencyLevels = ['Native', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
@@ -29,7 +30,7 @@ export type SpokenLanguages = z.infer<typeof spokenLanguages>
 export const createTeacherSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	preferedLanguage: z.string(),
+	preferedLanguage: z.enum(availableLanguageTags),
 	spokenLanguages,
 	topicsTaught,
 	bio: z.string().nonempty({ message: 'Bio is required' }),
@@ -41,5 +42,5 @@ export const createTeacherSchema = z.object({
 export const createStudentSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	preferedLanguage: z.string()
+	preferedLanguage: z.enum(availableLanguageTags)
 })

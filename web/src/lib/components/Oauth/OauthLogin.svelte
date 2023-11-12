@@ -1,9 +1,6 @@
 <script lang="ts">
 	import type { BuiltInProviderType } from '@auth/core/providers'
 	import { signIn } from '@auth/sveltekit/client'
-	import { t } from 'svelte-i18n'
-
-	let email: string
 
 	async function handleSignIn(provider: BuiltInProviderType) {
 		await signIn(provider, {

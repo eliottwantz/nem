@@ -6,7 +6,6 @@
 	import { browser } from '$app/environment'
 	import { onNavigate } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { ws } from '$lib/api/ws'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Drawer from '$lib/components/Drawer/Drawer.svelte'
@@ -15,7 +14,6 @@
 	import Navigation from '$lib/components/Navigation.svelte'
 	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
-	import { dir } from '$lib/i18n'
 	import Logo from '$lib/icons/Logo.svelte'
 	import { userStore } from '$lib/stores/user'
 	import { getInitials } from '$lib/utils/initials'
@@ -29,7 +27,6 @@
 	} from '@skeletonlabs/skeleton'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import { t } from 'svelte-i18n'
 
 	export let data
 	initializeStores()
@@ -54,7 +51,7 @@
 
 	$: if (browser && data.user) userStore.set(data.user)
 	$: console.log('LAYOUT userStore', $userStore)
-	$: if (browser) document.dir = $dir
+	// $: if (browser) document.dir = $dir
 	// $: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 

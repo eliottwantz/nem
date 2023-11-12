@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
 	const drawerStore = getDrawerStore()
 
 	export let horizontal: boolean = true
@@ -18,7 +17,7 @@
 				class:active={activeUrl === '/' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				{$t('nav.home')}
+				Home
 			</a>
 		</li>
 		<li>
@@ -28,7 +27,7 @@
 				class:active={activeUrl === '/about' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				{$t('nav.about')}
+				About
 			</a>
 		</li>
 		<li>
@@ -38,7 +37,7 @@
 				class:active={activeUrl === '/contact' && !horizontal}
 				on:click={() => drawerStore.close()}
 			>
-				{$t('nav.contact')}
+				Contact
 			</a>
 		</li>
 	</ul>

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { TrashIcon } from 'lucide-svelte'
-	import { t } from 'svelte-i18n'
 
 	export let availableTopics: string[]
 	export let topicsTaught: string[]
@@ -25,7 +24,7 @@
 </script>
 
 <div>
-	<p>{$t('register.topicsTaught')}</p>
+	<p>Topics you want to teach</p>
 
 	{#each topicsTaught as topicTaught, i}
 		<div>

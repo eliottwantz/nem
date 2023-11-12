@@ -4,12 +4,11 @@
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
 	import ManageIcon from '$lib/icons/ManageIcon.svelte'
 	import UsersIcon from '$lib/icons/UsersIcon.svelte'
-	import { getDrawerStore } from "@skeletonlabs/skeleton"
-	import { t } from 'svelte-i18n'
+	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
 
-    const drawerStore = getDrawerStore()
+	const drawerStore = getDrawerStore()
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col space-y-4 p-4 lg:border-r">
@@ -33,9 +32,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<UsersIcon />
-						<span>
-							{$t('nav.users')}
-						</span>
+						<span> Users </span>
 					</a>
 				</li>
 				<li>
@@ -47,9 +44,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<ClassesIcon />
-						<span>
-							{$t('nav.classes')}
-						</span>
+						<span> Classes </span>
 					</a>
 				</li>
 				<li>
@@ -61,9 +56,7 @@
 						on:click={() => drawerStore.close()}
 					>
 						<ManageIcon />
-						<span>
-							{$t('nav.manage')}
-						</span>
+						<span> Manage </span>
 					</a>
 				</li>
 			</ul>

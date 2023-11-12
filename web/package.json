@@ -5,7 +5,7 @@
 	"scripts": {
 		"start": "node build",
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "paraglide-js compile --project ./project.inlang.json && vite build",
 		"preview": "vite preview",
 		"sync": "svelte-kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -16,9 +16,14 @@
 		"db:push": "prisma db push",
 		"db:migrate": "prisma migrate dev",
 		"db:studio": "prisma studio",
-		"db:seed": "prisma db seed"
+		"db:seed": "prisma db seed",
+		"i18n:gen": "paraglide-js compile",
+		"i18n:validate": "inlang project validate",
+		"i18n:lint": "inlang lint",
+		"i18n:translate": "inlang machine translate -f && pnpm i18n:gen"
 	},
 	"devDependencies": {
+		"@inlang/cli": "^1.20.0",
 		"@auth/core": "^0.18.0",
 		"@auth/prisma-adapter": "^1.0.5",
 		"@auth/sveltekit": "^0.3.11",
@@ -66,7 +71,8 @@
 	"dependencies": {
 		"@prisma/client": "^5.5.2",
 		"@zenstackhq/runtime": "1.2.1",
-		"lucide-svelte": "^0.284.0"
+		"lucide-svelte": "^0.284.0",
+		"@inlang/paraglide-js": "1.0.0-prerelease.9"
 	},
 	"pnpm": {
 		"patchedDependencies": {

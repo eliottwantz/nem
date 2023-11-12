@@ -5,7 +5,6 @@
 		type SpokenLanguages
 	} from '$lib/schemas/profile'
 	import { TrashIcon } from 'lucide-svelte'
-	import { t } from 'svelte-i18n'
 
 	export let availableLanguages: string[]
 	export let spokenLanguages: SpokenLanguages
@@ -36,8 +35,8 @@
 
 <div>
 	<div class="grid grid-cols-2">
-		<p>{$t('register.spokenLanguages')}</p>
-		<p>{$t('register.proficiencyLevel')}</p>
+		<p>Spoken Languages</p>
+		<p>Proficiency Level</p>
 	</div>
 
 	{#each spokenLanguages as spokenL, i}

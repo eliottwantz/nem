@@ -3,7 +3,6 @@
 	import Calendar from '$lib/components/Calendar/Calendar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
 
 	export let data
 
@@ -23,6 +22,6 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">{$t('calendar.title')}</h1>
+	<h1 slot="title" class="h1">Calendar</h1>
 	<Calendar {events} calendarMode="teacher" />
 </Layout>

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user'
+	import { availableLanguageTags } from 'i18n/runtime'
 	import type { ComponentType } from 'svelte'
-	import { locale, locales } from 'svelte-i18n'
-
-	let selectedLang: string = $locale || 'en'
 
 	// async function updateLang(lang: string) {
 	// 	if (!$userStore) return
@@ -22,20 +20,15 @@
 	// 	}
 	// }
 
-	$: console.log('$locale', $locale)
-	$: console.log('Locale uiLang', selectedLang)
-	$: {
-		locale.set(selectedLang)
-		// updateLang(selectedLang)
-	}
+	let selectedLang: string
 </script>
 
 <div class="flex items-center space-x-1">
 	<div>
 		<select class="select" bind:value={selectedLang}>
-			{#each $locales as _locale}
-				<option value={_locale}>
-					{_locale}
+			{#each availableLanguageTags as locale}
+				<option value={locale}>
+					{locale}
 				</option>
 			{/each}
 		</select>

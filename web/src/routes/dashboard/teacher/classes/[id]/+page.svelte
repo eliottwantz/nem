@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
-	import { locale } from 'svelte-i18n'
+	import { languageTag } from 'i18n/runtime'
 
 	export let data
 
 	const start = new Date(data.classDetails.class.startAt)
 	const end = new Date(data.classDetails.class.endAt)
-	$: _locale = $locale ?? 'en'
+	$: locale = languageTag()
 
 	const modalStore = getModalStore()
 	const toastStore = getToastStore()
@@ -81,8 +79,8 @@
 		{data.classDetails.class.isTrial ? 'Trial' : ''} Class: {data.classDetails.class.name}
 	</h1>
 	<p class="text-xl">
-		<span>{start.toLocaleDateString(_locale)}</span>
-		{start.toLocaleTimeString(_locale)} - {end.toLocaleTimeString(_locale)}
+		<span>{start.toLocaleDateString(locale)}</span>
+		{start.toLocaleTimeString(locale)} - {end.toLocaleTimeString(locale)}
 	</p>
 
 	<br />

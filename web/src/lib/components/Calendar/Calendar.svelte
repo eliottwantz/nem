@@ -22,10 +22,10 @@
 	import { page } from '$app/stores'
 	import type { Class } from '$lib/api/api.gen'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
-	import { locale, t } from 'svelte-i18n'
 	import { calendarViews } from '.'
 	import AddCalendarEvent from './AddCalendarEvent.svelte'
 	import ManageCalendarEvent from './ManageCalendarEvent.svelte'
+	import { languageTag } from 'i18n/runtime'
 
 	export let events: CalendarEntry[]
 	export let calendarMode: CalendarMode
@@ -119,19 +119,19 @@
 	}
 
 	$: if (cal) {
-		cal.setOption('locale', $locale)
+		cal.setOption('locale', languageTag())
 		cal.setOption('buttonText', {
-			close: $t('close'),
-			dayGridMonth: $t('month'),
-			listDay: $t('list'),
-			listMonth: $t('list'),
-			listWeek: $t('list'),
-			listYear: $t('list'),
-			resourceTimeGridDay: $t('day'),
-			resourceTimeGridWeek: $t('week'),
-			timeGridDay: $t('day'),
-			timeGridWeek: $t('week'),
-			today: $t('today')
+			close: 'Close',
+			dayGridMonth: 'month',
+			listDay: 'list',
+			listMonth: 'list',
+			listWeek: 'list',
+			listYear: 'list',
+			resourceTimeGridDay: 'day',
+			resourceTimeGridWeek: 'week',
+			timeGridDay: 'day',
+			timeGridWeek: 'week',
+			today: 'today'
 		})
 	}
 
