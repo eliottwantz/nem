@@ -12,43 +12,16 @@ export const load = async ({ locals: { session, user, db, redirect } }) => {
 		throw redirect(302, '/dashboard/profile')
 	}
 
-	// const resAsync = ResultAsync.fromPromise(
-	// 	db.language.findMany(),
-	// 	() => new AppError('Could not load languages')
-	// )
-	// const res = await resAsync
-	// if (res.isErr()) {
-	// 	console.log(res.error, res.error.metadata)
-	// } else {
-	// 	console.log('Languages:', res.value)
-	// }
-	{
-		const res = await safeDBCall(db.language.findMany())
-		if (res.ok) {
-			console.log('Languages SAFEDBCALL:', res.value)
-		} else {
-			res.error
-		}
-	}
-	{
-		const res = await safeDBCall(db.topic.findMany())
-		if (res.ok) {
-			console.log('Topics SAFEDBCALL:', res.value)
-		} else {
-			res.error
-		}
-	}
+	const form = await superValidate(createTeacherSchema)
 
 	const streams = await Promise.all([
-		safeDBCall(db.language.findMany()),
+		safeDBCall(db.spokenLanguage.findMany()),
 		safeDBCall(db.topic.findMany())
 	])
 
-	const form = await superValidate(createTeacherSchema)
-
 	return {
 		form,
-		languages: streams[0].ok ? streams[0].value.map((l) => l.language) : [],
+		languages: streams[0].ok ? streams[0].value : [],
 		topics: streams[1].ok ? streams[1].value.map((t) => t.topic) : []
 	}
 }
@@ -73,11 +46,26 @@ export const actions = {
 						id: session.user.id,
 						firstName: form.data.firstName,
 						lastName: form.data.lastName,
-						role: 'student',
+						role: 'teacher',
 						preferedLanguage: locale
 					}
 				})
-				await tx.student.create({ data: { id: session.user.id } })
+				await tx.teacher.create({
+					data: {
+						id: session.user.id,
+						bio: form.data.bio,
+						hourRate: form.data.hourRate,
+						topics: {
+							connect: form.data.topicsTaught.map((t) => ({ topic: t }))
+						}
+						// spokenLanguages: {
+						// 	connect: form.data.spokenLanguages.map((s) => ({
+						// 		languageId: s.language,
+						// 		proficiency: s.proficiency
+						// 	}))
+						// }
+					}
+				})
 			})
 		)
 		if (!res.ok) {

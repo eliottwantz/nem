@@ -5,7 +5,6 @@
 	import type { ServerMessage } from '$lib/schemas/error'
 	import { createTeacherSchema } from '$lib/schemas/profile.js'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { languageTag } from 'i18n/runtime'
 	import { superForm } from 'sveltekit-superforms/client'
 
 	export let data

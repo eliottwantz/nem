@@ -1,22 +1,30 @@
 import { fetchers, safeFetch } from '$lib/api'
 import type { ServerMessage } from '$lib/schemas/error'
 import { teachNewTopicSchema } from '$lib/schemas/teach'
+import { safeDBCall } from '$lib/utils/error'
 import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
-export async function load({ locals: { session, user, redirect }, fetch }) {
+export async function load({ locals: { session, user, redirect, db }, fetch }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	const streams = await Promise.all([
-		safeFetch(fetchers.classService(fetch, session).listTopics()),
-		safeFetch(fetchers.teacherService(fetch, session).findTeacherByID({ id: user.id }))
+		safeDBCall(db.topic.findMany()),
+		safeDBCall(
+			db.teacher.findUnique({
+				select: {
+					topics: true
+				},
+				where: { id: user.id }
+			})
+		)
 	])
 
 	const form = await superValidate(teachNewTopicSchema)
 
 	return {
 		form,
-		topics: streams[0].ok ? streams[0].data.topics : [],
-		topicsTaught: streams[1].ok ? streams[1].data.teacher.topicsTaught : []
+		topics: streams[0].ok ? streams[0].value.map((t) => t.topic) : [],
+		topicsTaught: streams[1].ok ? streams[1].value.topics.map((t) => t.topic) : []
 	}
 }
 

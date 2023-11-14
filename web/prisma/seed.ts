@@ -150,6 +150,9 @@ async function main() {
 				topic: 'English'
 			},
 			{
+				topic: 'Arabic'
+			},
+			{
 				topic: 'Mathematics'
 			},
 			{

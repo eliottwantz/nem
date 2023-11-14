@@ -166,7 +166,7 @@ model SpokenLanguage {
 
     @@allow('all', true)
 
-    @@index([languageId, proficiency])
+    @@unique([languageId, proficiency])
 }
 
 model HoursBank {

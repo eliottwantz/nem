@@ -1,9 +1,8 @@
 import { page } from '$app/stores'
 import { PUBLIC_ENV, PUBLIC_GO_SERVER_HOST } from '$env/static/public'
 import { chatStore } from '$lib/stores/chatStore'
-import type { Session } from '@supabase/supabase-js'
+import type { Session } from '@auth/core/types'
 import { derived, get, writable } from 'svelte/store'
-import type { Message } from '../api.gen'
 
 type SendPayload = {
 	action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
@@ -32,9 +31,7 @@ class WS {
 	async Connect(): Promise<void> {
 		if (this.#attempts > maxAttempts) return
 		this.#attempts++
-		const websocketUrl = `${this.#wsEndpoint}?jwt=${
-			(get(page).data.session as Session).access_token
-		}`
+		const websocketUrl = `${this.#wsEndpoint}?jwt=${get(page).data.session as Session}`
 		this.socket = new WebSocket(websocketUrl)
 
 		this.socket.addEventListener('open', () => {

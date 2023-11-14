@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
-	import type { User } from '$lib/api/api.gen'
-	import { ws } from '$lib/api/ws'
-	import AttachmentIcon from '$lib/icons/AttachmentIcon.svelte'
 	import SendIcon from '$lib/icons/SendIcon.svelte'
+	import { ws } from '$lib/ws'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { Plus, X } from 'lucide-svelte'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
+	import type { Profile } from '@prisma/client'
 
 	export let conversationId: number | undefined // undefined if no conversation exists yet
-	export let recepient: User | undefined // undefined if group chat
+	export let recepient: Profile | undefined // undefined if group chat
 
 	const toastStore = getToastStore()
 	const maxChars = 1000

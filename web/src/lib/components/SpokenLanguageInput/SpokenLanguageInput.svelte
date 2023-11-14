@@ -1,29 +1,24 @@
 <script lang="ts">
-	import {
-		proficienciesMeaning,
-		proficiencyLevels,
-		type SpokenLanguages
-	} from '$lib/schemas/profile'
+	import { proficienciesMeaning } from '$lib/schemas/profile'
+	import { Proficiency, type SpokenLanguage } from '@prisma/client'
 	import { TrashIcon } from 'lucide-svelte'
 
-	export let availableLanguages: string[]
-	export let spokenLanguages: SpokenLanguages
-	let languages = (JSON.parse(JSON.stringify(availableLanguages)) as string[]).sort((a, b) =>
-		a.localeCompare(b)
+	export let availableLanguages: SpokenLanguage[]
+	export let spokenLanguages: SpokenLanguage[]
+	let languages = (JSON.parse(JSON.stringify(availableLanguages)) as SpokenLanguage[]).sort(
+		(a, b) => a.language.localeCompare(b.language)
 	)
 	$: selectableLanguages = languages.filter(
-		(l) => !spokenLanguages.map((l) => l.language).includes(l)
+		(l) => !spokenLanguages.map((l) => l.language).includes(l.language)
 	)
 
 	$: console.log('languages', languages)
 	$: console.log('spokenLanguages', spokenLanguages)
+	$: console.log('selectableLanguages', selectableLanguages)
 
 	function add() {
 		if (selectableLanguages.length === 0) return
-		spokenLanguages = spokenLanguages.concat({
-			language: selectableLanguages[0],
-			proficiency: proficiencyLevels[0]
-		})
+		spokenLanguages = spokenLanguages.concat(selectableLanguages[0])
 	}
 
 	function remove(index: number, lang: string) {
@@ -44,20 +39,16 @@
 			<div>
 				<select bind:value={spokenL.language} class="select">
 					{#each languages as language}
-						<option disabled={!selectableLanguages.includes(language)} value={language}
-							>{language}</option
-						>
+						<option disabled={!selectableLanguages.includes(language)} value={language}>
+							{language.language}
+						</option>
 					{/each}
 				</select>
 			</div>
 			<div class="flex items-center gap-2">
 				<select bind:value={spokenL.proficiency} class="select">
-					{#each proficiencyLevels as p}
-						{#if p === 'Native'}
-							<option value={p}>{p}</option>
-						{:else}
-							<option value={p}>{p} - {proficienciesMeaning[p]}</option>
-						{/if}
+					{#each Object.values(Proficiency) as p}
+						<option value={p}>{p} - {proficienciesMeaning[p]}</option>
 					{/each}
 				</select>
 				<button

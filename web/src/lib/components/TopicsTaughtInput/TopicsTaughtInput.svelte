@@ -7,9 +7,6 @@
 		a.localeCompare(b)
 	)
 	$: selectableTopics = topics.filter((l) => !topicsTaught.includes(l))
-	$: console.log('topics', topics)
-	$: console.log('topicsTaught', topicsTaught)
-	$: console.log('selectableTopics', selectableTopics)
 
 	function add() {
 		if (selectableTopics.length === 0) return
@@ -17,7 +14,6 @@
 	}
 
 	function remove(index: number, topic: string) {
-		console.log(index, topic)
 		topicsTaught.splice(index, 1)
 		topicsTaught = topicsTaught
 	}

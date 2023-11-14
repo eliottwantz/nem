@@ -93,7 +93,8 @@ tasks:
     cmds:
       - docker compose -f web/compose.yaml down -v
       - task: up
-      - cd web &&pnpm db:push
+      - sleep 1
+      - cd web && pnpm db:push
       - cd web && pnpm db:seed
     desc: Reset db with seed
 

@@ -157,7 +157,7 @@ model SpokenLanguage {
     language Language @relation(fields: [languageId], references: [language], onDelete: Cascade)
     teachers Teacher[]
 
-    @@index([languageId, proficiency])
+    @@unique([languageId, proficiency])
 }
 
 /// @@allow('all', true)
