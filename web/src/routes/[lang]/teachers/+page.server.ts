@@ -2,7 +2,7 @@ import type { SortType } from '$lib/stores/teachersFiltersStore'
 import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
 import type { Topic } from '@prisma/client'
 
-export async function load({ fetch, locals: { session, user, redirect, db }, url }) {
+export async function load({ locals: { session, user, redirect, db }, url }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
 	const skip = url.searchParams.get('skip')
@@ -26,9 +26,12 @@ export async function load({ fetch, locals: { session, user, redirect, db }, url
 					hourRate: hourRate ? { lte: Number(hourRate) } : undefined
 				},
 				include: {
+					studentSubscriptions: { select: { studentId: true } },
 					profile: true,
 					spokenLanguages: true,
-					topics: true
+					topics: true,
+					reviews: true,
+					classes: { select: { _count: true } }
 				},
 				orderBy: {
 					hourRate:
@@ -36,7 +39,21 @@ export async function load({ fetch, locals: { session, user, redirect, db }, url
 							? 'desc'
 							: sortBy === 'PriceLowest'
 							? 'asc'
-							: undefined
+							: undefined,
+					profile:
+						sortBy === 'Newest'
+							? {
+									createdAt: 'desc'
+							  }
+							: sortBy === 'Oldest'
+							? {
+									createdAt: 'asc'
+							  }
+							: undefined,
+					rating: sortBy === 'BestRating' ? 'desc' : undefined,
+					reviews: sortBy === 'NumberOfReviews' ? { _count: 'desc' } : undefined,
+					studentSubscriptions: sortBy === 'Popularity' ? { _count: 'desc' } : undefined,
+					classesTaught: sortBy === 'ClassesTaught' ? 'desc' : undefined
 				},
 				skip: skip ? Number(skip) : 0
 			})

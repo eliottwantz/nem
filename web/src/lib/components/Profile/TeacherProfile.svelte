@@ -118,7 +118,7 @@
 			</a>
 			<div class="flex flex-col items-center justify-around sm:text-lg">
 				<div>
-					<span>Reviews</span>
+					<span>Rating</span>
 					{#if teacher.rating === 0}
 						<span>N/A</span>
 					{:else}

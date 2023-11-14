@@ -6,7 +6,7 @@ export const SortTypeKeyToLabel = {
 	Newest: 'Newest First',
 	Oldest: 'Oldest First',
 	BestRating: 'Best Rating',
-	NumberOfRatings: 'Number of Ratings',
+	NumberOfReviews: 'Number of Reviews',
 	ClassesTaught: 'Classes Taught',
 	PriceLowest: 'Price: Lowest',
 	PriceHighest: 'Price: Highest'
@@ -19,7 +19,7 @@ export type SortType = keyof typeof SortTypeKeyToLabel
 type Store = {
 	topic?: string
 	language?: string
-	priceMax?: number
+	priceMax: number
 	ratingMin?: string
 	isTopAgent?: boolean
 	sortBy: string
@@ -27,7 +27,7 @@ type Store = {
 const store = writable<Store>({
 	topic: undefined,
 	language: undefined,
-	priceMax: undefined,
+	priceMax: 45,
 	ratingMin: undefined,
 	isTopAgent: undefined,
 	sortBy: SortTypeKeyToLabel.Popularity
@@ -43,7 +43,7 @@ export const teachersFiltersStore = {
 		store.set({
 			topic: params.get('topic') ?? undefined,
 			language: params.get('language') ?? undefined,
-			priceMax: params.get('priceMax') ? Number(params.get('priceMax')) : undefined,
+			priceMax: params.get('priceMax') ? Number(params.get('priceMax')) : 45,
 			ratingMin: params.get('ratingMin') ?? undefined,
 			isTopAgent: params.get('topAgent') ? Boolean(params.get('topAgent')) : undefined,
 			sortBy: SortTypeKeyToLabel[sortBy as SortType] ?? SortTypeKeyToLabel.Popularity

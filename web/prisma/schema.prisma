@@ -109,7 +109,6 @@ model Student {
     id String @id()
     profile Profile @relation(fields: [id], references: [id], onDelete: Cascade)
     classes Class[]
-    teachers Teacher[]
     reviews Review[]
     hoursBank HoursBank[]
     subscriptions StudentSubscription[]
@@ -121,12 +120,12 @@ model Teacher {
     bio String
     hourRate Int
     topAgent Boolean @default(false)
-    rating Float?
+    rating Float @default(0)
+    classesTaught Int @default(0)
     profile Profile @relation(fields: [id], references: [id], onDelete: Cascade)
     spokenLanguages SpokenLanguage[]
     topics Topic[]
     classes Class[]
-    students Student[]
     reviews Review[]
     availabilities TimeSlot[]
     hoursBank HoursBank[]

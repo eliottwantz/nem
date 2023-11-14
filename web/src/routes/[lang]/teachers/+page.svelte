@@ -71,7 +71,11 @@
 						? '45+'
 						: $teachersFiltersStore.priceMax}
 				</span>
-				<Dropdown val={`${$teachersFiltersStore.priceMax}`}>
+				<Dropdown
+					val={`${$teachersFiltersStore.priceMax}${
+						$teachersFiltersStore.priceMax === 45 ? '+' : ''
+					}`}
+				>
 					<div class="flex w-full gap-x-1">
 						<span>1</span>
 						<RangeSlider
