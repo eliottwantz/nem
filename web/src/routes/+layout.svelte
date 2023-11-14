@@ -129,7 +129,7 @@
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
 								src={data.user.avatarUrl ?? ''}
-								initials={getInitials(data.user.firstName, data.user.lastName)}
+								initials={getInitials(data.user)}
 							/>
 						</a>
 					{/if}

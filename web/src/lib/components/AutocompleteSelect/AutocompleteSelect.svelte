@@ -12,13 +12,12 @@
 
 	let val = ''
 	let oldVal = ''
-	export let selectedVal: string
+	export let selectedVal: string | undefined
 	let input: HTMLInputElement
 	let showDropdown = false
 
 	$: console.log('selectedVal', selectedVal)
-
-	$: val = selectedVal
+	$: val = selectedVal ?? ''
 
 	function onSelect(event: CustomEvent<AutocompleteOption<string>>): void {
 		oldVal = val

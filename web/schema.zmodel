@@ -35,21 +35,16 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String    @unique
-    emailVerified DateTime?
-    image         String?
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime? @updatedAt
-
-    profile  Profile?
-    accounts Account[]
-    sessions Session[]
-
-    student          Student?
-    teacher          Teacher?
+    id               String    @id @default(cuid())
+    name             String?
+    email            String    @unique
+    emailVerified    DateTime?
+    image            String?
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime? @updatedAt
+    accounts         Account[]
+    sessions         Session[]
+    profile          Profile?
     chats            Chat[]
     sentMessages     Message[] @relation("SentMessages")
     receivedMessages Message[] @relation("DeliveredMessages")
@@ -86,6 +81,8 @@ model Profile {
     avatarFilePath   String?
     avatarUrl        String?
     stripeCustomerId String?
+    student          Student?
+    teacher          Teacher?
     createdAt        DateTime  @default(now())
     updatedAt        DateTime? @updatedAt
 
@@ -100,9 +97,7 @@ enum Role {
 
 model Student {
     id            String                @id
-    createdAt     DateTime              @default(now())
-    updatedAt     DateTime?             @updatedAt
-    user          User                  @relation(fields: [id], references: [id], onDelete: Cascade)
+    profile       Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
     classes       Class[]
     teachers      Teacher[]
     reviews       Review[]
@@ -118,9 +113,7 @@ model Teacher {
     hourRate             Int
     topAgent             Boolean               @default(false)
     rating               Float?
-    createdAt            DateTime              @default(now())
-    updatedAt            DateTime?             @updatedAt
-    user                 User                  @relation(fields: [id], references: [id], onDelete: Cascade)
+    profile              Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
     spokenLanguages      SpokenLanguage[]
     topics               Topic[]
     classes              Class[]
@@ -131,6 +124,10 @@ model Teacher {
     studentSubscriptions StudentSubscription[]
 
     @@allow('all', true)
+
+    @@index([topAgent])
+    @@index([rating])
+    @@index([hourRate])
 }
 
 model Language {

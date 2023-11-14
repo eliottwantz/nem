@@ -1,31 +1,43 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import AutocompleteSelect from '$lib/components/AutocompleteSelect/AutocompleteSelect.svelte'
+	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import Profile from '$lib/components/Profile/TeacherProfile.svelte'
 	import {
+		SortLabelToTypeKey,
 		SortTypeKeyToLabel,
-		teachersFiltersStore,
-		type SortType,
-		SortLabelToTypeKey
+		teachersFiltersStore
 	} from '$lib/stores/teachersFiltersStore'
+	import { ListBox, ListBoxItem, RangeSlider, SlideToggle } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import { SlideToggle } from '@skeletonlabs/skeleton'
-	import { RangeSlider } from '@skeletonlabs/skeleton'
-	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte'
 
 	export let data
 	$: console.log('filters', $teachersFiltersStore)
-
-	$: url = new URLSearchParams({
-		topic: $teachersFiltersStore.topic,
-		language: $teachersFiltersStore.language,
-		priceMax: `${$teachersFiltersStore.priceMax}`,
-		ratingMin: $teachersFiltersStore.ratingMin,
-		topAgent: `${$teachersFiltersStore.isTopAgent}`,
-		sortBy: SortLabelToTypeKey[$teachersFiltersStore.sortBy]
-	})
-	$: console.log('url', url.toString())
+	let url: string
+	$: {
+		const u = new URLSearchParams()
+		if ($teachersFiltersStore.topic) {
+			u.append('topic', $teachersFiltersStore.topic)
+		}
+		if ($teachersFiltersStore.language) {
+			u.append('language', $teachersFiltersStore.language)
+		}
+		if ($teachersFiltersStore.priceMax && $teachersFiltersStore.priceMax < 45) {
+			u.append('priceMax', `${$teachersFiltersStore.priceMax}`)
+		}
+		if ($teachersFiltersStore.ratingMin) {
+			u.append('ratingMin', `${$teachersFiltersStore.ratingMin}`)
+		}
+		if ($teachersFiltersStore.isTopAgent) {
+			u.append('topAgent', `${$teachersFiltersStore.isTopAgent}`)
+		}
+		if ($teachersFiltersStore.sortBy) {
+			u.append('sortBy', SortLabelToTypeKey[$teachersFiltersStore.sortBy])
+		}
+		url = u.toString()
+	}
+	$: console.log('url', url)
 
 	onMount(() => {
 		teachersFiltersStore.fromURL()
@@ -59,7 +71,7 @@
 						? '45+'
 						: $teachersFiltersStore.priceMax}
 				</span>
-				<Dropdown>
+				<Dropdown val={`${$teachersFiltersStore.priceMax}`}>
 					<div class="flex w-full gap-x-1">
 						<span>1</span>
 						<RangeSlider
@@ -75,7 +87,7 @@
 				</Dropdown>
 			</div>
 			<div class="flex flex-col items-start gap-y-1">
-				<span>TopAgent</span>
+				<span>TopAgent only</span>
 				<SlideToggle
 					size="lg"
 					active="bg-primary-500"
@@ -86,12 +98,18 @@
 		</div>
 		<div class="flex gap-x-4">
 			<div class="flex flex-col items-start gap-y-1">
-				<span class="">Sort by</span>
-				<AutocompleteSelect
-					placeholder="Sort by"
-					rawData={Object.values(SortTypeKeyToLabel)}
-					bind:selectedVal={$teachersFiltersStore.sortBy}
-				/>
+				<span>Sort by</span>
+				<Dropdown bind:val={$teachersFiltersStore.sortBy}>
+					<ListBox>
+						{#each Object.values(SortTypeKeyToLabel) as label}
+							<ListBoxItem
+								bind:group={$teachersFiltersStore.sortBy}
+								name="sortBy"
+								value={label}>{label}</ListBoxItem
+							>
+						{/each}
+					</ListBox>
+				</Dropdown>
 			</div>
 			<a class="variant-filled-primary btn self-end" href={$page.url.pathname + '?' + url}>
 				Search

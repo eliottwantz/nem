@@ -63,7 +63,10 @@ export const handle = sequence(
 		}
 	}),
 	async function ({ event, resolve }) {
-		if (event.url.pathname === 'favicon.ico') {
+		if (
+			event.url.pathname.includes('.well-known') ||
+			event.url.pathname.includes('favicon.ico')
+		) {
 			return resolve(event)
 		}
 		const { url } = event

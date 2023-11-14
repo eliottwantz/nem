@@ -24,3 +24,12 @@ export async function safeDBCall<T>(prismaPromise: Promise<T | null>): Promise<D
 export type DBResult<T> = ResultSuccess<T> | ResultError
 type ResultSuccess<T> = { ok: true; value: T }
 type ResultError = { ok: false; error: AppError }
+
+export function dbLoadPromise<T>(promise: Promise<DBResult<T>>, fallBack: T): Promise<T> {
+	return new Promise((resolve) => {
+		promise.then((data) => {
+			if (data.ok) resolve(data.value)
+			else resolve(fallBack)
+		})
+	})
+}

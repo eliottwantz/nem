@@ -1,57 +1,68 @@
-import { fetchers, safeFetch } from '$lib/api'
-import { SortTypeEnum, type ListTeacher } from '$lib/api/api.gen'
 import type { SortType } from '$lib/stores/teachersFiltersStore'
+import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
+import type { Topic } from '@prisma/client'
 
-export async function load({ fetch, locals: { session, user, redirect }, url }) {
+export async function load({ fetch, locals: { session, user, redirect, db }, url }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
-	const page = Number(url.searchParams.get('page'))
-	const topic = url.searchParams.get('topic') ?? ''
-	const language = url.searchParams.get('language') ?? ''
-	const ratingMin = Number(url.searchParams.get('ratingMin'))
-	const topAgent = Boolean(url.searchParams.get('topAgent') === 'true')
-	const priceMax = Number(url.searchParams.get('priceMax') || 1000)
+	const skip = url.searchParams.get('skip')
+	const topic = url.searchParams.get('topic')
+	const language = url.searchParams.get('language')
+	const ratingMin = url.searchParams.get('ratingMin')
+	const topAgent = url.searchParams.get('topAgent')
+	const hourRate = url.searchParams.get('priceMax')
 	const sortBy: SortType = url.searchParams.get('sortBy')
 		? (url.searchParams.get('sortBy') as SortType)
 		: 'Popularity'
 
+	const teachers = dbLoadPromise(
+		safeDBCall(
+			db.teacher.findMany({
+				where: {
+					topics: topic ? { some: { topic } } : undefined,
+					spokenLanguages: language ? { some: { languageId: language } } : undefined,
+					rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
+					topAgent: topAgent ? Boolean(topAgent) : undefined,
+					hourRate: hourRate ? { lte: Number(hourRate) } : undefined
+				},
+				include: {
+					profile: true,
+					spokenLanguages: true,
+					topics: true
+				},
+				orderBy: {
+					hourRate:
+						sortBy === 'PriceHighest'
+							? 'desc'
+							: sortBy === 'PriceLowest'
+							? 'asc'
+							: undefined
+				},
+				skip: skip ? Number(skip) : 0
+			})
+		),
+		[]
+	)
+
 	return {
 		user,
-		teachers: new Promise<ListTeacher[]>((resolve) => {
-			safeFetch(
-				fetchers.userService(fetch, session).listTeachers({
-					filters: {
-						page,
-						language,
-						priceMax,
-						ratingMin,
-						topAgent,
-						topic,
-						sortBy: SortTypeEnum[sortBy]
-					}
-				})
-			).then((res) => {
-				if (res.ok) resolve(res.data.teachers)
-				else resolve([])
-			})
-		}),
-		total: new Promise<number>((resolve) => {
-			safeFetch(fetchers.userService(fetch, session).teachersCount()).then((res) => {
-				if (res.ok) resolve(res.data.count)
-				else resolve(0)
-			})
-		}),
-		languages: new Promise<string[]>((resolve) => {
-			safeFetch(fetchers.userService(fetch, session).listLanguagesTaught()).then((res) => {
-				if (res.ok) resolve(res.data.languages)
-				else resolve([])
-			})
-		}),
-		topics: new Promise<string[]>((resolve) => {
-			safeFetch(fetchers.userService(fetch, session).listTopicsTaught()).then((res) => {
-				if (res.ok) resolve(res.data.topics.map((t) => t.topic))
-				else resolve([])
-			})
-		})
+		teachers,
+		total: dbLoadPromise(safeDBCall(db.teacher.count()), 0),
+		languages: dbLoadPromise(
+			safeDBCall<{ languageId: string }[]>(
+				db.$queryRaw`SELECT DISTINCT sl."languageId"
+			FROM "_SpokenLanguageToTeacher" tsl
+				JOIN "SpokenLanguage" sl ON sl.id = tsl."A"`
+			),
+			[]
+		).then((data) => data.map((l) => l.languageId)),
+		topics: dbLoadPromise(
+			safeDBCall<Topic[]>(
+				db.$queryRaw`SELECT DISTINCT t.topic
+				FROM "_TeacherToTopic" tt
+				JOIN "Topic" t ON t.topic = tt."B"`
+			),
+			[]
+		).then((data) => data.map((t) => t.topic))
 	}
 }
