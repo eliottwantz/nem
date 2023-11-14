@@ -33,7 +33,7 @@
 <Layout>
 	<h1 slot="title" class="h1 pb-4 text-center">Create your profile</h1>
 
-	<form method="post" use:enhance class="w-full max-w-lg space-y-4">
+	<form method="post" use:enhance class="flex w-full max-w-lg flex-col gap-y-4">
 		<div class="space-y-2">
 			<label class="label">
 				<span>First Name</span>
@@ -67,13 +67,15 @@
 			{/if}
 
 			<SpokenLanguageInput
-				availableLanguages={data.languages}
+				allLanguages={data.languages}
 				bind:spokenLanguages={$superF.spokenLanguages}
 			/>
 			<!-- {#if $errors.spokenLanguages && $errors.spokenLanguages._errors && $tainted?.spokenLanguages} -->
 			{#if $errors.spokenLanguages && $errors.spokenLanguages._errors}
 				<p class="text-error-500">{$errors.spokenLanguages._errors}</p>
 			{/if}
+
+			<hr class="divider border-surface-500" />
 
 			<TopicsTaughtInput
 				bind:topicsTaught={$superF.topicsTaught}

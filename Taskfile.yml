@@ -93,7 +93,10 @@ tasks:
     cmds:
       - docker compose -f web/compose.yaml down -v
       - task: up
-      - sleep 1
+      - platforms: [windows]
+        cmd: timeout 1
+      - platforms: [linux]
+        cmd: sleep 1
       - cd web && pnpm db:push
       - cd web && pnpm db:seed
     desc: Reset db with seed

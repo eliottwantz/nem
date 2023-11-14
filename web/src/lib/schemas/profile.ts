@@ -18,7 +18,6 @@ const topicsTaught = z
 	.min(1, { message: 'At least one topic is required' })
 const spokenLanguages = z
 	.object({
-		id: z.number().positive({ message: 'Language is required' }),
 		language: z.string().nonempty({ message: 'Language is required' }),
 		proficiency: z.nativeEnum(Proficiency)
 	})

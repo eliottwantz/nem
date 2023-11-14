@@ -63,6 +63,9 @@ export const handle = sequence(
 		}
 	}),
 	async function ({ event, resolve }) {
+		if (event.url.pathname === 'favicon.ico') {
+			return resolve(event)
+		}
 		const { url } = event
 		const withLocale = urlWithLocale(url, event.cookies)
 		if (withLocale !== url) {

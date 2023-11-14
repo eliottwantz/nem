@@ -23,7 +23,7 @@ export const actions = {
 			request,
 			createStudentSchema
 		)
-		console.log('POST setup-profile', form)
+		console.log('POST setup-profile', form.data)
 
 		if (!form.valid) {
 			return fail(400, { form })
@@ -45,7 +45,10 @@ export const actions = {
 		)
 		if (!res.ok) {
 			console.log(res.error)
-			return message(form, { type: 'error', text: res.error.message })
+			return message(form, {
+				type: 'error',
+				text: 'Something went wrong when creating your profile'
+			})
 		}
 
 		throw redirect(302, '/dashboard/profile')

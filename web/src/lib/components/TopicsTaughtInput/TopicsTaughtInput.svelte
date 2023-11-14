@@ -20,7 +20,7 @@
 </script>
 
 <div>
-	<p>Topics you want to teach</p>
+	<p class="mb-2 underline underline-offset-2">Topics you want to teach</p>
 
 	{#each topicsTaught as topicTaught, i}
 		<div>
@@ -43,6 +43,8 @@
 		</div>
 	{/each}
 	{#if selectableTopics.length > 0}
-		<button class="mt-4 font-semibold" type="button" on:click={add}> Add a topic </button>
+		<button class="variant-outline btn mt-4 font-semibold" type="button" on:click={add}>
+			Add a topic
+		</button>
 	{/if}
 </div>

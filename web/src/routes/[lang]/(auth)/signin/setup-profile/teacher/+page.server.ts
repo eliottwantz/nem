@@ -15,13 +15,13 @@ export const load = async ({ locals: { session, user, db, redirect } }) => {
 	const form = await superValidate(createTeacherSchema)
 
 	const streams = await Promise.all([
-		safeDBCall(db.spokenLanguage.findMany()),
+		safeDBCall(db.language.findMany()),
 		safeDBCall(db.topic.findMany())
 	])
 
 	return {
 		form,
-		languages: streams[0].ok ? streams[0].value : [],
+		languages: streams[0].ok ? streams[0].value.map((l) => l.language) : [],
 		topics: streams[1].ok ? streams[1].value.map((t) => t.topic) : []
 	}
 }
@@ -33,7 +33,7 @@ export const actions = {
 			request,
 			createTeacherSchema
 		)
-		console.log('POST setup-profile', form)
+		console.log('POST setup-profile', form.data)
 
 		if (!form.valid) {
 			return fail(400, { form })
@@ -57,20 +57,31 @@ export const actions = {
 						hourRate: form.data.hourRate,
 						topics: {
 							connect: form.data.topicsTaught.map((t) => ({ topic: t }))
+						},
+						spokenLanguages: {
+							connectOrCreate: form.data.spokenLanguages.map((l) => ({
+								create: {
+									languageId: l.language,
+									proficiency: l.proficiency
+								},
+								where: {
+									languageId_proficiency: {
+										languageId: l.language,
+										proficiency: l.proficiency
+									}
+								}
+							}))
 						}
-						// spokenLanguages: {
-						// 	connect: form.data.spokenLanguages.map((s) => ({
-						// 		languageId: s.language,
-						// 		proficiency: s.proficiency
-						// 	}))
-						// }
 					}
 				})
 			})
 		)
 		if (!res.ok) {
 			console.log(res.error)
-			return message(form, { type: 'error', text: res.error.message })
+			return message(form, {
+				type: 'error',
+				text: 'Something went wrong when creating your profile'
+			})
 		}
 
 		throw redirect(302, '/dashboard/profile')
