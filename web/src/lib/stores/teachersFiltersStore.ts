@@ -17,7 +17,6 @@ export const SortLabelToTypeKey = Object.fromEntries(
 export type SortType = keyof typeof SortTypeKeyToLabel
 
 type Store = {
-	page: number
 	topic?: string
 	language?: string
 	priceMax: number
@@ -26,7 +25,6 @@ type Store = {
 	sortBy: string
 }
 const store = writable<Store>({
-	page: 0,
 	topic: undefined,
 	language: undefined,
 	priceMax: 45,
@@ -43,7 +41,6 @@ export const teachersFiltersStore = {
 		const params = new URLSearchParams(get(page).url.search)
 		let sortBy = params.get('sortBy') ?? SortTypeKeyToLabel.Popularity
 		store.set({
-			page: Number(params.get('page')) ?? 0,
 			topic: params.get('topic') ?? undefined,
 			language: params.get('language') ?? undefined,
 			priceMax: params.get('priceMax') ? Number(params.get('priceMax')) : 45,

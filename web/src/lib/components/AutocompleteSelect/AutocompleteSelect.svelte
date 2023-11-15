@@ -16,7 +16,6 @@
 	let input: HTMLInputElement
 	let showDropdown = false
 
-	$: console.log('selectedVal', selectedVal)
 	$: val = selectedVal ?? ''
 
 	function onSelect(event: CustomEvent<AutocompleteOption<string>>): void {

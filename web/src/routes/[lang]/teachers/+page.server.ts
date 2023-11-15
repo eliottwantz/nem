@@ -5,7 +5,7 @@ import type { Topic } from '@prisma/client'
 export async function load({ locals: { session, user, redirect, db }, url }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
-	const skip = url.searchParams.get('skip')
+	const page = url.searchParams.get('page')
 	const topic = url.searchParams.get('topic')
 	const language = url.searchParams.get('language')
 	const ratingMin = url.searchParams.get('ratingMin')
@@ -15,50 +15,99 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 		? (url.searchParams.get('sortBy') as SortType)
 		: 'Popularity'
 
+	const take = 7
+
 	const teachers = dbLoadPromise(
 		safeDBCall(
-			db.teacher.findMany({
-				where: {
-					topics: topic ? { some: { topic } } : undefined,
-					spokenLanguages: language ? { some: { languageId: language } } : undefined,
-					rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
-					topAgent: topAgent ? Boolean(topAgent) : undefined,
-					hourRate: hourRate ? { lte: Number(hourRate) } : undefined
-				},
-				include: {
-					studentSubscriptions: { select: { studentId: true } },
-					profile: true,
-					spokenLanguages: true,
-					topics: true,
-					reviews: true,
-					classes: { select: { _count: true } }
-				},
-				orderBy: {
-					hourRate:
-						sortBy === 'PriceHighest'
-							? 'desc'
-							: sortBy === 'PriceLowest'
-							? 'asc'
-							: undefined,
-					profile:
-						sortBy === 'Newest'
-							? {
-									createdAt: 'desc'
-							  }
-							: sortBy === 'Oldest'
-							? {
-									createdAt: 'asc'
-							  }
-							: undefined,
-					rating: sortBy === 'BestRating' ? 'desc' : undefined,
-					reviews: sortBy === 'NumberOfReviews' ? { _count: 'desc' } : undefined,
-					studentSubscriptions: sortBy === 'Popularity' ? { _count: 'desc' } : undefined,
-					classesTaught: sortBy === 'ClassesTaught' ? 'desc' : undefined
-				},
-				skip: skip ? Number(skip) : 0
+			db.$transaction(async (tx) => {
+				const ids = await tx.teacher.findMany({
+					select: { id: true },
+					where: {
+						topics: topic ? { some: { topic } } : undefined,
+						spokenLanguages: language ? { some: { languageId: language } } : undefined,
+						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
+						topAgent: topAgent ? Boolean(topAgent) : undefined,
+						hourRate: hourRate ? { lte: Number(hourRate) } : undefined
+					},
+					orderBy: {
+						hourRate:
+							sortBy === 'PriceHighest'
+								? 'desc'
+								: sortBy === 'PriceLowest'
+								? 'asc'
+								: undefined,
+						profile:
+							sortBy === 'Newest'
+								? {
+										createdAt: 'desc'
+								  }
+								: sortBy === 'Oldest'
+								? {
+										createdAt: 'asc'
+								  }
+								: undefined,
+						rating: sortBy === 'BestRating' ? 'desc' : undefined,
+						reviews: sortBy === 'NumberOfReviews' ? { _count: 'desc' } : undefined,
+						studentSubscriptions:
+							sortBy === 'Popularity' ? { _count: 'desc' } : undefined,
+						classesTaught: sortBy === 'ClassesTaught' ? 'desc' : undefined
+					}
+				})
+				// Check if skip is out of bounds
+				let skip = Number(page) * take
+				if (skip >= ids.length) {
+					skip = 0
+				}
+				const teachers = await tx.teacher.findMany({
+					where: {
+						topics: topic ? { some: { topic } } : undefined,
+						spokenLanguages: language ? { some: { languageId: language } } : undefined,
+						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
+						topAgent: topAgent ? Boolean(topAgent) : undefined,
+						hourRate: hourRate ? { lte: Number(hourRate) } : undefined
+					},
+					include: {
+						studentSubscriptions: { select: { studentId: true } },
+						profile: true,
+						spokenLanguages: true,
+						topics: true,
+						reviews: true,
+						classes: { select: { _count: true } }
+					},
+					take,
+					skip,
+					orderBy: {
+						hourRate:
+							sortBy === 'PriceHighest'
+								? 'desc'
+								: sortBy === 'PriceLowest'
+								? 'asc'
+								: undefined,
+						profile:
+							sortBy === 'Newest'
+								? {
+										createdAt: 'desc'
+								  }
+								: sortBy === 'Oldest'
+								? {
+										createdAt: 'asc'
+								  }
+								: undefined,
+						rating: sortBy === 'BestRating' ? 'desc' : undefined,
+						reviews: sortBy === 'NumberOfReviews' ? { _count: 'desc' } : undefined,
+						studentSubscriptions:
+							sortBy === 'Popularity' ? { _count: 'desc' } : undefined,
+						classesTaught: sortBy === 'ClassesTaught' ? 'desc' : undefined
+					}
+				})
+				return {
+					teachers,
+					count: ids.length,
+					page: skip === 0 ? 0 : skip / take
+				}
 			})
 		),
-		[]
+		{ count: 0, teachers: [], page: 0 }
 	)
 
 	return {
@@ -80,6 +129,7 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 				JOIN "Topic" t ON t.topic = tt."B"`
 			),
 			[]
-		).then((data) => data.map((t) => t.topic))
+		).then((data) => data.map((t) => t.topic)),
+		take
 	}
 }

@@ -71,27 +71,25 @@
 				<svelte:fragment slot="lead">
 					<div class="flex items-center space-x-4">
 						<!-- Leftslider Menu Icon -->
-						{#if data.user}
-							<button
-								class="btn-icon btn-icon-sm lg:!hidden"
-								on:click={() =>
-									drawerStore.open({
-										id: drawerStoreIds.sidebar
-									})}
+						<button
+							class="btn-icon btn-icon-sm lg:!hidden"
+							on:click={() =>
+								drawerStore.open({
+									id: drawerStoreIds.sidebar
+								})}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="32"
+								height="32"
+								viewBox="0 0 24 24"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="32"
-									height="32"
-									viewBox="0 0 24 24"
-								>
-									<path
-										fill="currentColor"
-										d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"
-									/>
-								</svg>
-							</button>
-						{/if}
+								<path
+									fill="currentColor"
+									d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"
+								/>
+							</svg>
+						</button>
 						<a href=".">
 							<div class="flex items-center space-x-4">
 								<Logo />

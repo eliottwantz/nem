@@ -12,22 +12,22 @@
 </script>
 
 <Drawer bgDrawer="bg-surface-300-600-token w-5/6">
-	{#if $page.data.user}
-		{#if $drawerStore.id === drawerStoreIds.sidebar}
+	{#if $drawerStore.id === drawerStoreIds.sidebar}
+		{#if $page.data.user}
 			{#if $page.data.user.role === 'admin'}
 				<AdminSidebar />
 			{:else if $page.data.user.role === 'teacher'}
 				<TeacherSidebar />
-			{:else if $page.data.user.role === 'student'}
-				<StudentSidebar />
 			{:else}
-				<DefaultSidebar />
+				<StudentSidebar />
 			{/if}
-		{:else if $drawerStore.id === drawerStoreIds.chat}
-			<Chatbox
-				conversationId={$drawerStore.meta.conversationId}
-				recepient={$drawerStore.meta.recepient}
-			/>
+		{:else}
+			<DefaultSidebar />
 		{/if}
+	{:else if $drawerStore.id === drawerStoreIds.chat}
+		<Chatbox
+			conversationId={$drawerStore.meta.conversationId}
+			recepient={$drawerStore.meta.recepient}
+		/>
 	{/if}
 </Drawer>

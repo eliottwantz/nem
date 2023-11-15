@@ -8,7 +8,6 @@
 		spokenLanguages: SpokenLanguage[]
 		topics: Topic[]
 	}
-	console.log('teacher', teacher)
 	export let shortForm = false
 
 	function badgeColor(proficiency: Proficiency): string {

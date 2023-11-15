@@ -13,9 +13,11 @@
 	import { onMount } from 'svelte'
 
 	export let data
+	console.log(data)
 
-	const pageSize = 2
-	$: totalPages = Math.ceil(data.total / pageSize)
+	const pageSize = data.take
+	$: totalPages = Math.ceil(data.teachers.count / pageSize)
+	$: currentPage = data.teachers.page
 
 	let url: string
 	$: {
@@ -36,8 +38,8 @@
 			u.append('topAgent', `${$teachersFiltersStore.isTopAgent}`)
 		}
 		u.append('sortBy', SortLabelToTypeKey[$teachersFiltersStore.sortBy])
-		u.append('page', `${$teachersFiltersStore.page}`)
-		url = u.toString()
+		u.append('page', `${currentPage}`)
+		url = $page.url.pathname + '?' + u.toString()
 	}
 
 	onMount(() => {
@@ -116,26 +118,29 @@
 					</ListBox>
 				</Dropdown>
 			</div>
-			<a class="variant-filled-primary btn self-end" href={$page.url.pathname + '?' + url}>
-				Search
-			</a>
+			<a class="variant-filled-primary btn self-end" href={url}> Search </a>
 		</div>
 	</section>
 
-	<!-- <p><strong>{data.teachers.length}</strong> out of <strong>{data.total}</strong></p> -->
+	<p>
+		<strong>{data.teachers.count}</strong> out of
+		<strong>{data.total}</strong>
+	</p>
 	<div id="pagination">
 		{#each Array.from({ length: totalPages }) as _, idx}
 			<a
-				class:active={idx === $teachersFiltersStore.page}
-				href={url.replace('page=' + idx, 'page=' + (idx + 1))}
+				class="text-lg hover:underline {currentPage === idx
+					? 'font-semibold text-primary-700'
+					: ''}"
+				href={url.replace(`page=${currentPage}`, `page=${idx}`)}
 			>
-				{idx}
+				{idx + 1}
 			</a>
 		{/each}
 	</div>
 
 	<div class="flex w-full flex-col gap-y-4">
-		{#each data.teachers as teacher}
+		{#each data.teachers.teachers as teacher}
 			<Profile shortForm={true} {teacher} />
 		{/each}
 	</div>
