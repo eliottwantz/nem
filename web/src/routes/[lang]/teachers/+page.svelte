@@ -13,7 +13,10 @@
 	import { onMount } from 'svelte'
 
 	export let data
-	$: console.log('filters', $teachersFiltersStore)
+
+	const pageSize = 2
+	$: totalPages = Math.ceil(data.total / pageSize)
+
 	let url: string
 	$: {
 		const u = new URLSearchParams()
@@ -23,7 +26,7 @@
 		if ($teachersFiltersStore.language) {
 			u.append('language', $teachersFiltersStore.language)
 		}
-		if ($teachersFiltersStore.priceMax && $teachersFiltersStore.priceMax < 45) {
+		if ($teachersFiltersStore.priceMax < 45) {
 			u.append('priceMax', `${$teachersFiltersStore.priceMax}`)
 		}
 		if ($teachersFiltersStore.ratingMin) {
@@ -32,12 +35,10 @@
 		if ($teachersFiltersStore.isTopAgent) {
 			u.append('topAgent', `${$teachersFiltersStore.isTopAgent}`)
 		}
-		if ($teachersFiltersStore.sortBy) {
-			u.append('sortBy', SortLabelToTypeKey[$teachersFiltersStore.sortBy])
-		}
+		u.append('sortBy', SortLabelToTypeKey[$teachersFiltersStore.sortBy])
+		u.append('page', `${$teachersFiltersStore.page}`)
 		url = u.toString()
 	}
-	$: console.log('url', url)
 
 	onMount(() => {
 		teachersFiltersStore.fromURL()
@@ -120,7 +121,18 @@
 			</a>
 		</div>
 	</section>
-	<p><strong>{data.teachers.length}</strong> out of <strong>{data.total}</strong></p>
+
+	<!-- <p><strong>{data.teachers.length}</strong> out of <strong>{data.total}</strong></p> -->
+	<div id="pagination">
+		{#each Array.from({ length: totalPages }) as _, idx}
+			<a
+				class:active={idx === $teachersFiltersStore.page}
+				href={url.replace('page=' + idx, 'page=' + (idx + 1))}
+			>
+				{idx}
+			</a>
+		{/each}
+	</div>
 
 	<div class="flex w-full flex-col gap-y-4">
 		{#each data.teachers as teacher}

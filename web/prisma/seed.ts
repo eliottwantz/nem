@@ -1,179 +1,29 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Proficiency } from '@prisma/client'
+import { faker } from '@faker-js/faker'
+
 const prisma = new PrismaClient()
 
+const languages = ['French', 'English', 'Arabic']
+const proficiencies = Object.values(Proficiency)
+const topics = [
+	'French',
+	'English',
+	'Arabic',
+	'Mathematics',
+	'Philosophy',
+	'Biology',
+	'Physics',
+	'Chemistry',
+	'History',
+	'Geography'
+]
+
 async function main() {
-	const eliott = await prisma.user.create({
-		data: {
-			email: 'teacher@nem.com',
-			emailVerified: new Date()
-		}
-	})
-	const margaux = await prisma.user.create({
-		data: {
-			email: 'teacher2@nem.com',
-			emailVerified: new Date()
-		}
-	})
-	const a = await prisma.user.create({
-		data: {
-			email: 'a@nem.com',
-			emailVerified: new Date()
-		}
-	})
-	const b = await prisma.user.create({
-		data: {
-			email: 'b@nem.com',
-			emailVerified: new Date()
-		}
-	})
-	await prisma.profile.createMany({
-		data: [
-			{
-				id: eliott.id,
-				firstName: 'Eliott',
-				lastName: 'General',
-				role: 'teacher',
-				preferedLanguage: 'fr'
-			},
-			{
-				id: margaux.id,
-				firstName: 'Margaux',
-				lastName: 'Preply',
-				role: 'teacher',
-				preferedLanguage: 'fr'
-			},
-			{
-				id: a.id,
-				firstName: 'A',
-				lastName: 'A',
-				role: 'student',
-				preferedLanguage: 'en'
-			},
-			{
-				id: b.id,
-				firstName: 'B',
-				lastName: 'B',
-				role: 'student',
-				preferedLanguage: 'en'
-			}
-		]
-	})
-	await prisma.student.createMany({
-		data: [
-			{
-				id: a.id
-			},
-			{
-				id: b.id
-			}
-		]
-	})
 	await prisma.language.createMany({
-		data: [
-			{
-				language: 'French'
-			},
-			{
-				language: 'English'
-			},
-			{
-				language: 'Arabic'
-			}
-		]
-	})
-	await prisma.spokenLanguage.createMany({
-		data: [
-			{
-				languageId: 'French',
-				proficiency: 'native'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'a1'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'a2'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'b1'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'b2'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'c1'
-			},
-			{
-				languageId: 'French',
-				proficiency: 'c2'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'native'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'a1'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'a2'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'b1'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'b2'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'c1'
-			},
-			{
-				languageId: 'English',
-				proficiency: 'c2'
-			}
-		]
+		data: languages.map((l) => ({ language: l }))
 	})
 	await prisma.topic.createMany({
-		data: [
-			{
-				topic: 'French'
-			},
-			{
-				topic: 'English'
-			},
-			{
-				topic: 'Arabic'
-			},
-			{
-				topic: 'Mathematics'
-			},
-			{
-				topic: 'Philosophy'
-			},
-			{
-				topic: 'Biology'
-			},
-			{
-				topic: 'Physics'
-			},
-			{
-				topic: 'Chemistry'
-			},
-			{
-				topic: 'History'
-			},
-			{
-				topic: 'Geography'
-			}
-		]
+		data: topics.map((t) => ({ topic: t }))
 	})
 	await prisma.subscription.createMany({
 		data: [
@@ -204,76 +54,85 @@ async function main() {
 			}
 		]
 	})
-	await prisma.teacher.create({
-		include: {
-			spokenLanguages: true
-		},
-		data: {
-			id: eliott.id,
-			bio: `Bienvenue à mes cours de langue en ligne ! Je suis passionné(e) par l''enseignement des langues et je suis ravi(e) de vous aider à atteindre vos objectifs linguistiques. Avec une expérience de plusieurs années dans l''enseignement des langues, je suis là pour rendre votre voyage d''apprentissage agréable et efficace.
-
-Mes cours sont conçus pour être interactifs, engageants et adaptés à vos besoins spécifiques. Que vous souhaitiez améliorer votre conversation, renforcer vos compétences en grammaire ou préparer un examen, nous travaillerons ensemble pour atteindre vos objectifs.
-
-En tant qu''instructeur, je m''engage à créer un environnement d''apprentissage positif et inclusif où vous vous sentirez à l''aise pour pratiquer et progresser. Rejoignez-moi dans cette aventure linguistique et découvrez la beauté et la richesse d''une nouvelle langue. Ensemble, nous allons explorer de nouveaux horizons linguistiques !'`,
-			hourRate: 32,
-			topAgent: true,
-			topics: {
-				connect: [
-					{
-						topic: 'French'
-					},
-					{
-						topic: 'Physics'
+	for (let index = 0; index < 100; index++) {
+		const firstName = faker.person.firstName()
+		const lastName = faker.person.lastName()
+		const email = `teacher${index}@nem.com`
+		const languageId = languages[Math.floor(Math.random() * languages.length)]
+		const proficiency = proficiencies[Math.floor(Math.random() * proficiencies.length)]
+		const avatar = faker.image.avatar()
+		const topic = topics[Math.floor(Math.random() * topics.length)]
+		// Create teachers
+		await prisma.user.create({
+			data: {
+				email,
+				profile: {
+					create: {
+						firstName,
+						lastName,
+						role: 'teacher',
+						avatarUrl: avatar,
+						avatarFilePath: avatar,
+						birdthday: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
+						teacher: {
+							create: {
+								bio: faker.lorem.paragraph(),
+								hourRate: faker.number.int({ min: 1, max: 60 }),
+								rating: faker.number.int({ min: 1, max: 5 }),
+								topAgent: faker.datatype.boolean(),
+								spokenLanguages: {
+									connectOrCreate: [
+										{
+											where: {
+												languageId_proficiency: {
+													languageId,
+													proficiency
+												}
+											},
+											create: {
+												languageId,
+												proficiency
+											}
+										}
+									]
+								},
+								topics: {
+									connectOrCreate: [
+										{
+											where: { topic },
+											create: { topic }
+										}
+									]
+								}
+							}
+						}
 					}
-				]
-			},
-			spokenLanguages: {
-				connect: [
-					{
-						id: 1
-					},
-					{
-						id: 9
-					}
-				]
+				}
 			}
-		}
-	})
-	await prisma.teacher.create({
-		data: {
-			id: margaux.id,
-			bio: `Bienvenue à mes cours de langue en ligne ! Je suis passionnée par l'enseignement des langues et je suis ravie de vous aider à atteindre vos objectifs linguistiques. Avec une expérience de plusieurs années dans l'enseignement des langues, je suis là pour rendre votre voyage d''apprentissage agréable et efficace.
+		})
 
-Mes cours sont conçus pour être interactifs, engageants et adaptés à vos besoins spécifiques. Que vous souhaitiez améliorer votre conversation, renforcer vos compétences en grammaire ou préparer un examen, nous travaillerons ensemble pour atteindre vos objectifs.
-
-En tant que professeure, je m'engage à créer un environnement d'apprentissage positif et inclusif où vous vous sentirez à l'aise pour pratiquer et progresser. Rejoignez-moi dans cette aventure linguistique et découvrez la beauté et la richesse d'une nouvelle langue. Ensemble, nous allons explorer de nouveaux horizons linguistiques !`,
-			topAgent: true,
-			hourRate: 37,
-			topics: {
-				connect: [
-					{
-						topic: 'French'
-					},
-					{
-						topic: 'English'
-					},
-					{
-						topic: 'Chemistry'
+		const firstName2 = faker.person.firstName()
+		const lastName2 = faker.person.lastName()
+		const email2 = `student${index}@nem.com`
+		const avatar2 = faker.image.avatar()
+		// Create students
+		await prisma.user.create({
+			data: {
+				email: email2,
+				profile: {
+					create: {
+						firstName: firstName2,
+						lastName: lastName2,
+						role: 'student',
+						avatarUrl: avatar2,
+						avatarFilePath: avatar2,
+						birdthday: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
+						student: { create: {} }
 					}
-				]
-			},
-			spokenLanguages: {
-				connect: [
-					{
-						id: 1
-					},
-					{
-						id: 10
-					}
-				]
+				}
 			}
-		}
-	})
+		})
+	}
 }
 
 main()

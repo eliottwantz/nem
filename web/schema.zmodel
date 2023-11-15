@@ -76,6 +76,7 @@ model Profile {
     user             User      @relation(fields: [id], references: [id], onDelete: Cascade)
     firstName        String
     lastName         String
+    birdthday        DateTime
     role             Role
     preferedLanguage Locale    @default(en)
     avatarFilePath   String?
