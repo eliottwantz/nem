@@ -1,24 +1,28 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { safeDBCall } from '$lib/utils/error'
 
-export async function load({ locals: { session, redirect }, fetch }) {
+export async function load({ locals: { session, redirect, db } }) {
 	if (!session) throw redirect(302, '/signin')
 
-	const streams = await Promise.all([
-		safeFetch(
-			fetchers
-				.teacherService(fetch, session)
-				.listClassesOfTeacher({ teacherId: session.user.id })
+	const data = await Promise.all([
+		safeDBCall(
+			db.class.findMany({
+				include: { timeSlot: true },
+				where: { teacherId: session.user.id }
+			})
 		),
-		safeFetch(
-			fetchers
-				.teacherService(fetch, session)
-				.listAvailabilities({ teacherId: session.user.id })
+		safeDBCall(
+			db.timeSlot.findMany({
+				where: { teacherId: session.user.id }
+			})
 		)
 	])
+	let message = ''
+	if (!data[0].ok) message = 'Failed to load classes'
+	if (!data[1].ok) message = 'Failed to load availabilities'
 	return {
-		success: streams[0].ok && streams[1].ok,
-		message: !streams[0].ok ? streams[0].cause : !streams[1].ok ? streams[1].cause : '',
-		classes: streams[0].ok ? streams[0].data.classes : [],
-		availabilities: streams[1].ok ? streams[1].data.timeSlots : []
+		success: data[0].ok && data[1].ok,
+		message,
+		classes: data[0].ok ? data[0].value : [],
+		availabilities: data[1].ok ? data[1].value : []
 	}
 }

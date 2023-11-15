@@ -4,14 +4,13 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
-
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { languageTag } from 'i18n/runtime'
 
 	export let data
 
-	const start = new Date(data.classDetails.class.startAt)
-	const end = new Date(data.classDetails.class.endAt)
+	const start = new Date(data.classDetails.timeSlot.startAt)
+	const end = new Date(data.classDetails.timeSlot.endAt)
 	$: locale = languageTag()
 
 	const modalStore = getModalStore()
@@ -42,7 +41,7 @@
 			body: 'Are you sure you want to start the class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-				await goto(`/dashboard/class/${data.classDetails.class.id}`)
+				await goto(`/dashboard/class/${data.classDetails.id}`)
 			}
 		})
 	}
@@ -61,7 +60,7 @@
 				try {
 					await fetch('/dashboard/teacher/classes/', {
 						method: 'DELETE',
-						body: JSON.stringify(data.classDetails.class)
+						body: JSON.stringify(data.classDetails)
 					})
 					window.location.reload()
 				} catch (error) {
@@ -77,7 +76,7 @@
 
 <Layout>
 	<h1 class="h1" slot="title">
-		{data.classDetails.class.isTrial ? 'Trial' : ''} Class: {data.classDetails.class.name}
+		{data.classDetails.isTrial ? 'Trial' : ''} Class: {data.classDetails.name}
 	</h1>
 	<p class="text-xl">
 		<span>{start.toLocaleDateString(locale)}</span>
@@ -113,19 +112,19 @@
 	<br />
 
 	<div class="card w-full max-w-sm p-4">
-		<h3 class="h3 mb-1">Students: {data.classDetails.users.length}</h3>
+		<h3 class="h3 mb-1">Students: {data.classDetails.students.length}</h3>
 		<ul class="list grid grid-cols-2">
-			{#each data.classDetails.users as user}
+			{#each data.classDetails.students as user}
 				<li>
 					<a class="flex items-center gap-2 p-2" href="users/{user.id}">
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
-							src={user.avatarUrl}
-							initials={getInitials(user.firstName, user.lastName)}
+							src={user.profile.avatarUrl ?? undefined}
+							initials={getInitials(user.profile)}
 						/>
 						<p class="font-semibold sm:text-lg">
-							{getPublicName(user.firstName, user.lastName)}
+							{getPublicName(user.profile)}
 						</p>
 					</a>
 				</li>

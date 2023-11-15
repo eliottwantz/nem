@@ -1,5 +1,5 @@
-import type { Class, TimeSlot } from '$lib/api/api.gen'
 import { dayFromDate, hourNumToTimeFormat, timeFromDateHHMM } from '$lib/utils/datetime'
+import type { Class, TimeSlot } from '@prisma/client'
 
 export type CalendarEntry = {
 	id: string
@@ -112,7 +112,7 @@ export const calendarTimes = [
 	'21:00',
 	'22:00',
 	'23:00',
-	'24:00',
+	'24:00'
 ]
 
 export function isTimeAfter(startAt: string, endAt: string) {
@@ -123,12 +123,12 @@ export function isTimeAfter(startAt: string, endAt: string) {
 	return end.getTime() - start.getTime() > 0
 }
 
-export function classToCalendarEntry(c: Class): CalendarEntry {
+export function classToCalendarEntry(c: Class & { timeSlot: TimeSlot }): CalendarEntry {
 	return {
 		id: c.id,
 		allDay: false,
-		start: new Date(c.startAt),
-		end: new Date(c.endAt),
+		start: new Date(c.timeSlot.startAt),
+		end: new Date(c.timeSlot.endAt),
 		title: c.name,
 		editable: false,
 		startEditable: false,

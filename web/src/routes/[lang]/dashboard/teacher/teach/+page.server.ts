@@ -5,9 +5,9 @@ import { safeDBCall } from '$lib/utils/error'
 import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
-export async function load({ locals: { session, user, redirect, db }, fetch }) {
+export async function load({ locals: { session, user, redirect, db } }) {
 	if (!session || !user) throw redirect(302, '/signin')
-	const streams = await Promise.all([
+	const data = await Promise.all([
 		safeDBCall(db.topic.findMany()),
 		safeDBCall(
 			db.teacher.findUnique({
@@ -23,8 +23,8 @@ export async function load({ locals: { session, user, redirect, db }, fetch }) {
 
 	return {
 		form,
-		topics: streams[0].ok ? streams[0].value.map((t) => t.topic) : [],
-		topicsTaught: streams[1].ok ? streams[1].value.topics.map((t) => t.topic) : []
+		topics: data[0].ok ? data[0].value.map((t) => t.topic) : [],
+		topicsTaught: data[1].ok ? data[1].value.topics.map((t) => t.topic) : []
 	}
 }
 

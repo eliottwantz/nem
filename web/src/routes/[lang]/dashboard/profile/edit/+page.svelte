@@ -72,15 +72,11 @@
 			>
 				{#if previewSrc}
 					<!-- Preview -->
-					<Avatar
-						src={previewSrc}
-						initials={getInitials(user.firstName, user.lastName)}
-						width="w-20"
-					/>
+					<Avatar src={previewSrc} initials={getInitials(user)} width="w-20" />
 				{:else}
 					<Avatar
 						src={user.avatarUrl ? user.avatarUrl : undefined}
-						initials={getInitials(user.firstName, user.lastName)}
+						initials={getInitials(user)}
 						width="w-20"
 					/>
 				{/if}

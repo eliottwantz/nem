@@ -6,11 +6,11 @@
 
 	export let data
 	let upcomingClasses = data.classes.filter((c) => {
-		if (new Date(c.endAt) >= new Date()) return true
+		if (new Date(c.timeSlot.endAt) >= new Date()) return true
 		else return false
 	})
 	let pastClasses = data.classes.filter((c) => {
-		if (new Date(c.endAt) < new Date()) return true
+		if (new Date(c.timeSlot.endAt) < new Date()) return true
 		else return false
 	})
 	let tabSet: number = 0
@@ -51,12 +51,12 @@
 										<td>{row.language}</td>
 										<td>{row.topic}</td>
 										<td
-											>{new Date(row.startAt).toLocaleString(
+											>{new Date(row.timeSlot.startAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>
 										<td
-											>{new Date(row.endAt).toLocaleString(
+											>{new Date(row.timeSlot.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>
@@ -99,12 +99,12 @@
 										<td>{row.language}</td>
 										<td>{row.topic}</td>
 										<td
-											>{new Date(row.startAt).toLocaleString(
+											>{new Date(row.timeSlot.startAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>
 										<td
-											>{new Date(row.endAt).toLocaleString(
+											>{new Date(row.timeSlot.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>

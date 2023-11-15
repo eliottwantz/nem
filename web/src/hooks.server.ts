@@ -19,6 +19,7 @@ import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
 import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
+import type { AvailableLanguageTag } from 'i18n/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {
@@ -69,6 +70,22 @@ export const handle = sequence(
 		) {
 			return resolve(event)
 		}
+		const session = await event.locals.getSession()
+		event.locals.session = session
+		console.log('######')
+		console.log('Have session:', session !== null)
+		console.log('Session:', session)
+		event.locals.db = getEnhancedPrisma(session?.user ? session.user.id : undefined)
+
+		let locale = event.cookies.get('locale') as AvailableLanguageTag | undefined
+		if (!locale) locale = 'en'
+		event.locals.locale = locale
+		event.locals.redirect = appRedirect(event.locals.locale)
+
+		if (event.url.pathname.startsWith('/api')) {
+			return resolve(event)
+		}
+
 		const { url } = event
 		const withLocale = urlWithLocale(url, event.cookies)
 		if (withLocale !== url) {
@@ -77,14 +94,8 @@ export const handle = sequence(
 		event.locals.locale = localeFromURL(withLocale)
 		if (event.cookies.get('locale') !== event.locals.locale) {
 			event.cookies.set('locale', event.locals.locale, { path: '/' })
+			event.locals.redirect = appRedirect(event.locals.locale)
 		}
-		event.locals.redirect = appRedirect(event.locals.locale)
-		const session = await event.locals.getSession()
-		event.locals.session = session
-		console.log('######')
-		console.log('Have session:', session !== null)
-		console.log('Session:', session)
-		event.locals.db = getEnhancedPrisma(session?.user ? session.user.id : undefined)
 
 		const urlWithoutLocale = pathNameWithoutLocale(url)
 		const isProtectedRoute = urlWithoutLocale.startsWith('/dashboard')

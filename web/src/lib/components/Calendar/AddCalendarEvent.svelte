@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { TimeSlot } from '$lib/api/api.gen'
 	import type { CreateCalendarAvailability } from '$lib/schemas/calendar'
 	import { dayFromDate, timeFromDateHHMM, timeToDateHHMM } from '$lib/utils/datetime'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import type { CalendarEvent, CalendarSelectInfo } from '.'
 	import TimeInput from './TimeInput.svelte'
+	import type { TimeSlot } from '@prisma/client'
 
 	export let cal: any
 	export let info: CalendarSelectInfo | undefined
@@ -51,7 +51,7 @@
 			const res:
 				| { success: false; message: string }
 				| { success: true; timeSlots: TimeSlot[] } = await (
-				await fetch('/dashboard/teacher/calendar', {
+				await fetch('/api/teacher/availabilities', {
 					method: 'POST',
 					body: JSON.stringify(body)
 				})
@@ -68,8 +68,8 @@
 					title: 'Available',
 					backgroundColor: '#fbdc90',
 					textColor: '#000',
-					start: new Date(t.startAt),
-					end: new Date(t.endAt),
+					start: t.startAt,
+					end: t.endAt,
 					allDay: false,
 					editable: true,
 					startEditable: true,

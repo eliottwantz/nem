@@ -1,10 +1,13 @@
-import { fetchers, safeFetch } from '$lib/api'
-import type { TimesRequest } from '$lib/api/api.gen'
 import { createAvailabilitySchema, type CreateCalendarAvailability } from '$lib/schemas/calendar'
+import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
-import type { RequestHandler } from './$types'
 
-export const POST: RequestHandler = async ({ request, locals: { session, redirect }, fetch }) => {
+export interface TimesRequest {
+	startAt: string
+	endAt: string
+}
+
+export const POST = async ({ request, locals: { session, redirect, db } }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as CreateCalendarAvailability
@@ -51,20 +54,29 @@ export const POST: RequestHandler = async ({ request, locals: { session, redirec
 			currentEndDate.setTime(currentEndDate.getTime() + 60 * 60 * 1000)
 		}
 
-		const res = await safeFetch(
-			fetchers.teacherService(fetch, session).addAvailability({
-				req: {
-					startAt: body.startAt,
-					endAt: body.endAt,
-					times
-				}
+		const res = await safeDBCall(
+			db.$transaction(async (tx) => {
+				await tx.timeSlot.createMany({
+					data: times.map((t) => ({
+						teacherId: session.user.id,
+						startAt: t.startAt,
+						endAt: t.endAt
+					}))
+				})
+				return tx.timeSlot.findMany({
+					where: {
+						teacherId: session.user.id,
+						startAt: { gte: body.startAt },
+						endAt: { lte: body.endAt }
+					}
+				})
 			})
 		)
 		if (!res.ok) {
 			return new Response(
 				JSON.stringify({
 					success: false,
-					message: res.cause
+					message: 'Failed to create availabilities'
 				})
 			)
 		}
@@ -72,7 +84,7 @@ export const POST: RequestHandler = async ({ request, locals: { session, redirec
 		return new Response(
 			JSON.stringify({
 				success: true,
-				timeSlots: res.data.timeSlots
+				timeSlots: res.value
 			})
 		)
 	} catch (error) {

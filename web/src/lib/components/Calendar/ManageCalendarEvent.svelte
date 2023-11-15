@@ -80,7 +80,7 @@
 			const res:
 				| { success: false; message: string }
 				| { success: true; timeSlots: TimeSlot[] } = await (
-				await fetch(`/dashboard/teacher/calendar/${info.event.id}`, {
+				await fetch(`/api/teacher/availabilities/${info.event.id}`, {
 					method: 'PUT',
 					body: JSON.stringify(reqBody)
 				})
@@ -129,7 +129,7 @@
 		}
 		try {
 			const res: { success: false; message: string } | { success: true } = await (
-				await fetch(`/dashboard/teacher/calendar/${info.event.id}`, {
+				await fetch(`/api/teacher/availabilities/${info.event.id}`, {
 					method: 'DELETE',
 					body: JSON.stringify(reqBody)
 				})

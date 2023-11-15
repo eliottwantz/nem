@@ -1,14 +1,14 @@
-import { safeFetch, fetchers } from '$lib/api'
-import type { TimesRequest } from '$lib/api/api.gen'
 import {
 	type UpdateCalendarAvailability,
 	modifyAvailabilitySchema,
 	type DeleteCalendarAvailability,
 	deleteAvailabilitySchema
 } from '$lib/schemas/calendar'
+import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
+import type { TimesRequest } from '../+server'
 
-export const PUT = async ({ request, locals: { session, redirect }, fetch }) => {
+export const PUT = async ({ request, locals: { session, redirect, db } }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as UpdateCalendarAvailability
@@ -52,21 +52,33 @@ export const PUT = async ({ request, locals: { session, redirect }, fetch }) => 
 			currentEndDate.setTime(currentEndDate.getTime() + 60 * 60 * 1000)
 		}
 
-		const res = await safeFetch(
-			fetchers.teacherService(fetch, session).updateAvailability({
-				req: {
-					id: parseRes.data.id,
-					times,
-					startAt: body.startAt,
-					endAt: body.endAt
-				}
+		const res = await safeDBCall(
+			db.$transaction(async (tx) => {
+				// First delete this existing timeslot
+				await tx.timeSlot.delete({
+					where: { id: body.id }
+				})
+				await tx.timeSlot.createMany({
+					data: times.map((t) => ({
+						teacherId: session.user.id,
+						startAt: t.startAt,
+						endAt: t.endAt
+					}))
+				})
+				return tx.timeSlot.findMany({
+					where: {
+						teacherId: session.user.id,
+						startAt: { gte: body.startAt },
+						endAt: { lte: body.endAt }
+					}
+				})
 			})
 		)
 		if (!res.ok) {
 			return new Response(
 				JSON.stringify({
 					success: false,
-					message: res.cause
+					message: 'Failed to update availabilities'
 				})
 			)
 		}
@@ -74,7 +86,7 @@ export const PUT = async ({ request, locals: { session, redirect }, fetch }) => 
 		return new Response(
 			JSON.stringify({
 				success: true,
-				timeSlots: res.data.timeSlots
+				timeSlots: res.value
 			})
 		)
 	} catch (error) {
@@ -87,7 +99,7 @@ export const PUT = async ({ request, locals: { session, redirect }, fetch }) => 
 	}
 }
 
-export const DELETE = async ({ request, locals: { session, redirect }, fetch }) => {
+export const DELETE = async ({ request, locals: { session, redirect, db } }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as DeleteCalendarAvailability
@@ -106,16 +118,12 @@ export const DELETE = async ({ request, locals: { session, redirect }, fetch }) 
 				}
 			)
 
-		const res = await safeFetch(
-			fetchers.teacherService(fetch, session).deleteAvailability({
-				id: parseRes.data.id
-			})
-		)
+		const res = await safeDBCall(db.timeSlot.delete({ where: { id: body.id } }))
 		if (!res.ok) {
 			return new Response(
 				JSON.stringify({
 					success: false,
-					message: res.cause
+					message: 'Failed to delete availability'
 				})
 			)
 		}

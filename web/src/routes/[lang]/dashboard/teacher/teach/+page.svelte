@@ -68,7 +68,7 @@
 			<section
 				class="m-auto flex w-full max-w-xl flex-wrap justify-center gap-4 lg:max-w-3xl xl:max-w-5xl"
 			>
-				{#if copyTopicsTaught.length <= 1}
+				{#if copyTopicsTaught.length < 1}
 					<p class="text-xl text-red-500">You must have at least one topic to teach</p>
 				{/if}
 				{#each copyTopicsTaught as topic}
