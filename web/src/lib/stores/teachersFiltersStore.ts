@@ -22,6 +22,7 @@ type Store = {
 	priceMax: number
 	ratingMin?: string
 	isTopAgent?: boolean
+	firstName?: string
 	sortBy: string
 }
 const store = writable<Store>({
@@ -30,6 +31,7 @@ const store = writable<Store>({
 	priceMax: 45,
 	ratingMin: undefined,
 	isTopAgent: undefined,
+	firstName: undefined,
 	sortBy: SortTypeKeyToLabel.Popularity
 })
 export const teachersFiltersStore = {
@@ -46,6 +48,7 @@ export const teachersFiltersStore = {
 			priceMax: params.get('priceMax') ? Number(params.get('priceMax')) : 45,
 			ratingMin: params.get('ratingMin') ?? undefined,
 			isTopAgent: params.get('topAgent') ? Boolean(params.get('topAgent')) : undefined,
+			firstName: params.get('firstName') ?? undefined,
 			sortBy: SortTypeKeyToLabel[sortBy as SortType] ?? SortTypeKeyToLabel.Popularity
 		})
 	}

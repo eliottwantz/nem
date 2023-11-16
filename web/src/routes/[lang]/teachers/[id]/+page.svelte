@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
 	import { drawerStoreIds } from '$lib/components/Drawer'
-	import EmojiPicker from '$lib/components/EmojiPicker/EmojiPicker.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
@@ -184,8 +182,8 @@
 					>
 						{#if tabSet === 0}
 							<div class="flex flex-col gap-2">
-								{#each data.teacher.topicsTaught as topic}
-									<p>{topic}</p>
+								{#each data.teacher.topics as topic}
+									<p>{topic.topic}</p>
 								{/each}
 							</div>
 						{:else if tabSet === 1}

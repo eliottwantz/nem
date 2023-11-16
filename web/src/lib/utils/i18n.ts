@@ -28,7 +28,7 @@ export function urlWithLocale(url: URL, cookies: Cookies): URL {
 }
 
 export function urlWithoutLocale(url: URL): URL {
-	const urlParts = url.pathname.split('/').splice(1)
+	const urlParts = url.pathname.split('/').splice(2)
 	return new URL(`${url.origin}/${urlParts.join('/')}${url.search}`)
 }
 

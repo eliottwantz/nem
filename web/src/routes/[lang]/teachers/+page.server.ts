@@ -11,6 +11,11 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 	const ratingMin = url.searchParams.get('ratingMin')
 	const topAgent = url.searchParams.get('topAgent')
 	const hourRate = url.searchParams.get('priceMax')
+	let firstName = url.searchParams.get('firstName')
+	if (firstName) {
+		firstName = firstName.trim()
+		// firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1)
+	}
 	const sortBy: SortType = url.searchParams.get('sortBy')
 		? (url.searchParams.get('sortBy') as SortType)
 		: 'Popularity'
@@ -27,7 +32,10 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 						spokenLanguages: language ? { some: { languageId: language } } : undefined,
 						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
 						topAgent: topAgent ? Boolean(topAgent) : undefined,
-						hourRate: hourRate ? { lte: Number(hourRate) } : undefined
+						hourRate: hourRate ? { lte: Number(hourRate) } : undefined,
+						profile: firstName
+							? { firstName: { contains: firstName, mode: 'insensitive' } }
+							: undefined
 					},
 					orderBy: {
 						hourRate:
@@ -64,7 +72,10 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 						spokenLanguages: language ? { some: { languageId: language } } : undefined,
 						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
 						topAgent: topAgent ? Boolean(topAgent) : undefined,
-						hourRate: hourRate ? { lte: Number(hourRate) } : undefined
+						hourRate: hourRate ? { lte: Number(hourRate) } : undefined,
+						profile: firstName
+							? { firstName: { contains: firstName, mode: 'insensitive' } }
+							: undefined
 					},
 					include: {
 						studentSubscriptions: { select: { studentId: true } },

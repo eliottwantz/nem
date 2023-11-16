@@ -9,7 +9,12 @@ import {
 } from '$env/static/private'
 import { getEnhancedPrisma, prisma } from '$lib/server/prisma'
 import { safeDBCall } from '$lib/utils/error'
-import { localeFromURL, pathNameWithoutLocale, urlWithLocale } from '$lib/utils/i18n'
+import {
+	localeFromURL,
+	pathNameWithoutLocale,
+	urlWithLocale,
+	urlWithoutLocale
+} from '$lib/utils/i18n'
 import { appRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import Email from '@auth/core/providers/email'
@@ -64,12 +69,15 @@ export const handle = sequence(
 		}
 	}),
 	async function ({ event, resolve }) {
-		if (
-			event.url.pathname.includes('.well-known') ||
-			event.url.pathname.includes('favicon.ico')
-		) {
-			return resolve(event)
+		if (event.url.pathname.includes('.well-known')) return resolve(event)
+		if (event.url.pathname.includes('favicon.png')) {
+			if (urlWithoutLocale(event.url) !== event.url) {
+				throw redirect(302, urlWithoutLocale(event.url))
+			} else {
+				return resolve(event)
+			}
 		}
+
 		const session = await event.locals.getSession()
 		event.locals.session = session
 		console.log('######')
@@ -97,8 +105,8 @@ export const handle = sequence(
 			event.locals.redirect = appRedirect(event.locals.locale)
 		}
 
-		const urlWithoutLocale = pathNameWithoutLocale(url)
-		const isProtectedRoute = urlWithoutLocale.startsWith('/dashboard')
+		const pathName = pathNameWithoutLocale(url)
+		const isProtectedRoute = pathName.startsWith('/dashboard')
 		console.log(
 			'REQ. Method:',
 			event.request.method,
@@ -115,10 +123,7 @@ export const handle = sequence(
 
 		const handleNoProfile = () => {
 			console.log('User needs to create his profile')
-			if (
-				!urlWithoutLocale.startsWith('/signout') &&
-				!urlWithoutLocale.startsWith('/verifyRequest')
-			)
+			if (!pathName.startsWith('/signout') && !pathName.startsWith('/verifyRequest'))
 				throw event.locals.redirect(302, '/signin/setup-profile')
 		}
 
@@ -140,7 +145,7 @@ export const handle = sequence(
 				}
 			} catch (e) {
 				if (e instanceof Prisma.PrismaClientKnownRequestError) {
-					if (e.code === 'P2025' && !urlWithoutLocale.startsWith('/signin/setup-profile'))
+					if (e.code === 'P2025' && !pathName.startsWith('/signin/setup-profile'))
 						handleNoProfile()
 					else {
 						console.log('Cannot get user profile from db')
@@ -148,7 +153,7 @@ export const handle = sequence(
 					}
 				}
 			}
-			if (!event.locals.user && !urlWithoutLocale.startsWith('/signin/setup-profile')) {
+			if (!event.locals.user && !pathName.startsWith('/signin/setup-profile')) {
 				handleNoProfile()
 			}
 		}

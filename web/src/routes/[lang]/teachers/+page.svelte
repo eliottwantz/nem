@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
 	import AutocompleteSelect from '$lib/components/AutocompleteSelect/AutocompleteSelect.svelte'
 	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte'
@@ -10,6 +11,7 @@
 		teachersFiltersStore
 	} from '$lib/stores/teachersFiltersStore'
 	import { ListBox, ListBoxItem, RangeSlider, SlideToggle } from '@skeletonlabs/skeleton'
+	import { Search } from 'lucide-svelte'
 	import { onMount } from 'svelte'
 
 	export let data
@@ -36,6 +38,9 @@
 		}
 		if ($teachersFiltersStore.isTopAgent) {
 			u.append('topAgent', `${$teachersFiltersStore.isTopAgent}`)
+		}
+		if ($teachersFiltersStore.firstName) {
+			u.append('firstName', $teachersFiltersStore.firstName)
 		}
 		u.append('sortBy', SortLabelToTypeKey[$teachersFiltersStore.sortBy])
 		u.append('page', `${currentPage}`)
@@ -118,14 +123,31 @@
 					</ListBox>
 				</Dropdown>
 			</div>
+			<div class="flex flex-col items-start gap-y-1">
+				<span>Search by name</span>
+				<div class="input-group grid-cols-[auto_1fr]">
+					<div class="w-full lg:p-4">
+						<Search />
+					</div>
+					<input
+						on:keydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault()
+								goto(url)
+							}
+						}}
+						type="search"
+						placeholder="Search by name"
+						bind:value={$teachersFiltersStore.firstName}
+					/>
+				</div>
+			</div>
+
 			<a class="variant-filled-primary btn self-end" href={url}> Search </a>
 		</div>
 	</section>
 
-	<p>
-		<strong>{data.teachers.count}</strong> out of
-		<strong>{data.total}</strong>
-	</p>
+	<strong>{data.teachers.count} teachers available</strong>
 	<div id="pagination">
 		{#each Array.from({ length: totalPages }) as _, idx}
 			<a
