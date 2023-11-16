@@ -51,5 +51,15 @@ export const teachersFiltersStore = {
 			firstName: params.get('firstName') ?? undefined,
 			sortBy: SortTypeKeyToLabel[sortBy as SortType] ?? SortTypeKeyToLabel.Popularity
 		})
+	},
+	reset: () => {
+		store.update((prev) => ({
+			...prev,
+			priceMax: 45,
+			ratingMin: undefined,
+			isTopAgent: undefined,
+			firstName: undefined,
+			sortBy: SortTypeKeyToLabel.Popularity
+		}))
 	}
 }

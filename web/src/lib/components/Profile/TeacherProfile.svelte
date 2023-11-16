@@ -1,12 +1,21 @@
 <script lang="ts">
 	import { getInitials, getPublicName } from '$lib/utils/initials'
-	import type { Proficiency, Profile, SpokenLanguage, Teacher, Topic } from '@prisma/client'
+	import type {
+		Proficiency,
+		Profile,
+		Review,
+		SpokenLanguage,
+		Teacher,
+		Topic
+	} from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
+	import { Star } from 'lucide-svelte'
 
 	export let teacher: Teacher & {
 		profile: Profile
 		spokenLanguages: SpokenLanguage[]
 		topics: Topic[]
+		reviews: Review[]
 	}
 	export let shortForm = false
 
@@ -49,11 +58,14 @@
 			</a>
 			<div class="flex items-center justify-around gap-4 sm:text-lg">
 				<div>
-					<span>Reviews</span>
 					{#if teacher.rating === 0}
-						<span>N/A</span>
+						<span>No reviews</span>
 					{:else}
-						<span>{teacher.rating}</span>
+						<div class="flex gap-x-1">
+							<img class="h-5 w-5" src="/star.svg" alt="star" />
+							<span>{teacher.rating}</span>
+						</div>
+						<span>{teacher.reviews.length} reviews</span>
 					{/if}
 				</div>
 				<p>
@@ -80,7 +92,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each teacher.topics as topic}
 					<div>
-						<span>{topic}</span>
+						<span>{topic.topic}</span>
 					</div>
 				{/each}
 			</div>
@@ -117,11 +129,14 @@
 			</a>
 			<div class="flex flex-col items-center justify-around sm:text-lg">
 				<div>
-					<span>Rating</span>
 					{#if teacher.rating === 0}
-						<span>N/A</span>
+						<span>No reviews</span>
 					{:else}
-						<span>{teacher.rating}</span>
+						<div class="flex gap-x-1">
+							<img class="h-5 w-5" src="/star.svg" alt="star" />
+							<span>{teacher.rating}</span>
+						</div>
+						<span>{teacher.reviews.length} reviews</span>
 					{/if}
 				</div>
 				<p>

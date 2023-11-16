@@ -5,9 +5,12 @@ import type { Topic } from '@prisma/client'
 export async function load({ locals: { session, user, redirect, db }, url }) {
 	if (!session || !user) throw redirect(302, '/signin')
 	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
+	if (!url.searchParams.get('language') || !url.searchParams.get('topic')) {
+		throw redirect(302, '/teachers?topic=English&language=French')
+	}
+	const language = url.searchParams.get('language') ?? 'French'
+	const topic = url.searchParams.get('topic') ?? 'English'
 	const page = url.searchParams.get('page')
-	const topic = url.searchParams.get('topic')
-	const language = url.searchParams.get('language')
 	const ratingMin = url.searchParams.get('ratingMin')
 	const topAgent = url.searchParams.get('topAgent')
 	const hourRate = url.searchParams.get('priceMax')
@@ -28,8 +31,8 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 				const ids = await tx.teacher.findMany({
 					select: { id: true },
 					where: {
-						topics: topic ? { some: { topic } } : undefined,
-						spokenLanguages: language ? { some: { languageId: language } } : undefined,
+						topics: { some: { topic } },
+						spokenLanguages: { some: { languageId: language } },
 						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
 						topAgent: topAgent ? Boolean(topAgent) : undefined,
 						hourRate: hourRate ? { lte: Number(hourRate) } : undefined,
@@ -68,8 +71,8 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 				}
 				const teachers = await tx.teacher.findMany({
 					where: {
-						topics: topic ? { some: { topic } } : undefined,
-						spokenLanguages: language ? { some: { languageId: language } } : undefined,
+						topics: { some: { topic } },
+						spokenLanguages: { some: { languageId: language } },
 						rating: ratingMin ? { gte: Number(ratingMin) } : undefined,
 						topAgent: topAgent ? Boolean(topAgent) : undefined,
 						hourRate: hourRate ? { lte: Number(hourRate) } : undefined,
