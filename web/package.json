@@ -12,7 +12,6 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
-		"db:gen": "zenstack generate",
 		"db:push": "prisma db push",
 		"db:migrate": "prisma migrate dev",
 		"db:studio": "prisma studio",
@@ -42,7 +41,6 @@
 		"@tailwindcss/forms": "^0.5.6",
 		"@tailwindcss/typography": "^0.5.10",
 		"@types/nodemailer": "^6.4.14",
-		"@vercel/blob": "^0.15.1",
 		"@videosdk.live/js-sdk": "^0.0.73",
 		"@videosdk.live/rtc-js-prebuilt": "0.3.34",
 		"autoprefixer": "^10.4.16",
@@ -64,14 +62,12 @@
 		"typescript": "^5.2.2",
 		"vite": "^4.4.9",
 		"vite-plugin-tailwind-purgecss": "^0.1.3",
-		"zenstack": "1.2.2",
 		"zod": "^3.22.2"
 	},
 	"type": "module",
 	"dependencies": {
 		"@inlang/paraglide-js": "1.0.0-prerelease.9",
 		"@prisma/client": "^5.5.2",
-		"@zenstackhq/runtime": "1.2.2",
 		"lucide-svelte": "^0.284.0"
 	},
 	"pnpm": {

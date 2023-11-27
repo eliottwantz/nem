@@ -7,7 +7,7 @@ import {
 	SMTP_PORT,
 	SMTP_USER
 } from '$env/static/private'
-import { getEnhancedPrisma, prisma } from '$lib/server/prisma'
+import { prisma } from '$lib/server/prisma'
 import { safeDBCall } from '$lib/utils/error'
 import {
 	localeFromURL,
@@ -83,7 +83,7 @@ export const handle = sequence(
 		console.log('######')
 		console.log('Have session:', session !== null)
 		console.log('Session:', session)
-		event.locals.db = getEnhancedPrisma(session?.user ? session.user.id : undefined)
+		event.locals.db = prisma
 
 		let locale = event.cookies.get('locale') as AvailableLanguageTag | undefined
 		if (!locale) locale = 'en'
