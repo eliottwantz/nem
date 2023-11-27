@@ -50,12 +50,12 @@
 
 	onMount(() => {
 		teachersFiltersStore.fromURL()
+		scrollTop()
 	})
 
 	async function scrollTop() {
-		console.log('lets scroll up')
-		const page = document.getElementById('page') as HTMLDivElement
-		setTimeout(() => page.scrollTo({ top: 0, behavior: 'smooth' }))
+		const doc = document.getElementById('page') as HTMLDivElement
+		setTimeout(() => doc.scrollTo({ top: 0, behavior: 'smooth' }))
 	}
 </script>
 
@@ -298,6 +298,7 @@
 						? 'font-semibold text-primary-700'
 						: ''}"
 					href={url.replace(`page=${currentPage}`, `page=${idx}`)}
+					on:click={scrollTop}
 				>
 					{idx + 1}
 				</a>

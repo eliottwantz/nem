@@ -54,7 +54,7 @@ async function main() {
 			}
 		]
 	})
-	for (let index = 0; index < 100; index++) {
+	for (let index = 0; index < 500; index++) {
 		const firstName = faker.person.firstName()
 		const lastName = faker.person.lastName()
 		const email = `teacher${index}@nem.com`
