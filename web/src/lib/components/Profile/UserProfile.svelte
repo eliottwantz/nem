@@ -3,7 +3,8 @@
 	import type { Profile } from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
 
-	export let user: Profile
+	export let profile: Profile
+	$: console.log('profile', profile)
 	export let avatarWidth = 'w-28'
 	export let avatarHeight = 'h-28'
 	export let textClass = ''
@@ -13,12 +14,12 @@
 	<Avatar
 		width={avatarWidth}
 		height={avatarHeight}
-		src={user.avatarUrl ?? undefined}
-		initials={getInitials(user)}
+		src={profile.avatarUrl ?? undefined}
+		initials={getInitials(profile)}
 	/>
 	<div>
 		<p class="flex-auto text-lg {textClass}">
-			{getPublicName(user)}
+			{getPublicName(profile)}
 		</p>
 	</div>
 </div>

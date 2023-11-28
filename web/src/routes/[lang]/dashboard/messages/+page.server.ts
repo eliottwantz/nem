@@ -1,16 +1,40 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { safeDBCall } from '~/lib/utils/error'
 
-export async function load({ locals: { user, session, redirect }, fetch }) {
+export async function load({ locals: { user, session, redirect, db } }) {
 	if (!session || !user) throw redirect(302, '/signin')
 
-	const streams = await Promise.all([
-		safeFetch(
-			fetchers.messageService(fetch, session).listConversationsOfUser({ userId: user.id })
-		)
-	])
+	// const res = await Promise.all([
+	// 	safeFetch(
+	// 		fetchers.messageService(fetch, session).listConversationsOfUser({ userId: user.id })
+	// 	)
+	// ])
+	const res = await safeDBCall(
+		db.chat.findMany({
+			where: {
+				users: {
+					some: {
+						id: user.id
+					}
+				}
+			},
+			include: {
+				users: {
+					select: {
+						id: true,
+						profile: true
+					}
+				},
+				messages: {
+					select: { createdAt: true },
+					orderBy: { createdAt: 'desc' },
+					take: 1
+				}
+			}
+		})
+	)
 
 	return {
 		user,
-		conversations: streams[0].ok ? streams[0].data.conversations : []
+		chats: res.ok ? res.value : []
 	}
 }

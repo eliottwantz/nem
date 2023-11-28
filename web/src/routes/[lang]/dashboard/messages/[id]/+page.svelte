@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { page } from '$app/stores'
 	import Chatbox from '$lib/components/Chatbox/Chatbox.svelte'
 
 	export let data
 </script>
 
-<Chatbox chatId={data.conversation.id} recepient={data.recipient} />
+<Chatbox chatId={$page.params.id} recepient={data.recipient} />

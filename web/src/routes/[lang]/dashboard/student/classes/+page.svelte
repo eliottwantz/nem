@@ -54,7 +54,7 @@
 											<UserProfile
 												avatarHeight="h-10"
 												avatarWidth="w-10"
-												user={{
+												profile={{
 													avatarFilePath: row.teacherAvatarFilePath,
 													avatarUrl: row.teacherAvatarUrl,
 													firstName: row.teacherFirstName,
@@ -113,7 +113,7 @@
 											<UserProfile
 												avatarHeight="h-10"
 												avatarWidth="w-10"
-												user={{
+												profile={{
 													avatarFilePath: row.teacherAvatarFilePath,
 													avatarUrl: row.teacherAvatarUrl,
 													firstName: row.teacherFirstName,

@@ -82,7 +82,7 @@
 
 <div class="flex h-full flex-col">
 	<div class="p-2 sm:p-4">
-		<UserProfile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+		<UserProfile profile={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 	</div>
 	{#if !$chatStore.isMore}
 		<div class="text-center">

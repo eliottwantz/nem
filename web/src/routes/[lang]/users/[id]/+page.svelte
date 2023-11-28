@@ -6,7 +6,7 @@
 </script>
 
 <Layout>
-	<Profile user={data.userToShow} />
+	<Profile profile={data.userToShow} />
 	{#if data.user.role === 'student' && data.userToShow.role === 'teacher'}
 		<a
 			href="dashboard/student/learn?teacherId={data.userToShow.id}"
