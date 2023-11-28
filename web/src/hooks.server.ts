@@ -90,14 +90,13 @@ export const handle = sequence(
 		event.locals.locale = locale
 		event.locals.redirect = appRedirect(event.locals.locale)
 
-		if (event.url.pathname.startsWith('/api')) {
-			return resolve(event)
-		}
-
 		const { url } = event
 		const withLocale = urlWithLocale(url, event.cookies)
-		if (withLocale !== url) {
-			throw redirect(302, withLocale)
+
+		if (!event.url.pathname.startsWith('/api')) {
+			if (withLocale !== url) {
+				throw redirect(302, withLocale)
+			}
 		}
 		event.locals.locale = localeFromURL(withLocale)
 		if (event.cookies.get('locale') !== event.locals.locale) {

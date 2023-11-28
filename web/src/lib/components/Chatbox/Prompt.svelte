@@ -1,13 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { safeFetch } from '$lib/api'
 	import SendIcon from '$lib/icons/SendIcon.svelte'
 	import { ws } from '$lib/ws'
+	import type { Message, Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
+	import type { CreateChatRequest, CreateChatResponse } from '~/routes/api/chats/+server'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
-	import type { Profile } from '@prisma/client'
+	import type { SendMessageRequest } from '~/routes/api/chats/send/[chatId]/+server'
 
-	export let conversationId: number | undefined // undefined if no conversation exists yet
-	export let recepient: Profile | undefined // undefined if group chat
+	export let chatId: string | undefined
+	export let recepient: Profile | undefined
+
+	$: console.log('ChatID', chatId)
 
 	const toastStore = getToastStore()
 	const maxChars = 1000
@@ -19,7 +24,7 @@
 	// let files: FileList
 	// let attachments: File[] = []
 	// $: console.log('-------------> attachments', attachments)
-	let fileInput: HTMLInputElement
+	// let fileInput: HTMLInputElement
 
 	$: promptToBig = remainingChars < 0
 	$: remainingChars = maxChars - prompt.length
@@ -28,55 +33,54 @@
 		if (!prompt || !prompt.trim()) return
 		isSubmiting = true
 
-		if (!conversationId) {
-			const res = await safeFetch(
-				fetchers.messageService(fetch, $page.data.session).createOneToOneConversation({
-					recepientId: recepient!.id
+		if (!chatId) {
+			const res = await safeFetch<CreateChatResponse>(
+				fetch('/api/chats', {
+					method: 'POST',
+					body: JSON.stringify({
+						withUserIds: [recepient!.id]
+					} satisfies CreateChatRequest)
 				})
 			)
 			if (!res.ok) {
 				toastStore.trigger({
-					message: res.cause,
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
 				return
 			}
-			conversationId = res.data.conversationId
+			chatId = res.data.id
 		}
 
 		ws.send({
 			action: 'stopTyping',
-			roomId: conversationId,
+			chatId,
 			data: $page.data.user.firstName
 		})
 		currentlyTyping = false
 
-		const res = recepient
-			? await safeFetch(
-					fetchers.messageService(fetch, $page.data.session!).sendMessageToUser({
-						message: {
-							conversationId: conversationId,
-							text: prompt.trim()
-						}
-					})
-			  )
-			: await safeFetch(
-					fetchers.messageService(fetch, $page.data.session!).sendMessageToClass({
-						message: {
-							conversationId: conversationId,
-							text: prompt.trim()
-						}
-					})
-			  )
+		const res = await safeFetch<Message>(
+			fetch(`/api/chats/send/${chatId}`, {
+				method: 'POST',
+				body: JSON.stringify({
+					text: prompt.trim()
+				} satisfies SendMessageRequest)
+			})
+		)
 
 		isSubmiting = false
 		if (!res.ok) {
 			toastStore.trigger({
-				message: res.cause,
+				message: res.error.message,
 				background: 'variant-filled-error'
 			})
 			return
 		}
+		ws.send({
+			action: 'sendMessage',
+			chatId,
+			data: res.data
+		})
 
 		console.log('SUCESS:\n', res)
 		prompt = ''
@@ -84,18 +88,18 @@
 	}
 
 	function handleOnInput(): void {
-		if (!conversationId) return
+		if (!chatId) return
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',
-				roomId: conversationId,
+				chatId: chatId,
 				data: $page.data.user.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
-				roomId: conversationId,
+				chatId: chatId,
 				data: $page.data.user.firstName
 			})
 			currentlyTyping = false

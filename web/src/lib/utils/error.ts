@@ -1,29 +1,26 @@
-class AppError extends Error {
+export class AppError extends Error {
+	status: number
 	metadata?: Record<string, string>
-	constructor(baseError: Error, metadata?: Record<string, string>) {
-		super(baseError.message)
-		Object.setPrototypeOf(this, AppError.prototype)
-		this.stack = baseError.stack
-		this.message = baseError.message
-		this.name = baseError.name
-		this.cause = baseError.cause
+	constructor(message: string, status: number, metadata?: Record<string, string>) {
+		super(message)
 		this.metadata = metadata
+		this.status = status
 	}
 }
 
 export async function safeDBCall<T>(prismaPromise: Promise<T | null>): Promise<DBResult<T>> {
 	try {
 		const res = await prismaPromise
-		if (!res) return { ok: false, error: new AppError(new Error('Not found')) }
+		if (!res) return { ok: false, error: new Error('Not found') }
 		else return { ok: true, value: res }
 	} catch (e) {
-		return { ok: false, error: new AppError(e as Error) }
+		return { ok: false, error: e as Error }
 	}
 }
 
 export type DBResult<T> = ResultSuccess<T> | ResultError
 type ResultSuccess<T> = { ok: true; value: T }
-type ResultError = { ok: false; error: AppError }
+type ResultError = { ok: false; error: Error }
 
 export function dbLoadPromise<T>(promise: Promise<DBResult<T>>, fallBack: T): Promise<T> {
 	return new Promise((resolve) => {

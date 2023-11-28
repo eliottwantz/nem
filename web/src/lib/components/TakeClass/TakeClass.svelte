@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
-	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
+	import { safeFetch } from '$lib/api'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
+	import type { Class, SpokenLanguage, Teacher, TimeSlot } from '@prisma/client'
 	import {
 		ListBox,
 		ListBoxItem,
@@ -11,6 +11,7 @@
 		getModalStore,
 		getToastStore
 	} from '@skeletonlabs/skeleton'
+	import type { JoinClassRequest } from '../../../routes/api/classes/join/+server'
 	import {
 		availabilityToCalendarEntryOneHourBlock,
 		type CalendarEvent,
@@ -18,8 +19,8 @@
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
 
-	export let teacher: Teacher
-	export let classes: Class[]
+	export let teacher: Teacher & { topicsTaught: string[]; spokenLanguages: SpokenLanguage[] }
+	export let classes: (Class & { timeSlot: TimeSlot })[]
 	export let availabilities: TimeSlot[]
 	export let isTrial: boolean | undefined = undefined
 	$: if (isTrial) $takeClassStore.selectedIsPrivate = isTrial
@@ -38,7 +39,9 @@
 	$: console.log('topics', topics)
 	$: events = availabilities
 		.filter((a) => {
-			const matchClass = classes.find((c) => c.startAt === a.startAt && c.endAt === a.endAt)
+			const matchClass = classes.find(
+				(c) => c.timeSlot.startAt === a.startAt && c.timeSlot.endAt === a.endAt
+			)
 			if (!matchClass) return true
 			return (
 				matchClass.language === $takeClassStore.selectedLanguage &&
@@ -93,8 +96,9 @@
 			}
 		} else {
 			const res = await safeFetch(
-				fetchers.publicService(fetch).createOrJoinClass({
-					req: {
+				fetch('/api/classes/join', {
+					method: 'POST',
+					body: JSON.stringify({
 						isPrivate: $takeClassStore.selectedIsPrivate,
 						isTrial: false,
 						language: $takeClassStore.selectedLanguage!,
@@ -102,12 +106,12 @@
 						timeSlotId: $takeClassStore.selectedEvent!.event.id,
 						topic: $takeClassStore.selectedTopic!,
 						userId: $page.data.user.id
-					}
+					} satisfies JoinClassRequest)
 				})
 			)
 			if (!res.ok) {
 				toastStore.trigger({
-					message: res.cause,
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
 			} else {
@@ -134,7 +138,7 @@
 		<Step locked={lockedLanguage}>
 			<svelte:fragment slot="header">Teaching Language</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each new Set(teacher.spokenLanguages.map((l) => l.language)) as language}
+				{#each new Set(teacher.spokenLanguages.map((l) => l.languageId)) as language}
 					<ListBoxItem
 						bind:group={$takeClassStore.selectedLanguage}
 						name={language}

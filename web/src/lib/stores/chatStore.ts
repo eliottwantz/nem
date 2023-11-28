@@ -1,8 +1,8 @@
-import type { Message } from '$lib/api/api.gen'
+import type { Message } from '@prisma/client'
 import { writable } from 'svelte/store'
 
 type ChatState = {
-	conversationId: number
+	chatId: number
 	messages: Message[]
 	unreadMessages: number
 	peopleTyping: string[]
@@ -10,7 +10,7 @@ type ChatState = {
 }
 
 const { subscribe, update, set } = writable<ChatState>({
-	conversationId: 0,
+	chatId: 0,
 	messages: [],
 	peopleTyping: [],
 	unreadMessages: 0,
@@ -40,7 +40,7 @@ export const chatStore = {
 	},
 	reset: () => {
 		set({
-			conversationId: 0,
+			chatId: 0,
 			messages: [],
 			peopleTyping: [],
 			unreadMessages: 0,

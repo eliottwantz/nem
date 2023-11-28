@@ -79,10 +79,10 @@
 	}
 
 	async function subscribe() {
-		const res = await safeFetch(fetchers.subscriptionService(fetch).listSubscriptions())
-		if (!res.ok) {
+		const subs = await data.streamed.subscriptions
+		if (!subs.length) {
 			toastStore.trigger({
-				message: res.cause,
+				message: 'Failed to retreive subscriptions',
 				background: 'bg-error-500'
 			})
 			return
@@ -93,26 +93,21 @@
 				ref: Subscription,
 				props: {
 					teacher: data.teacher,
-					subscriptions: res.data.subscriptions
+					subscriptions: subs
 				}
 			}
 		})
 	}
 
 	async function openChat() {
-		const res = await safeFetch(
-			fetchers.messageService(fetch, $page.data.session).findOneToOneConversation({
-				user1Id: data.teacher.id,
-				user2Id: $page.data.user.id
-			})
-		)
-		let conversationId = undefined
-		if (res.ok) conversationId = res.data.conversation.id
+		const res = await data.streamed.convo
+		let chatId = undefined
+		if (res) chatId = res.id
 		drawerStore.open({
 			id: drawerStoreIds.chat,
 			meta: {
-				conversationId,
-				recepient: data.teacher
+				chatId,
+				recepient: data.teacher.profile
 			},
 			position: 'right',
 			width: 'w-2/3'
@@ -127,8 +122,15 @@
 			<div class="flex flex-col gap-4">
 				<div class="flex items-center justify-around gap-x-2 text-lg">
 					<div>
-						<span>Reviews</span>
-						<span>{data.teacher.rating}</span>
+						{#if data.teacher.rating === 0}
+							<span>No reviews</span>
+						{:else}
+							<div class="flex items-center gap-x-1">
+								<img class="h-6 w-6" src="/star.svg" alt="star" />
+								<p class="text-2xl font-semibold">{data.teacher.rating}</p>
+							</div>
+							<span>{data.teacher.reviews.length} reviews</span>
+						{/if}
 					</div>
 					<p>
 						<span class="text-2xl font-semibold">{data.teacher.hourRate}$</span>

@@ -14,11 +14,11 @@
 		width={avatarWidth}
 		height={avatarHeight}
 		src={user.avatarUrl ?? undefined}
-		initials={getInitials(user.firstName, user.lastName)}
+		initials={getInitials(user)}
 	/>
 	<div>
 		<p class="flex-auto text-lg {textClass}">
-			{getPublicName(user.firstName, user.lastName)}
+			{getPublicName(user)}
 		</p>
 	</div>
 </div>

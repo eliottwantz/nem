@@ -17,5 +17,14 @@ services:
             - 1025:1025
             - 1080:1080
 
+    redis:
+        image: redis
+        restart: unless-stopped
+        ports:
+            - 6379:6379
+        volumes:
+            - redis:/data
+
 volumes:
     postgres:
+    redis:

@@ -2,13 +2,17 @@ import { page } from '$app/stores'
 import { PUBLIC_ENV, PUBLIC_GO_SERVER_HOST } from '$env/static/public'
 import { chatStore } from '$lib/stores/chatStore'
 import type { Session } from '@auth/core/types'
+import type { Message } from '@prisma/client'
 import { derived, get, writable } from 'svelte/store'
 
-type SendPayload = {
-	action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
-	roomId: number
-	data: any
-}
+type SendPayload =
+	| {
+			action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
+			chatId: string
+			data: string
+	  }
+	| { action: 'sendMessage'; chatId: string; data: Message }
+	| { action: 'editMessage'; chatId: string; data: Message }
 
 type ReceivePayload =
 	| { action: 'none' }
@@ -31,7 +35,7 @@ class WS {
 	async Connect(): Promise<void> {
 		if (this.#attempts > maxAttempts) return
 		this.#attempts++
-		const websocketUrl = `${this.#wsEndpoint}?jwt=${get(page).data.session as Session}`
+		const websocketUrl = `${this.#wsEndpoint}?uID=${get(page).data.user?.id}`
 		this.socket = new WebSocket(websocketUrl)
 
 		this.socket.addEventListener('open', () => {

@@ -25,9 +25,6 @@
 			<DefaultSidebar />
 		{/if}
 	{:else if $drawerStore.id === drawerStoreIds.chat}
-		<Chatbox
-			conversationId={$drawerStore.meta.conversationId}
-			recepient={$drawerStore.meta.recepient}
-		/>
+		<Chatbox chatId={$drawerStore.meta.chatId} recepient={$drawerStore.meta.recepient} />
 	{/if}
 </Drawer>

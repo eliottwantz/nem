@@ -1,4 +1,5 @@
 import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
+import type { Chat, Subscription } from '@prisma/client'
 import { error } from '@sveltejs/kit'
 
 export async function load({ params, locals: { session, user, redirect, db } }) {
@@ -7,7 +8,7 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 
 	const teacher = await safeDBCall(
 		db.teacher.findUnique({
-			include: { topics: true, profile: true, spokenLanguages: true },
+			include: { topics: true, profile: true, spokenLanguages: true, reviews: true },
 			where: { id: params.id }
 		})
 	)
@@ -45,6 +46,29 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 			0
 		),
 		streamed: {
+			subscriptions: new Promise<Subscription[]>((resolve) => {
+				safeDBCall(db.subscription.findMany({}).then((res) => resolve(res)))
+			}),
+			convo: new Promise<Chat | null>((resolve) => {
+				safeDBCall(
+					db.chat.findFirst({
+						where: {
+							users: {
+								some: {
+									OR: [
+										{
+											id: { contains: user.id }
+										},
+										{
+											id: { contains: params.id }
+										}
+									]
+								}
+							}
+						}
+					})
+				).then((res) => (res.ok ? resolve(res.value) : resolve(null)))
+			})
 			// availabilities: new Promise<TimeSlot[]>((resolve) => {
 			// 	safeFetch(
 			// 		fetchers

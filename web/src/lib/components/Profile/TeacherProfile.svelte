@@ -9,7 +9,6 @@
 		Topic
 	} from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
-	import { Star } from 'lucide-svelte'
 
 	export let teacher: Teacher & {
 		profile: Profile

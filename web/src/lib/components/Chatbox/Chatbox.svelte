@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
-	import type { User } from '$lib/api/api.gen'
+	import { safeFetch } from '$lib/api'
 	import { chatStore } from '$lib/stores/chatStore'
-	import { stringToLocalTime } from '$lib/utils/datetime'
+	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import Profile from '../Profile/UserProfile.svelte'
+	import type { MessagesResponse } from '../../../routes/api/messages/[id]/+server'
+	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
 
-	export let conversationId: number
-	export let recepient: User
+	export let chatId: string | undefined
+	export let recepient: Profile
 
 	const toastStore = getToastStore()
 
@@ -19,14 +19,12 @@
 
 	onMount(async () => {
 		chatStore.reset()
-		const res = await safeFetch(
-			fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
-				conversationId
-			})
-		)
-		if (res.ok) {
-			console.log('got message', res.data.messages)
-			chatStore.addOldMessages(res.data.messages)
+		if (chatId) {
+			const res = await safeFetch<MessagesResponse>(fetch(`/api/messages/${chatId}`))
+			if (res.ok) {
+				console.log('got message', res.data)
+				chatStore.addOldMessages(res.data.messages)
+			}
 		}
 		scrollChatBottom()
 		chatStore.resetUnreadMessages()
@@ -51,13 +49,8 @@
 		console.log('there is more')
 		if (!chatStore.oldestMessage) return
 		isFetching = true
-		const res = await safeFetch(
-			fetchers
-				.messageService(fetch, $page.data.session)
-				.listMessagesOfConversationWithCursor({
-					conversationId,
-					cursor: chatStore.oldestMessage.sentAt
-				})
+		const res = await safeFetch<MessagesResponse>(
+			fetch(`/api/messages/${chatId}?cursor=${chatStore.oldestMessage.id}`)
 		)
 		if (!res.ok) {
 			toastStore.trigger({
@@ -89,7 +82,7 @@
 
 <div class="flex h-full flex-col">
 	<div class="p-2 sm:p-4">
-		<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+		<UserProfile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 	</div>
 	{#if !$chatStore.isMore}
 		<div class="text-center">
@@ -110,7 +103,7 @@
 			class="absolute inset-0 flex flex-1 flex-col gap-y-1 overflow-y-scroll p-2 sm:p-4"
 		>
 			{#each $chatStore.messages as msg}
-				{#if msg.sender.id !== $page.data.user.id}
+				{#if msg.senderId !== $page.data.user.id}
 					<!-- Got message from someone else -->
 					<div id="message">
 						<div id="inner" class="flex flex-1 items-center pl-2">
@@ -120,7 +113,7 @@
 							>
 								<header class="flex items-center justify-between gap-x-1">
 									<small class="opacity-50">
-										{stringToLocalTime(msg.sentAt)}
+										{msg.createdAt.toLocaleString()}
 									</small>
 								</header>
 								<p>{msg.text}</p>
@@ -139,7 +132,7 @@
 								>
 									<header class="flex items-center justify-between">
 										<small class="opacity-50"
-											>{stringToLocalTime(msg.sentAt)}</small
+											>{msg.createdAt.toLocaleString()}</small
 										>
 									</header>
 									<p class="text-right">{msg.text}</p>
@@ -157,7 +150,7 @@
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
 		<div>
-			<Prompt {conversationId} {recepient} />
+			<Prompt {chatId} {recepient} />
 		</div>
 	</div>
 </div>

@@ -3,7 +3,6 @@
 	import '@fontsource-variable/inter'
 	import '../app.postcss'
 
-	import { browser } from '$app/environment'
 	import { onNavigate } from '$app/navigation'
 	import { page } from '$app/stores'
 	import Avatar from '$lib/components/Avatar.svelte'
@@ -16,7 +15,6 @@
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
 	import Logo from '$lib/icons/Logo.svelte'
 	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
-	import { dir } from '$lib/utils/i18n'
 	import { getInitials } from '$lib/utils/initials'
 
 	import {
@@ -27,9 +25,10 @@
 		getDrawerStore,
 		initializeStores
 	} from '@skeletonlabs/skeleton'
-	import { languageTag } from 'i18n/runtime'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
+	import { browser } from '$app/environment'
+	import { ws } from '~/lib/ws'
 
 	export let data
 	initializeStores()
@@ -53,7 +52,7 @@
 	})
 
 	$: console.log('LAYOUT user', $page.data.user)
-	// $: if (browser && data.session && !ws.socket) ws.Connect()
+	$: if (browser && data.session && !ws.socket) ws.Connect()
 </script>
 
 <ParaglideAdapter>
