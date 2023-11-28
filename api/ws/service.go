@@ -6,7 +6,6 @@ import (
 	"nem/api/rpc"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -21,7 +20,7 @@ func NewService(hub *Hub) *Service {
 	}
 }
 
-func (s *Service) JoinClass(roomId int64, userId uuid.UUID) error {
+func (s *Service) JoinClass(roomId string, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -39,7 +38,7 @@ func (s *Service) JoinClass(roomId int64, userId uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) LeaveClass(roomId int64, userId uuid.UUID) error {
+func (s *Service) LeaveClass(roomId string, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -57,7 +56,7 @@ func (s *Service) LeaveClass(roomId int64, userId uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) StartClass(roomId int64, userId uuid.UUID) error {
+func (s *Service) StartClass(roomId string, userId string) error {
 	c, err := s.hub.findClientById(userId)
 	if err != nil {
 		s.logger.Warn("ws client not found", "err", err)
@@ -70,7 +69,7 @@ func (s *Service) StartClass(roomId int64, userId uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) EndClass(roomId int64) error {
+func (s *Service) EndClass(roomId string) error {
 	r, err := s.hub.findRoomById(roomId)
 	if err != nil {
 		s.logger.Warn("ws room not found", "err", err)
@@ -87,7 +86,7 @@ func (s *Service) EndClass(roomId int64) error {
 	return nil
 }
 
-func (s *Service) EmitNewMessage(roomID int64, message *rpc.Message) error {
+func (s *Service) EmitNewMessage(roomID string, message *rpc.Message) error {
 	s.hub.PublishToRoom(&EmittedMessage{
 		Action: ActionEmitNewMessage,
 		Data:   message,

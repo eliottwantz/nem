@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -25,14 +24,14 @@ const (
 var newline = []byte{'\n'}
 
 type Client struct {
-	id    uuid.UUID
+	id    string
 	conn  *websocket.Conn
 	hub   *Hub
 	send  chan []byte
 	rooms map[*Room]struct{}
 }
 
-func newClient(id uuid.UUID, conn *websocket.Conn, hub *Hub) *Client {
+func newClient(id string, conn *websocket.Conn, hub *Hub) *Client {
 	return &Client{
 		id:    id,
 		conn:  conn,
@@ -121,6 +120,8 @@ func (c *Client) handleNewMessage(raw []byte) {
 		c.handleTypingEvent(msg, ActionEmitAddToTyping)
 	case ActionReceiveStopTyping:
 		c.handleTypingEvent(msg, ActionEmitRemoveFromTyping)
+	case ActionReceiveSendMessage:
+		c.handleSendMessage(msg)
 	}
 }
 
@@ -128,5 +129,12 @@ func (c *Client) handleTypingEvent(msg *ReceivedMessage, action Action) {
 	c.hub.PublishToRoom(&EmittedMessage{
 		Action: action,
 		Data:   msg.Data,
-	}, msg.RoomID)
+	}, msg.ChatID)
+}
+
+func (c *Client) handleSendMessage(msg *ReceivedMessage) {
+	c.hub.PublishToRoom(&EmittedMessage{
+		Action: ActionEmitNewMessage,
+		Data:   msg.Data,
+	}, msg.ChatID)
 }

@@ -8,17 +8,9 @@ import (
 	"nem/api"
 	"nem/api/ws"
 	"nem/db"
-	"nem/services/class"
-	"nem/services/message"
-	"nem/services/public"
-	"nem/services/student"
-	"nem/services/subscription"
-	"nem/services/teacher"
-	"nem/services/user"
 	"nem/utils"
 
 	"github.com/charmbracelet/log"
-	"github.com/go-chi/jwtauth/v5"
 )
 
 func main() {
@@ -44,38 +36,21 @@ func setup() error {
 		return err
 	}
 
-	// SessionService layer
-	log.Info("Creating services...")
-
-	publicService := public.NewService()
-	userService := user.NewService()
-	classService := class.NewService()
-	subscriptionService := subscription.NewService()
-
 	// Endpoints layer
 	log.Info("Creating websocket hub...")
 	wsHub := ws.NewHub(&ws.Config{
-		UserService: userService,
 		RedisClient: db.Redis,
 	})
 	go wsHub.Run()
 	wsService := ws.NewService(wsHub)
-	teacherService := teacher.NewService(wsService)
-	studentService := student.NewService(wsService)
-	messageService := message.NewService(wsService)
-	jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
+	// teacherService := teacher.NewService(wsService)
+	// studentService := student.NewService(wsService)
+	// messageService := message.NewService(wsService)
+	// jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
 
 	api := api.New(&api.Services{
-		PublicService:       publicService,
-		SubscriptionService: subscriptionService,
-		UserService:         userService,
-		TeacherService:      teacherService,
-		StudentService:      studentService,
-		ClassService:        classService,
-		MessageService:      messageService,
-		WsHub:               wsHub,
-		WsService:           wsService,
-		JWTAuth:             jwtAuth,
+		WsHub:     wsHub,
+		WsService: wsService,
 	})
 
 	return api.Start(ctx)

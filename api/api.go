@@ -13,20 +13,9 @@ import (
 	"strings"
 	"time"
 
-	_ "embed"
-
 	"nem/api/helmet"
-	"nem/api/httpmw"
-	"nem/api/rpc"
 	"nem/api/ws"
 	"nem/db"
-	"nem/services/class"
-	"nem/services/message"
-	"nem/services/public"
-	"nem/services/student"
-	"nem/services/subscription"
-	"nem/services/teacher"
-	"nem/services/user"
 	"nem/utils"
 
 	"github.com/charmbracelet/log"
@@ -34,42 +23,22 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/jwalton/gchalk"
 	"golang.org/x/mod/modfile"
 )
-
-//go:embed apple-verif-file
-var AppleVerifFile string
 
 type Api struct {
 	http *http.Server
 
 	r chi.Router
 
-	publicService       *public.Service
-	subscriptionService *subscription.Service
-	userService         *user.Service
-	teacherService      *teacher.Service
-	studentService      *student.Service
-	classService        *class.Service
-	messageService      *message.Service
-	wsHub               *ws.Hub
-	wsService           *ws.Service
-	jwauth              *jwtauth.JWTAuth
+	wsHub     *ws.Hub
+	wsService *ws.Service
 }
 
 type Services struct {
-	PublicService       *public.Service
-	SubscriptionService *subscription.Service
-	UserService         *user.Service
-	TeacherService      *teacher.Service
-	StudentService      *student.Service
-	ClassService        *class.Service
-	MessageService      *message.Service
-	WsHub               *ws.Hub
-	WsService           *ws.Service
-	JWTAuth             *jwtauth.JWTAuth
+	WsHub     *ws.Hub
+	WsService *ws.Service
 }
 
 func New(
@@ -109,18 +78,9 @@ func New(
 			Addr:    utils.HTTPAddr(),
 			Handler: r,
 		},
-
-		r:                   r,
-		publicService:       services.PublicService,
-		userService:         services.UserService,
-		subscriptionService: services.SubscriptionService,
-		teacherService:      services.TeacherService,
-		studentService:      services.StudentService,
-		classService:        services.ClassService,
-		messageService:      services.MessageService,
-		wsHub:               services.WsHub,
-		wsService:           services.WsService,
-		jwauth:              services.JWTAuth,
+		r:         r,
+		wsHub:     services.WsHub,
+		wsService: services.WsService,
 	}
 
 	api.routes()
@@ -132,76 +92,8 @@ func New(
 }
 
 func (api *Api) routes() {
-	handlers := struct {
-		publicService       rpc.WebRPCServer
-		userService         rpc.WebRPCServer
-		subscriptionService rpc.WebRPCServer
-		authService         rpc.WebRPCServer
-		adminService        rpc.WebRPCServer
-		classService        rpc.WebRPCServer
-		teacherService      rpc.WebRPCServer
-		studentService      rpc.WebRPCServer
-		messageService      rpc.WebRPCServer
-	}{
-		userService:         rpc.NewUserServiceAPIServer(api.userService),
-		subscriptionService: rpc.NewSubscriptionServiceAPIServer(api.subscriptionService),
-		publicService:       rpc.NewPublicServiceAPIServer(api.publicService),
-		classService:        rpc.NewClassServiceAPIServer(api.classService),
-		teacherService:      rpc.NewTeacherServiceAPIServer(api.teacherService),
-		studentService:      rpc.NewStudentServiceAPIServer(api.studentService),
-		messageService:      rpc.NewMessageServiceAPIServer(api.messageService),
-	}
-
 	api.r.Group(func(r chi.Router) {
-		r.Use(httpmw.Auth(api.jwauth))
 		r.Get("/ws", api.wsHub.ServeWS)
-	})
-
-	api.r.Route("/api", func(r chi.Router) {
-		r.Group(func(r chi.Router) {
-			// Public routes
-			r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "text/plain")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("OK"))
-			})
-			r.Get("/apple-verif-file", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(AppleVerifFile))
-			})
-			r.Post("/rpc/PublicServiceAPI/*", func(w http.ResponseWriter, req *http.Request) {
-				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
-				handlers.publicService.ServeHTTP(w, req)
-			})
-			r.Post("/rpc/SubscriptionServiceAPI/*", func(w http.ResponseWriter, req *http.Request) {
-				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
-				handlers.subscriptionService.ServeHTTP(w, req)
-			})
-
-			// Private routes
-			r.Group(func(r chi.Router) {
-				r.Use(httpmw.Auth(api.jwauth))
-
-				r.Post("/*", func(w http.ResponseWriter, req *http.Request) {
-					req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api")
-					service, _ := getServicePath(req.URL.Path)
-					switch service {
-					case "UserServiceAPI":
-						handlers.userService.ServeHTTP(w, req)
-					case "ClassServiceAPI":
-						handlers.classService.ServeHTTP(w, req)
-					case "TeacherServiceAPI":
-						handlers.teacherService.ServeHTTP(w, req)
-					case "StudentServiceAPI":
-						handlers.studentService.ServeHTTP(w, req)
-					case "MessageServiceAPI":
-						handlers.messageService.ServeHTTP(w, req)
-					case "AdminServiceAPI":
-						httpmw.OnlyRoles(db.RoleAdmin)(handlers.adminService).ServeHTTP(w, req)
-					}
-				})
-			})
-		})
 	})
 }
 
@@ -233,12 +125,6 @@ func (api *Api) Start(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func getServicePath(url string) (service, method string) {
-	paths := strings.Split(strings.TrimPrefix(url, "/rpc/"), "/")
-	service, method = paths[0], paths[1]
-	return service, method
 }
 
 func printRoutes(r chi.Router) {
