@@ -1,7 +1,5 @@
 import { page } from '$app/stores'
 import { PUBLIC_ENV, PUBLIC_GO_SERVER_HOST } from '$env/static/public'
-import { chatStore } from '$lib/stores/chatStore'
-import type { Session } from '@auth/core/types'
 import type { Message } from '@prisma/client'
 import { derived, get, writable } from 'svelte/store'
 
@@ -50,20 +48,6 @@ class WS {
 		this.socket.addEventListener('message', (ev) => {
 			const payload: ReceivePayload = JSON.parse(ev.data)
 			wsPayloadStore.set(payload)
-			const user = get(page).data.user
-			switch (payload.action) {
-				case 'newMessage':
-					chatStore.addNewMessage(payload.data)
-					break
-				case 'addToTyping':
-					if (!user) break
-					if (payload.data !== user.firstName) chatStore.addTyping(payload.data)
-					break
-				case 'removeFromTyping':
-					if (!user) break
-					if (payload.data !== user.firstName) chatStore.removeTyping(payload.data)
-					break
-			}
 		})
 
 		return new Promise((resolve, reject) => {

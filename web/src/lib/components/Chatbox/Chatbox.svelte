@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { safeFetch } from '$lib/api'
-	import { chatStore } from '$lib/stores/chatStore'
-	import { isEmoji, matchEmojis } from '$lib/utils/emoji'
-	import type { Message, Profile } from '@prisma/client'
+	import { createChatStore } from '$lib/stores/chatStore'
+	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
 	import type { MessagesResponse } from '~/routes/api/messages/[id]/+server'
@@ -17,9 +16,9 @@
 
 	let elemChat: HTMLElement
 	let isFetching = false
+	const chatStore = createChatStore(scrollChatBottom)
 
 	onMount(async () => {
-		chatStore.reset()
 		if (chatId) {
 			const res = await safeFetch<MessagesResponse>(fetch(`/api/messages/${chatId}`))
 			if (res.ok) {
@@ -28,11 +27,8 @@
 			}
 		}
 		scrollChatBottom()
-		chatStore.resetUnreadMessages()
 	})
 	$: console.log($chatStore.messages)
-	$: if ($chatStore.messages.length > 0) scrollChatBottom()
-
 	$: typingString = getTypingString($chatStore.peopleTyping)
 
 	function scrollChatBottom(): void {
@@ -61,10 +57,11 @@
 			return
 		}
 
-		isFetching = false
-
 		if (res.data.isMore === false) $chatStore.isMore = false
 		chatStore.addOldMessages(res.data.messages)
+		setTimeout(() => {
+			isFetching = false
+		}, 0)
 	}
 
 	function getTypingString(peopleFirstNames: string[]) {
