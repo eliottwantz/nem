@@ -155,12 +155,12 @@
 	</div>
 
 	<form class="flex w-full items-center space-x-1">
-		<EmojiPicker bind:promptToPasteTo={prompt} />
+		<EmojiPicker bind:promptToPasteTo={prompt} {promptInput} />
 		<input
 			bind:this={promptInput}
 			bind:value={prompt}
 			on:input={handleOnInput}
-			class="input px-3"
+			class="emoji input px-3"
 			placeholder="Message"
 		/>
 		<div class="flex items-center gap-x-1">

@@ -69,16 +69,6 @@ export const handle = sequence(
 		}
 	}),
 	async function ({ event, resolve }) {
-		if (event.url.pathname.includes('.well-known')) return resolve(event)
-		if (event.url.pathname.includes('font')) return resolve(event)
-		if (event.url.pathname.includes('favicon.png')) {
-			if (urlWithoutLocale(event.url) !== event.url) {
-				throw redirect(302, urlWithoutLocale(event.url))
-			} else {
-				return resolve(event)
-			}
-		}
-
 		const session = await event.locals.getSession()
 		event.locals.session = session
 		console.log('######')
