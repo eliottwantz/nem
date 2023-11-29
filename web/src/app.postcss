@@ -5,6 +5,24 @@
 @tailwind utilities;
 @tailwind variants;
 
+@font-face {
+	font-family: emoji;
+
+	/* Fonts for text outside emoji blocks */
+	src: local('Segoe UI Symbol'), local('Droid Sans Mono'), local('Lucida Console'),
+		local('Arial Monospaced'), local(Arial);
+}
+
+@font-face {
+	font-family: emoji;
+
+	src:
+		local('Apple Color Emoji'),
+		local('Android Emoji'),
+		local(EmojiSymbols),
+		local(Symbola),
+		url('/font/AppleColorEmoji.ttf') format('truetype');
+}
 
 html,
 body {
