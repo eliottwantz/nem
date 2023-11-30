@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit'
-import type { AvailableLanguageTag } from 'i18n/runtime'
+import type { AvailableLanguageTag } from '$i18n/paraglide/runtime'
 
 export type AppRedirect = ReturnType<typeof appRedirect>
 

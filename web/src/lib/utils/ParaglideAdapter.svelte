@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { onSetLanguageTag, setLanguageTag } from 'i18n/runtime'
+	import { onSetLanguageTag, setLanguageTag } from '$i18n/paraglide/runtime'
 	import { getContext, setContext } from 'svelte'
 
 	setContext('languageTag', $page.data.locale)

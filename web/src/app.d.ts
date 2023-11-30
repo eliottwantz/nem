@@ -2,7 +2,7 @@ import type { AppRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import type { DefaultSession } from '@auth/core/types'
 import type { PrismaClient, Profile, User } from '@prisma/client'
-import type { AvailableLanguageTag } from 'i18n/runtime'
+import type { AvailableLanguageTag } from '$i18n/paraglide/runtime'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {

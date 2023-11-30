@@ -25,7 +25,7 @@
 	import { calendarViews } from '.'
 	import AddCalendarEvent from './AddCalendarEvent.svelte'
 	import ManageCalendarEvent from './ManageCalendarEvent.svelte'
-	import { languageTag } from 'i18n/runtime'
+	import { languageTag } from '$i18n/paraglide/runtime'
 
 	export let events: CalendarEntry[]
 	export let calendarMode: CalendarMode

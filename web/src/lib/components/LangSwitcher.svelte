@@ -15,9 +15,9 @@
 </script>
 
 <div>
-	<button class="variant-filled btn" use:popup={popupClick}>Click</button>
+	<button class="variant-ghost-surface btn" use:popup={popupClick}>{selectedLang}</button>
 
-	<div class="card variant-filled-primary p-4" data-popup="popupClick">
+	<div class="card p-4" data-popup="popupClick">
 		<ListBox>
 			{#each availableLanguageTags as lang}
 				<ListBoxItem
