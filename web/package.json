@@ -16,10 +16,10 @@
 		"db:migrate": "prisma migrate dev",
 		"db:studio": "prisma studio",
 		"db:seed": "prisma db seed",
-		"i18n:gen": "paraglide-js compile",
-		"i18n:validate": "inlang project validate",
-		"i18n:lint": "inlang lint",
-		"i18n:translate": "inlang machine translate -f && pnpm i18n:gen"
+		"i18n:gen": "paraglide-js compile --project ./project.inlang",
+		"i18n:validate": "inlang validate --project ./project.inlang",
+		"i18n:lint": "inlang lint --project ./project.inlang",
+		"i18n:translate": "inlang machine translate -f --project ./project.inlang"
 	},
 	"devDependencies": {
 		"@auth/core": "^0.18.0",
@@ -33,7 +33,9 @@
 		"@event-calendar/time-grid": "^2.3.3",
 		"@faker-js/faker": "^8.3.1",
 		"@fontsource-variable/inter": "^5.0.15",
-		"@inlang/cli": "^1.20.0",
+		"@fontsource/gravitas-one": "^5.0.17",
+		"@inlang/cli": "^2.0.0",
+		"@inlang/paraglide-js-adapter-vite": "^1.0.1",
 		"@skeletonlabs/skeleton": "^2.2.0",
 		"@skeletonlabs/tw-plugin": "^0.2.1",
 		"@sveltejs/adapter-vercel": "^3.0.3",
@@ -66,7 +68,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@inlang/paraglide-js": "1.0.0-prerelease.11",
+		"@inlang/paraglide-js": "1.0.0-prerelease.14",
 		"@prisma/client": "^5.6.0",
 		"lucide-svelte": "^0.284.0"
 	},

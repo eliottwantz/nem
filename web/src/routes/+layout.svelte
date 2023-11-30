@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '@event-calendar/core/index.css'
 	import '@fontsource-variable/inter'
+	import '@fontsource/gravitas-one'
 	import '../app.postcss'
 
 	import { onNavigate } from '$app/navigation'
@@ -29,6 +30,7 @@
 	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
 	import { ws } from '~/lib/ws'
+	import { m } from '~/lib/utils/i18n'
 
 	export let data
 	initializeStores()
@@ -121,7 +123,7 @@
 						</a>
 					{:else if !data.user}
 						<a href="signout" role="button" class="variant-filled-primary btn">
-							Signout
+							{m.signout()}
 						</a>
 					{:else}
 						<a href="dashboard/profile">

@@ -15,12 +15,11 @@ declare global {
 			} | null
 			user: Profile | null
 			db: PrismaClient
-			locale: AvailableLanguageTag
+			lang: AvailableLanguageTag
 			redirect: AppRedirect
 		}
 		interface PageData {
 			user: Profile
-			locale: AvailableLanguageTag
 		}
 		// interface Platform {}
 	}
