@@ -73,6 +73,7 @@
 	{#each availableLanguageTags as lang}
 		<link rel="alternate" hreflang={lang} href={translatePath($page.url.pathname, lang)} />
 	{/each}
+	<base href="/{$page.params.lang}/" />
 </svelte:head>
 
 {#key lang}

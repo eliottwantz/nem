@@ -22,7 +22,7 @@ export function translatePath(path: string, lang: AvailableLanguageTag) {
 /**
  * Returns the path without the language tag
  */
-function withoutLanguageTag(path: string) {
+export function withoutLanguageTag(path: string) {
 	const [_, maybeLang, ...rest] = path.split('/')
 	if (!maybeLang) return ''
 	if (availableLanguageTags.includes(maybeLang as AvailableLanguageTag)) {
