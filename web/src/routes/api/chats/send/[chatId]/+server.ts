@@ -1,7 +1,7 @@
 import type { APIErrorJson } from '$lib/api'
 import type { Message } from '@prisma/client'
 import { json } from '@sveltejs/kit'
-import { safeDBCall } from '~/lib/utils/error'
+import { safeDBCall } from '$lib/utils/error'
 
 export type SendMessageRequest = {
 	text: string

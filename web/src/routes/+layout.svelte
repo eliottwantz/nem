@@ -4,36 +4,43 @@
 	import '@fontsource/gravitas-one'
 	import '../app.postcss'
 
+	import { browser } from '$app/environment'
 	import { onNavigate } from '$app/navigation'
 	import { page } from '$app/stores'
+	import { m, translatePath } from '$i18n'
+	import {
+		availableLanguageTags,
+		setLanguageTag,
+		sourceLanguageTag,
+		type AvailableLanguageTag
+	} from '$i18n/paraglide/runtime'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Drawer from '$lib/components/Drawer/Drawer.svelte'
-	import Locale from '$lib/components/Locale.svelte'
 	import { modalComponentRegistry } from '$lib/components/Modal'
 	import Navigation from '$lib/components/Navigation.svelte'
 	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
 	import Logo from '$lib/icons/Logo.svelte'
-	import ParaglideAdapter from '$lib/utils/ParaglideAdapter.svelte'
 	import { getInitials } from '$lib/utils/initials'
-
+	import { ws } from '$lib/ws'
+	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom'
 	import {
 		AppBar,
 		AppShell,
 		Modal,
 		Toast,
 		getDrawerStore,
-		initializeStores
+		initializeStores,
+		storePopup
 	} from '@skeletonlabs/skeleton'
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
-	import { browser } from '$app/environment'
-	import { ws } from '~/lib/ws'
-	import { m } from '~/lib/utils/i18n'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
 
 	export let data
 	initializeStores()
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow })
 	const drawerStore = getDrawerStore()
 
 	onMount(() => {
@@ -55,9 +62,20 @@
 
 	$: console.log('LAYOUT user', $page.data.user)
 	$: if (browser && data.session && !ws.socket) ws.Connect()
+
+	$: lang = ($page.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
+	$: setLanguageTag(lang)
+	$: if (browser) document.documentElement.lang = lang
+	$: if (browser) document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
 </script>
 
-<ParaglideAdapter>
+<svelte:head>
+	{#each availableLanguageTags as lang}
+		<link rel="alternate" hreflang={lang} href={translatePath($page.url.pathname, lang)} />
+	{/each}
+</svelte:head>
+
+{#key lang}
 	<Drawer />
 
 	<Toast />
@@ -115,7 +133,7 @@
 						</div>
 					{/if}
 					<div class="hidden lg:block">
-						<Locale />
+						<LangSwitcher />
 					</div>
 					{#if !data.session}
 						<a href="signin" role="button" class="variant-filled-primary btn">
@@ -151,7 +169,7 @@
 		<!-- Router Slot -->
 		<slot />
 	</AppShell>
-</ParaglideAdapter>
+{/key}
 
 <style type="postcss">
 	#nem {

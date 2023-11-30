@@ -1,5 +1,5 @@
 import type { Profile } from '@prisma/client'
-import { safeDBCall } from '~/lib/utils/error'
+import { safeDBCall } from '$lib/utils/error'
 
 export async function load({ locals: { user, session, redirect, db }, params }) {
 	if (!session || !user) throw redirect(302, '/signin')

@@ -5,8 +5,8 @@
 	import ManageIcon from '$lib/icons/ManageIcon.svelte'
 	import UsersIcon from '$lib/icons/UsersIcon.svelte'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -15,7 +15,7 @@
 	<div class="flex items-center pl-2 pt-1 lg:hidden">
 		<CloseIcon on:click={() => drawerStore.close()} />
 		<div class="flex-grow"></div>
-		<Locale />
+		<LangSwitcher />
 	</div>
 	<hr class="border-surface-token divider border-t-2 lg:hidden" />
 

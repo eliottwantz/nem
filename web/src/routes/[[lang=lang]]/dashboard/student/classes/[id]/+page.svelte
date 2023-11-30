@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
+	import { languageTag } from '$i18n/paraglide/runtime'
+	import { safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Countdown from '$lib/components/Countdown/Countdown.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
-
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
-	import { languageTag } from 'i18n/runtime'
 	import { onMount } from 'svelte'
 
 	export let data
@@ -17,7 +16,7 @@
 
 	const start = new Date(data.classDetails.class.startAt)
 	const end = new Date(data.classDetails.class.endAt)
-	$: locale = languageTag()
+	$: lang = languageTag()
 
 	const modalStore = getModalStore()
 	const toastStore = getToastStore()
@@ -93,9 +92,9 @@
 <Layout>
 	<h1 class="h1" slot="title">Class: {data.classDetails.class.name}</h1>
 	<p>
-		<span class="text-xl">{start.toLocaleDateString(locale)}</span>
+		<span class="text-xl">{start.toLocaleDateString(lang)}</span>
 		<span class="text-xl">
-			{start.toLocaleTimeString(locale)} - {end.toLocaleTimeString(locale)}
+			{start.toLocaleTimeString(lang)} - {end.toLocaleTimeString(lang)}
 		</span>
 	</p>
 

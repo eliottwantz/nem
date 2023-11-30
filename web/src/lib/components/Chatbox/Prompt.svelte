@@ -5,9 +5,9 @@
 	import { ws } from '$lib/ws'
 	import type { Message, Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import type { CreateChatRequest, CreateChatResponse } from '~/routes/api/chats/+server'
+	import type { CreateChatRequest, CreateChatResponse } from '$routes/api/chats/+server'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
-	import type { SendMessageRequest } from '~/routes/api/chats/send/[chatId]/+server'
+	import type { SendMessageRequest } from '$routes/api/chats/send/[chatId]/+server'
 
 	export let chatId: string | undefined
 	export let recepient: Profile | undefined

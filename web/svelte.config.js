@@ -16,7 +16,8 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			$i18n: './src/lib/i18n/*',
-			'~': './src/*'
+			$components: './src/lib/components/*',
+			$routes: './src/routes/*'
 		}
 	}
 }

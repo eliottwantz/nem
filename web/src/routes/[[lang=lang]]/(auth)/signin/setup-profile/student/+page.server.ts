@@ -17,7 +17,7 @@ export const load = async ({ locals: { session, user, redirect } }) => {
 }
 
 export const actions = {
-	default: async ({ request, locals: { session, db, redirect, locale } }) => {
+	default: async ({ request, locals: { session, db, redirect, lang } }) => {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof createStudentSchema, ServerMessage>(
 			request,
@@ -37,7 +37,8 @@ export const actions = {
 						firstName: form.data.firstName,
 						lastName: form.data.lastName,
 						role: 'student',
-						preferedLanguage: locale
+						preferedLanguage: lang,
+						birdthday: form.data.birdthday
 					}
 				})
 				await tx.student.create({ data: { id: session.user.id } })

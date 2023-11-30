@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
 	import CalendarIcon from '$lib/icons/CalendarIcon.svelte'
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
@@ -8,7 +9,6 @@
 	import { currentClassDetailsStore } from '$lib/stores/currentClass'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
-	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
 
 	const drawerStore = getDrawerStore()
@@ -18,7 +18,7 @@
 	<div class="flex items-center py-1 pl-2 lg:hidden">
 		<CloseIcon on:click={() => drawerStore.close()} />
 		<div class="flex-grow"></div>
-		<Locale />
+		<LangSwitcher />
 	</div>
 
 	<hr class="border-surface-token divider border-t-2 lg:hidden" />

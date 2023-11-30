@@ -7,14 +7,8 @@ import {
 	SMTP_PORT,
 	SMTP_USER
 } from '$env/static/private'
+import { sourceLanguageTag, type AvailableLanguageTag } from '$i18n/paraglide/runtime'
 import { prisma } from '$lib/server/prisma'
-import { safeDBCall } from '$lib/utils/error'
-import {
-	localeFromURL,
-	pathNameWithoutLocale,
-	urlWithLocale,
-	urlWithoutLocale
-} from '$lib/utils/i18n'
 import { appRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import Email from '@auth/core/providers/email'
@@ -22,9 +16,7 @@ import Google from '@auth/core/providers/google'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
-import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-import { sourceLanguageTag, type AvailableLanguageTag } from '$i18n/paraglide/runtime'
 
 declare module '@auth/core/types' {
 	interface Session {

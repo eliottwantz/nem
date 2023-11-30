@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { m } from '$lib/utils/i18n'
+	import { m } from '$i18n'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	const drawerStore = getDrawerStore()
 

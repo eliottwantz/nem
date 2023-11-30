@@ -5,7 +5,7 @@
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import type { MessagesResponse } from '~/routes/api/messages/[id]/+server'
+	import type { MessagesResponse } from '$routes/api/messages/[id]/+server'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
 
