@@ -4,6 +4,7 @@
 	import OauthLogin from '$lib/components/Oauth/OauthLogin.svelte'
 
 	export let data
+	let callbackUrl = `${$page.params.lang ? `/${$page.params.lang}` : ''}/signin/setup-profile`
 </script>
 
 <Layout>
@@ -12,11 +13,7 @@
 	<section class="flex flex-col gap-y-4">
 		<OauthLogin />
 		<span class="text-center">Or</span>
-		<form
-			class="space-y-2"
-			method="post"
-			action="/auth/signin/email?callbackUrl=/{$page.data.locale}/signin/setup-profile"
-		>
+		<form class="space-y-2" method="post" action="/auth/signin/email?callbackUrl={callbackUrl}">
 			<input type="hidden" name="csrfToken" value={data.csrfToken} />
 			<label class="label">
 				<span>Email</span>
