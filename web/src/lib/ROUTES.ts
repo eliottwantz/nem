@@ -105,7 +105,8 @@ const SERVERS = {
   },
   "DELETE /api/teacher/availabilities/[id]": (params: { id: (string | number) }) => {
     return `/api/teacher/availabilities/${params.id}`
-  }
+  },
+  "PATCH /api/teacher/topics": `/api/teacher/topics`
 }
 
 /**
@@ -213,7 +214,7 @@ export function route<T extends keyof AllTypes>(key: T, ...params: any[]): strin
 */
 export type KIT_ROUTES = { 
   PAGES: { '/': 'lang', '/error': 'lang', '/signin': 'lang', '/signin/setup-profile': 'lang', '/signin/setup-profile/student': 'lang', '/signin/setup-profile/teacher': 'lang', '/signout': 'lang', '/verifyRequest': 'lang', '/about': 'lang', '/contact': 'lang', '/dashboard/class/[id]': 'id' | 'lang', '/dashboard/messages': 'lang', '/dashboard/messages/[id]': 'id' | 'lang', '/dashboard/profile': 'lang', '/dashboard/profile/edit': 'lang', '/dashboard/student/calendar': 'lang', '/dashboard/student/classes': 'lang', '/dashboard/student/classes/[id]': 'id' | 'lang', '/dashboard/teacher/calendar': 'lang', '/dashboard/teacher/classes': 'lang', '/dashboard/teacher/classes/[id]': 'id' | 'lang', '/dashboard/teacher/teach': 'lang', '/teachers': 'lang', '/teachers/[id]': 'id' | 'lang', '/teachers/[id]/subscribe': 'id' | 'lang', '/top-agent': 'lang', '/users/[id]': 'id' | 'lang' }
-  SERVERS: { 'DELETE /dashboard/teacher/classes': 'lang', 'PUT /api/change-lang': never, 'POST /api/teacher/availabilities': never, 'PUT /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/availabilities/[id]': 'id' }
+  SERVERS: { 'DELETE /dashboard/teacher/classes': 'lang', 'PUT /api/change-lang': never, 'POST /api/teacher/availabilities': never, 'PUT /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/availabilities/[id]': 'id', 'PATCH /api/teacher/topics': never }
   ACTIONS: { 'default /signin/setup-profile/student': 'lang', 'default /signin/setup-profile/teacher': 'lang', 'updateAvatar /dashboard/profile/edit': 'lang', 'deleteAvatar /dashboard/profile/edit': 'lang', 'newTopic /dashboard/teacher/teach': 'lang' }
   LINKS: Record<string, never>
   Params: { lang: never, id: never }

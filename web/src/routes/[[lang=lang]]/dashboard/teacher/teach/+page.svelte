@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
+	import { route } from '$lib/ROUTES'
 	import { safeFetch } from '$lib/api'
 	import Layout from '$lib/components/Layout.svelte'
 	import SelectTeach from '$lib/components/SelectTeach.svelte'
@@ -15,23 +16,22 @@
 	let isEditing = false
 
 	async function saveEdits() {
-		if (copyTopicsTaught.length <= 1) return
+		if (copyTopicsTaught.length < 1) return
 		isEditing = false
 		const diff = data.topics.filter((t) => !copyTopicsTaught.includes(t))
 		const res = await safeFetch(
-			fetchers.teacherService(fetch, $page.data.session).stopTeachingTopics({
-				topics: diff
+			fetch(route('PATCH /api/teacher/topics'), {
+				method: 'PATCH',
+				body: JSON.stringify(diff)
 			})
 		)
 		if (!res.ok) {
 			toastStore.trigger({
-				message: res.cause,
+				message: res.error.message,
 				background: 'bg-error-500'
 			})
 			return
 		}
-		console.log(data.topics)
-		console.log(copyTopicsTaught)
 		await invalidateAll()
 	}
 	function cancelEdits() {
@@ -53,16 +53,16 @@
 				{#if isEditing}
 					<button on:click={cancelEdits} class="variant-ghost btn"> Cancel </button>
 					<button
-						disabled={copyTopicsTaught.length <= 1}
+						disabled={copyTopicsTaught.length < 1}
 						on:click={saveEdits}
 						class="variant-ghost-success btn"
 					>
 						Save
 					</button>
 				{:else}
-					<button on:click={() => (isEditing = true)} class="variant-ghost btn"
-						>Edit</button
-					>
+					<button on:click={() => (isEditing = true)} class="variant-ghost btn">
+						Edit
+					</button>
 				{/if}
 			</div>
 			<section

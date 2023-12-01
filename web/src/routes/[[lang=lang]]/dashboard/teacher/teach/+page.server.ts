@@ -1,4 +1,3 @@
-import { safeFetch } from '$lib/api'
 import type { ServerMessage } from '$lib/schemas/error'
 import { teachNewTopicSchema } from '$lib/schemas/teach'
 import { safeDBCall } from '$lib/utils/error'
@@ -29,7 +28,7 @@ export async function load({ locals: { session, user, redirect, db } }) {
 }
 
 export const actions = {
-	newTopic: async ({ request, locals: { session, redirect }, fetch }) => {
+	newTopic: async ({ request, locals: { session, redirect, db } }) => {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,
@@ -37,17 +36,18 @@ export const actions = {
 		)
 		if (!form.valid) return fail(400, { form })
 
-		const res = await safeFetch(
-			fetchers.teacherService(fetch, session).teach({
-				topic: form.data.topic
+		const res = await safeDBCall(
+			db.teacher.update({
+				where: { id: session.user.id },
+				data: { topics: { connect: { topic: form.data.topic } } }
 			})
 		)
 
 		if (!res.ok) {
 			console.log(res.error)
-			return fail(res.error.code, {
+			return fail(400, {
 				success: false,
-				message: res.cause
+				message: 'Could not add this topic to your teaching list. Please try again.'
 			})
 		}
 	}

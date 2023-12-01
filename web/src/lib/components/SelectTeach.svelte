@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import type { ServerMessage } from '$lib/schemas/error'
 	import { teachNewTopicSchema } from '$lib/schemas/teach'
 	import { ListBox, ListBoxItem, getToastStore } from '@skeletonlabs/skeleton'
@@ -36,7 +38,12 @@
 </script>
 
 <div class="card text-token w-full p-4">
-	<form use:enhance method="post" class="flex flex-col gap-4">
+	<form
+		use:enhance
+		method="post"
+		action={route('newTopic /dashboard/teacher/teach', langParams())}
+		class="flex flex-col gap-4"
+	>
 		<p class=" text-xl font-semibold">Topic to teach</p>
 		{#if $errors.topic}
 			<p class="text-red-500">{$errors.topic}</p>
