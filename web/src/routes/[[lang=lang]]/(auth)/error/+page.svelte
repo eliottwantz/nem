@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
 	import Layout from '$lib/components/Layout.svelte'
-	import { signOut } from '@auth/sveltekit/client'
-	import { onMount } from 'svelte'
 </script>
 
 <Layout>

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores'
 	import { m } from '$i18n'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
+	import Link from './Link.svelte'
 	const drawerStore = getDrawerStore()
 
 	export let horizontal: boolean = true
@@ -12,44 +13,37 @@
 <nav class="select-none sm:text-lg {horizontal ? '' : 'list-nav'}">
 	<ul class={horizontal ? 'flex items-center justify-center space-x-8' : 'space-y-4'}>
 		<li>
-			<a
-				href="."
-				class="flex"
-				class:active={activeUrl === '/' && !horizontal}
+			<Link
+				href="/"
+				class="flex text-black {activeUrl === '/' && !horizontal
+					? 'bg-primary-active-token'
+					: ''}"
 				on:click={() => drawerStore.close()}
 			>
 				{m.home()}
-			</a>
+			</Link>
 		</li>
 		<li>
-			<a
-				href="about"
-				class="flex"
-				class:active={activeUrl === '/about' && !horizontal}
+			<Link
+				href="/about"
+				class="flex text-black {activeUrl === '/about' && !horizontal
+					? 'bg-primary-active-token'
+					: ''}"
 				on:click={() => drawerStore.close()}
 			>
 				{m.about()}
-			</a>
+			</Link>
 		</li>
 		<li>
-			<a
-				href="contact"
-				class="flex"
-				class:active={activeUrl === '/contact' && !horizontal}
+			<Link
+				href="/contact"
+				class="flex text-black {activeUrl === '/contact' && !horizontal
+					? 'bg-primary-active-token'
+					: ''}"
 				on:click={() => drawerStore.close()}
 			>
 				{m.contact()}
-			</a>
+			</Link>
 		</li>
 	</ul>
 </nav>
-
-<style lang="postcss">
-	a {
-		color: black;
-	}
-
-	.active {
-		@apply bg-primary-active-token;
-	}
-</style>

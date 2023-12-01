@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Link from '$components/Link.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 </script>
 
@@ -7,5 +8,5 @@
 
 	<div>About content</div>
 
-	<a href="contact">Go to contact</a>
+	<Link href="/contact">Go to contact</Link>
 </Layout>

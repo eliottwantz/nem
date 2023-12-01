@@ -7,6 +7,7 @@
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import Navigation from '../Navigation.svelte'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import Link from '$components/Link.svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -24,8 +25,8 @@
 		<nav class="list-nav">
 			<ul>
 				<li>
-					<a
-						href="admin/list-users"
+					<Link
+						href="/admin/list-users"
 						class="flex {$page.url.pathname === '/admin/list-users'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -33,11 +34,11 @@
 					>
 						<UsersIcon />
 						<span> Users </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="admin/list-classes"
+					<Link
+						href="/admin/list-classes"
 						class="flex {$page.url.pathname === '/admin/list-classes'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -45,11 +46,11 @@
 					>
 						<ClassesIcon />
 						<span> Classes </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="admin/manage"
+					<Link
+						href="/admin/manage"
 						class="flex {$page.url.pathname === '/admin/manage'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -57,7 +58,7 @@
 					>
 						<ManageIcon />
 						<span> Manage </span>
-					</a>
+					</Link>
 				</li>
 			</ul>
 		</nav>

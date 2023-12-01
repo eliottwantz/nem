@@ -76,7 +76,7 @@ export const handle = sequence(
 		console.log(
 			'REQ. Method:',
 			event.request.method,
-			pathname,
+			event.url.toString(),
 			'isProtectedRoute:',
 			isProtectedRoute,
 			'Have session:',

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
+	import Link from '$components/Link.svelte'
 	import { languageTag } from '$i18n/paraglide/runtime'
 	import { safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
@@ -142,7 +143,7 @@
 	<div class="card w-full max-w-xl space-y-4 p-4">
 		<h3 class="h3 mb-2">Teacher</h3>
 		<div class="flex gap-x-2">
-			<a href="teachers/{data.classDetails.teacher.id}" class="relative flex gap-2">
+			<Link href="/teachers/{data.classDetails.teacher.id}" class="relative flex gap-2">
 				{#if data.classDetails.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -152,39 +153,33 @@
 					width="w-8 sm:w-12"
 					height="h-8 sm:h-12"
 					src={data.classDetails.teacher.avatarUrl}
-					initials={getInitials(
-						data.classDetails.teacher.firstName,
-						data.classDetails.teacher.lastName
-					)}
+					initials={getInitials(data.classDetails.teacher)}
 				/>
 				<div>
 					<p class="font-semibold sm:text-lg">
-						{getPublicName(
-							data.classDetails.teacher.firstName,
-							data.classDetails.teacher.lastName
-						)}
+						{getPublicName(data.classDetails.teacher)}
 					</p>
 					{#if data.classDetails.teacher.topAgent}
 						<span class="font-bold text-primary-600"> TopAgent </span>
 					{/if}
 				</div>
-			</a>
+			</Link>
 		</div>
 		<h3 class="h3">Students</h3>
 		<ul class="list grid grid-cols-2">
 			{#each data.classDetails.users as user}
 				<li>
-					<a class="flex items-center gap-2 p-2" href="users/{user.id}">
+					<Link class="flex items-center gap-2 p-2" href="/users/{user.id}">
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
 							src={user.avatarUrl}
-							initials={getInitials(user.firstName, user.lastName)}
+							initials={getInitials(user)}
 						/>
 						<p class="font-semibold sm:text-lg">
-							{getPublicName(user.firstName, user.lastName)}
+							{getPublicName(user)}
 						</p>
-					</a>
+					</Link>
 				</li>
 			{/each}
 		</ul>

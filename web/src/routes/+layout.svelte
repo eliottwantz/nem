@@ -37,6 +37,7 @@
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import Link from '$components/Link.svelte'
 
 	export let data
 	initializeStores()
@@ -73,7 +74,6 @@
 	{#each availableLanguageTags as lang}
 		<link rel="alternate" hreflang={lang} href={translatePath($page.url.pathname, lang)} />
 	{/each}
-	<base href="/{$page.params.lang}/" />
 </svelte:head>
 
 {#key lang}
@@ -110,12 +110,12 @@
 								/>
 							</svg>
 						</button>
-						<a href=".">
+						<Link href="/">
 							<div class="flex items-center space-x-4">
 								<Logo />
 								<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
 							</div>
-						</a>
+						</Link>
 					</div>
 				</svelte:fragment>
 
@@ -123,9 +123,9 @@
 				<div class="hidden lg:block">
 					<Navigation horizontal />
 				</div>
-				<a href=".">
+				<Link href="/">
 					<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
-				</a>
+				</Link>
 				<svelte:fragment slot="trail">
 					{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
 						<div id="hoursBank" class="flex flex-wrap items-center justify-center">
@@ -137,21 +137,21 @@
 						<LangSwitcher />
 					</div>
 					{#if !data.session}
-						<a href="signin" role="button" class="variant-filled-primary btn">
+						<Link href="/signin" role="button" class="variant-filled-primary btn">
 							Signin
-						</a>
+						</Link>
 					{:else if !data.user}
-						<a href="signout" role="button" class="variant-filled-primary btn">
+						<Link href="/signout" role="button" class="variant-filled-primary btn">
 							{m.signout()}
-						</a>
+						</Link>
 					{:else}
-						<a href="dashboard/profile">
+						<Link href="/dashboard/profile">
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
 								src={data.user.avatarUrl ?? ''}
 								initials={getInitials(data.user)}
 							/>
-						</a>
+						</Link>
 					{/if}
 				</svelte:fragment>
 			</AppBar>

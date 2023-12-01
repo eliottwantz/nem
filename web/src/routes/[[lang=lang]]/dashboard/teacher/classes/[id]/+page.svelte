@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
+	import Link from '$components/Link.svelte'
 	import { languageTag } from '$i18n/paraglide/runtime'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
@@ -116,7 +117,7 @@
 		<ul class="list grid grid-cols-2">
 			{#each data.classDetails.students as user}
 				<li>
-					<a class="flex items-center gap-2 p-2" href="users/{user.id}">
+					<Link class="flex items-center gap-2 p-2" href="/users/{user.id}">
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
@@ -126,7 +127,7 @@
 						<p class="font-semibold sm:text-lg">
 							{getPublicName(user.profile)}
 						</p>
-					</a>
+					</Link>
 				</li>
 			{/each}
 		</ul>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Link from '$components/Link.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 
 	export let data
@@ -8,7 +9,7 @@
 
 <Layout>
 	<h1 slot="title" class="h1">Hi {user.firstName} !</h1>
-	<a class="variant-filled-primary btn" href="signout">Sign out</a>
-	<a href="dashboard/profile/edit" class="variant-ghost-surface btn">Edit Profile</a>
+	<Link class="variant-filled-primary btn" href="/signout">Sign out</Link>
+	<Link href="/dashboard/profile/edit" class="variant-ghost-surface btn">Edit Profile</Link>
 	<span>NEM Pass</span>
 </Layout>

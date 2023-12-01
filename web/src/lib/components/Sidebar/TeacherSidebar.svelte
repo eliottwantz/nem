@@ -10,6 +10,7 @@
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
+	import Link from '$components/Link.svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -27,8 +28,8 @@
 		<nav class="list-nav">
 			<ul>
 				<li>
-					<a
-						href="dashboard/teacher/teach"
+					<Link
+						href="/dashboard/teacher/teach"
 						class="flex {$page.url.pathname === '/dashboard/teacher/teach'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -36,11 +37,11 @@
 					>
 						<TeachIcon />
 						<span> Teach </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/teacher/classes"
+					<Link
+						href="/dashboard/teacher/classes"
 						class="flex {$page.url.pathname === '/dashboard/teacher/classes'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -48,11 +49,11 @@
 					>
 						<ClassesIcon />
 						<span> Classes </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/teacher/calendar"
+					<Link
+						href="/dashboard/teacher/calendar"
 						class="flex {$page.url.pathname === '/dashboard/teacher/calendar'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -60,11 +61,11 @@
 					>
 						<CalendarIcon />
 						<span> Calendar </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/messages"
+					<Link
+						href="/dashboard/messages"
 						class="flex {$page.url.pathname === '/dashboard/messages'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -72,12 +73,12 @@
 					>
 						<MessagesSquare size="32" />
 						<span> Messages </span>
-					</a>
+					</Link>
 				</li>
 				{#if $currentClassDetailsStore}
 					<li>
-						<a
-							href="class/{$currentClassDetailsStore?.class.id}"
+						<Link
+							href="/class/{$currentClassDetailsStore?.class.id}"
 							class="flex {$page.url.pathname ===
 							`/class/${$currentClassDetailsStore?.class.id}`
 								? 'bg-primary-active-token'
@@ -86,7 +87,7 @@
 						>
 							<CurrentClass />
 							<span> CurrentClass </span>
-						</a>
+						</Link>
 					</li>
 				{/if}
 			</ul>

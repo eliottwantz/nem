@@ -10,6 +10,7 @@
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
+	import Link from '$components/Link.svelte'
 
 	const drawerStore = getDrawerStore()
 </script>
@@ -35,8 +36,8 @@
 		<nav class="list-nav">
 			<ul>
 				<li>
-					<a
-						href="teachers"
+					<Link
+						href="/teachers"
 						class="flex {$page.url.pathname === '/teachers'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -44,11 +45,11 @@
 					>
 						<TeachIcon />
 						<span> Teachers </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/student/classes"
+					<Link
+						href="/dashboard/student/classes"
 						class="flex {$page.url.pathname === '/dashboard/student/classes'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -56,11 +57,11 @@
 					>
 						<ClassesIcon />
 						<span> Classes </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/student/calendar"
+					<Link
+						href="/dashboard/student/calendar"
 						class="flex {$page.url.pathname === '/dashboard/student/calendar'
 							? 'bg-primary-active-token'
 							: ''}"
@@ -68,11 +69,11 @@
 					>
 						<CalendarIcon />
 						<span> Calendar </span>
-					</a>
+					</Link>
 				</li>
 				<li>
-					<a
-						href="dashboard/messages"
+					<Link
+						href="/dashboard/messages"
 						class="flex {$page.url.pathname.startsWith('/dashboard/messages')
 							? 'bg-primary-active-token'
 							: ''}"
@@ -80,12 +81,12 @@
 					>
 						<MessagesSquare size="32" />
 						<span> Messages </span>
-					</a>
+					</Link>
 				</li>
 				{#if $currentClassDetailsStore}
 					<li>
-						<a
-							href="class/{$currentClassDetailsStore?.class.id}"
+						<Link
+							href="/class/{$currentClassDetailsStore?.class.id}"
 							class="flex {$page.url.pathname ===
 							`/class/${$currentClassDetailsStore?.class.id}`
 								? 'bg-primary-active-token'
@@ -94,7 +95,7 @@
 						>
 							<CurrentClass />
 							<span> Current Class </span>
-						</a>
+						</Link>
 					</li>
 				{/if}
 			</ul>
