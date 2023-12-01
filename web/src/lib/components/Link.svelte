@@ -3,9 +3,12 @@
 
 	export let href: string
 
-	const actualLink = href === '/' ? '' : href.startsWith('/') ? href : `/${href}`
+	let lang = $page.params.lang ?? ''
+	let actualLink = href.startsWith('/') ? `/${lang}${href}` : `/${lang}/${href}`
+	if (href === '/') actualLink = `/${lang}`
+	else if (!lang) actualLink = href.startsWith('/') ? href : `/${href}`
 </script>
 
-<a {...$$restProps} href="/{$page.params.lang}{actualLink}">
+<a {...$$restProps} on:click href={actualLink}>
 	<slot />
 </a>

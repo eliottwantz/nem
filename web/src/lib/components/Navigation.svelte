@@ -15,7 +15,7 @@
 		<li>
 			<Link
 				href="/"
-				class="flex text-black {activeUrl === '/' && !horizontal
+				class="flex text-black {activeUrl === `/${$page.params.lang ?? ''}` && !horizontal
 					? 'bg-primary-active-token'
 					: ''}"
 				on:click={() => drawerStore.close()}
@@ -26,7 +26,8 @@
 		<li>
 			<Link
 				href="/about"
-				class="flex text-black {activeUrl === '/about' && !horizontal
+				class="flex text-black {activeUrl ===
+					`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}about` && !horizontal
 					? 'bg-primary-active-token'
 					: ''}"
 				on:click={() => drawerStore.close()}
@@ -37,7 +38,9 @@
 		<li>
 			<Link
 				href="/contact"
-				class="flex text-black {activeUrl === '/contact' && !horizontal
+				class="flex text-black {activeUrl ===
+					`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}contact` &&
+				!horizontal
 					? 'bg-primary-active-token'
 					: ''}"
 				on:click={() => drawerStore.close()}
