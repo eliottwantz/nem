@@ -13,6 +13,8 @@
 	import Link from '$components/Link.svelte'
 
 	const drawerStore = getDrawerStore()
+
+	let activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col space-y-4 p-4 lg:border-r">
@@ -30,7 +32,10 @@
 				<li>
 					<Link
 						href="/dashboard/teacher/teach"
-						class="flex {$page.url.pathname === '/dashboard/teacher/teach'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/teach`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -42,7 +47,10 @@
 				<li>
 					<Link
 						href="/dashboard/teacher/classes"
-						class="flex {$page.url.pathname === '/dashboard/teacher/classes'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/classes`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -54,7 +62,10 @@
 				<li>
 					<Link
 						href="/dashboard/teacher/calendar"
-						class="flex {$page.url.pathname === '/dashboard/teacher/calendar'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/calendar`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -66,7 +77,10 @@
 				<li>
 					<Link
 						href="/dashboard/messages"
-						class="flex {$page.url.pathname === '/dashboard/messages'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/messages`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -79,8 +93,10 @@
 					<li>
 						<Link
 							href="/class/{$currentClassDetailsStore?.class.id}"
-							class="flex {$page.url.pathname ===
-							`/class/${$currentClassDetailsStore?.class.id}`
+							class="flex {activeUrl ===
+							`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}class/${
+								$currentClassDetailsStore?.class.id
+							}`
 								? 'bg-primary-active-token'
 								: ''}"
 							on:click={() => drawerStore.close()}

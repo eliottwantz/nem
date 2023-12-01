@@ -13,6 +13,8 @@
 	import Link from '$components/Link.svelte'
 
 	const drawerStore = getDrawerStore()
+
+	let activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col p-2 sm:space-y-4 sm:p-4 lg:border-r">
@@ -38,7 +40,8 @@
 				<li>
 					<Link
 						href="/teachers"
-						class="flex {$page.url.pathname === '/teachers'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}teachers`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -50,7 +53,10 @@
 				<li>
 					<Link
 						href="/dashboard/student/classes"
-						class="flex {$page.url.pathname === '/dashboard/student/classes'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/student/classes`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -62,7 +68,10 @@
 				<li>
 					<Link
 						href="/dashboard/student/calendar"
-						class="flex {$page.url.pathname === '/dashboard/student/calendar'
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/student/calendar`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -74,7 +83,10 @@
 				<li>
 					<Link
 						href="/dashboard/messages"
-						class="flex {$page.url.pathname.startsWith('/dashboard/messages')
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/messages`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -87,8 +99,10 @@
 					<li>
 						<Link
 							href="/class/{$currentClassDetailsStore?.class.id}"
-							class="flex {$page.url.pathname ===
-							`/class/${$currentClassDetailsStore?.class.id}`
+							class="flex {activeUrl ===
+							`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}class/${
+								$currentClassDetailsStore?.class.id
+							}`
 								? 'bg-primary-active-token'
 								: ''}"
 							on:click={() => drawerStore.close()}
