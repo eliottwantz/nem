@@ -10,19 +10,13 @@ import {
 import { sourceLanguageTag, type AvailableLanguageTag } from '$i18n/paraglide/runtime'
 import { prisma } from '$lib/server/prisma'
 import { appRedirect } from '$lib/utils/redirect'
-import type { AdapterUser } from '@auth/core/adapters'
 import Email from '@auth/core/providers/email'
 import Google from '@auth/core/providers/google'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { SvelteKitAuth } from '@auth/sveltekit'
 import { Prisma } from '@prisma/client'
+import { redirect } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-
-declare module '@auth/core/types' {
-	interface Session {
-		user: AdapterUser & DefaultSession['user']
-	}
-}
 
 export const handle = sequence(
 	SvelteKitAuth({
@@ -71,6 +65,14 @@ export const handle = sequence(
 		event.locals.lang = (event.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
 		event.locals.redirect = appRedirect(event.locals.lang)
 
+		if (event.url.pathname.startsWith('/verifyRequest')) {
+			let lang = event.cookies.get('lang') ?? event.locals.lang
+			throw redirect(302, `/${lang}/verifyRequest`)
+		}
+		if (event.cookies.get('lang') !== event.locals.lang) {
+			event.cookies.set('lang', event.locals.lang, { path: '/' })
+		}
+
 		const { pathname } = event.url
 		const isProtectedRoute = pathname.includes('/dashboard')
 		console.log(
@@ -98,17 +100,7 @@ export const handle = sequence(
 				const profile = await event.locals.db.profile.findUnique({
 					where: { id: session.user.id }
 				})
-				if (profile) {
-					event.locals.user = profile
-					// if (profile.preferedLanguage !== event.locals.lang) {
-					// 	await safeDBCall(
-					// 		event.locals.db.profile.update({
-					// 			where: { id: profile.id },
-					// 			data: { preferedLanguage: event.locals.lang }
-					// 		})
-					// 	)
-					// }
-				}
+				if (profile) event.locals.user = profile
 			} catch (e) {
 				if (e instanceof Prisma.PrismaClientKnownRequestError) {
 					if (e.code === 'P2025' && !pathname.includes('/signin/setup-profile'))
