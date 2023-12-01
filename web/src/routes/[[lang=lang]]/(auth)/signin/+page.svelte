@@ -5,6 +5,7 @@
 
 	export let data
 	let callbackUrl = `${$page.params.lang ? `/${$page.params.lang}` : ''}/signin/setup-profile`
+	console.log('callbackUrl', callbackUrl)
 </script>
 
 <Layout>

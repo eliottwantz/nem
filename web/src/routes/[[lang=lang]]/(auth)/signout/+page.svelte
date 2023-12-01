@@ -3,8 +3,9 @@
 	import Layout from '$lib/components/Layout.svelte'
 	import { signOut } from '@auth/sveltekit/client'
 
+	let callbackUrl = `${$page.params.lang ? `/${$page.params.lang}` : ''}/signin/setup-profile`
 	async function signout() {
-		await signOut({ callbackUrl: `/${$page.params.lang}` })
+		await signOut({ callbackUrl })
 	}
 </script>
 
