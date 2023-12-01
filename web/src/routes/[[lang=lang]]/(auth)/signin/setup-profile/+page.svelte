@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 	import RoleCard from '$lib/components/RoleCard.svelte'
 	import StudentIcon from '$lib/icons/StudentIcon.svelte'
@@ -14,15 +15,15 @@
 	<div
 		class="grid max-w-2xl grid-rows-2 space-y-4 md:grid-cols-2 md:grid-rows-1 md:space-x-4 md:space-y-0"
 	>
-		<Link href="/signin/setup-profile/student">
+		<a href={route('/signin/setup-profile/student', langParams())}>
 			<RoleCard desc="Become a NEM Student now." title="NEM Student">
 				<StudentIcon />
 			</RoleCard>
-		</Link>
-		<Link href="/signin/setup-profile/teacher">
+		</a>
+		<a href={route('/signin/setup-profile/teacher', langParams())}>
 			<RoleCard desc="Become a NEM Agent now." title="NEM Agent">
 				<TeacherIcon />
 			</RoleCard>
-		</Link>
+		</a>
 	</div>
 </Layout>

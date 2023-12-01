@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
@@ -167,9 +168,12 @@
 				<img class="h-10 w-10" src="/topagent.png" alt="TopAgent" />
 				<p>
 					This teacher is a NEM
-					<Link href="/top-agent" class="anchor font-bold text-primary-600">
+					<a
+						href={route('/top-agent', langParams())}
+						class="anchor font-bold text-primary-600"
+					>
 						<span> TopAgent </span>
-					</Link>
+					</a>
 				</p>
 			</div>
 		{/if}

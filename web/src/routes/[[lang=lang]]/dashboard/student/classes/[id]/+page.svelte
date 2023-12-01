@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
 	import { languageTag } from '$i18n/paraglide/runtime'
+	import { route } from '$lib/ROUTES'
 	import { safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Countdown from '$lib/components/Countdown/Countdown.svelte'
@@ -143,7 +144,13 @@
 	<div class="card w-full max-w-xl space-y-4 p-4">
 		<h3 class="h3 mb-2">Teacher</h3>
 		<div class="flex gap-x-2">
-			<Link href="/teachers/{data.classDetails.teacher.id}" class="relative flex gap-2">
+			<a
+				href={route('/teachers/[id]', {
+					id: data.classDetails.teacher.id,
+					lang: langParams().lang
+				})}
+				class="relative flex gap-2"
+			>
 				{#if data.classDetails.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -163,13 +170,16 @@
 						<span class="font-bold text-primary-600"> TopAgent </span>
 					{/if}
 				</div>
-			</Link>
+			</a>
 		</div>
 		<h3 class="h3">Students</h3>
 		<ul class="list grid grid-cols-2">
 			{#each data.classDetails.users as user}
 				<li>
-					<Link class="flex items-center gap-2 p-2" href="/users/{user.id}">
+					<a
+						class="flex items-center gap-2 p-2"
+						href={route('/users/[id]', { id: user.id, lang: langParams().lang })}
+					>
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
@@ -179,7 +189,7 @@
 						<p class="font-semibold sm:text-lg">
 							{getPublicName(user)}
 						</p>
-					</Link>
+					</a>
 				</li>
 			{/each}
 		</ul>

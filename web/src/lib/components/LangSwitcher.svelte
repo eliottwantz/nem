@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation'
 	import { ListBox, ListBoxItem, popup, type PopupSettings } from '@skeletonlabs/skeleton'
 	import { safeFetch } from '$lib/api'
+	import { route } from '$lib/ROUTES'
 
 	const popupClick: PopupSettings = {
 		event: 'click',
@@ -23,8 +24,8 @@
 		} else {
 			await Promise.all([
 				await safeFetch(
-					fetch('/api/change-lang', {
-						method: 'POST',
+					fetch(route('PUT /api/change-lang'), {
+						method: 'PUT',
 						body: JSON.stringify({ lang })
 					})
 				),

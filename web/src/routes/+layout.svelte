@@ -7,7 +7,7 @@
 	import { browser } from '$app/environment'
 	import { onNavigate } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { m, translatePath } from '$i18n'
+	import { langParams, m, translatePath } from '$i18n'
 	import {
 		availableLanguageTags,
 		setLanguageTag,
@@ -37,7 +37,7 @@
 	import { Hourglass } from 'lucide-svelte'
 	import { onMount } from 'svelte'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
-	import Link from '$components/Link.svelte'
+	import { route } from '$lib/ROUTES'
 
 	export let data
 	initializeStores()
@@ -110,12 +110,12 @@
 								/>
 							</svg>
 						</button>
-						<Link href="/">
+						<a href={route('/', langParams())}>
 							<div class="flex items-center space-x-4">
 								<Logo />
 								<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
 							</div>
-						</Link>
+						</a>
 					</div>
 				</svelte:fragment>
 
@@ -123,9 +123,9 @@
 				<div class="hidden lg:block">
 					<Navigation horizontal />
 				</div>
-				<Link href="/">
+				<a href={route('/', langParams())}>
 					<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
-				</Link>
+				</a>
 				<svelte:fragment slot="trail">
 					{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
 						<div id="hoursBank" class="flex flex-wrap items-center justify-center">
@@ -137,21 +137,29 @@
 						<LangSwitcher />
 					</div>
 					{#if !data.session}
-						<Link href="/signin" role="button" class="variant-filled-primary btn">
+						<a
+							href={route('/signin', langParams())}
+							role="button"
+							class="variant-filled-primary btn"
+						>
 							Signin
-						</Link>
+						</a>
 					{:else if !data.user}
-						<Link href="/signout" role="button" class="variant-filled-primary btn">
+						<a
+							href={route('/signout', langParams())}
+							role="button"
+							class="variant-filled-primary btn"
+						>
 							{m.signout()}
-						</Link>
+						</a>
 					{:else}
-						<Link href="/dashboard/profile">
+						<a href={route('/dashboard/profile', langParams())}>
 							<Avatar
 								class="cursor-pointer hover:border-primary-500"
 								src={data.user.avatarUrl ?? ''}
 								initials={getInitials(data.user)}
 							/>
-						</Link>
+						</a>
 					{/if}
 				</svelte:fragment>
 			</AppBar>

@@ -31,7 +31,7 @@
 
 	<Text>
 		Click the confirmation link to verify your email address:
-		<Link href={confirmationUrl}>{confirmationUrl}</Link>
+		<a href={confirmationUrl}>{confirmationUrl}</a>
 	</Text>
 
 	<Text>

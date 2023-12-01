@@ -1,4 +1,4 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { safeFetch } from '$lib/api'
 import type { ServerMessage } from '$lib/schemas/error'
 import { teachNewTopicSchema } from '$lib/schemas/teach'
 import { safeDBCall } from '$lib/utils/error'
@@ -29,7 +29,7 @@ export async function load({ locals: { session, user, redirect, db } }) {
 }
 
 export const actions = {
-	async default({ request, locals: { session, redirect }, fetch }) {
+	newTopic: async ({ request, locals: { session, redirect }, fetch }) => {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,

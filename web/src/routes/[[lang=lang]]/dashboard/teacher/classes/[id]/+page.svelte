@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
 	import { languageTag } from '$i18n/paraglide/runtime'
+	import { route } from '$lib/ROUTES'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
@@ -117,7 +118,10 @@
 		<ul class="list grid grid-cols-2">
 			{#each data.classDetails.students as user}
 				<li>
-					<Link class="flex items-center gap-2 p-2" href="/users/{user.id}">
+					<a
+						class="flex items-center gap-2 p-2"
+						href={route('/users/[id]', { id: user.id, lang: langParams().lang })}
+					>
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
@@ -127,7 +131,7 @@
 						<p class="font-semibold sm:text-lg">
 							{getPublicName(user.profile)}
 						</p>
-					</Link>
+					</a>
 				</li>
 			{/each}
 		</ul>

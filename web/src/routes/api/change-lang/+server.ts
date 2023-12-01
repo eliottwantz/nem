@@ -2,7 +2,7 @@ import type { AvailableLanguageTag } from '$i18n/paraglide/runtime'
 import { safeDBCall } from '$lib/utils/error'
 import { json } from '@sveltejs/kit'
 
-export async function POST({ locals: { session, user, db }, request, cookies }) {
+export const PUT = async ({ locals: { session, user, db }, request, cookies }) => {
 	if (!session || !user) return json({ message: 'Unauthorized' }, { status: 401 })
 
 	const req = (await request.json()) as { lang: AvailableLanguageTag }

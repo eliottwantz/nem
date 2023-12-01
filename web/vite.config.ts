@@ -1,6 +1,8 @@
 import { sveltekit } from '@sveltejs/kit/vite'
 import { paraglide } from '@inlang/paraglide-js-adapter-vite'
 import { defineConfig } from 'vite'
+import { kitRoutes } from 'vite-plugin-kit-routes'
+import type { KIT_ROUTES } from '$lib/ROUTES'
 
 export default defineConfig({
 	plugins: [
@@ -8,6 +10,11 @@ export default defineConfig({
 			project: './project.inlang',
 			outdir: './src/lib/i18n/paraglide'
 		}),
-		sveltekit()
+		sveltekit(),
+		kitRoutes<KIT_ROUTES>({
+			override_params: {
+				lang: { type: 'string' }
+			}
+		})
 	]
 })

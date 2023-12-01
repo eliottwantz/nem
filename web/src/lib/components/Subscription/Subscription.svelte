@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import Link from '$components/Link.svelte'
 	import type { Subscription, Teacher } from '$lib/api/api.gen'
 
 	export let teacher: Teacher
@@ -65,25 +64,25 @@
 				</p>
 				<p><span class="font-bold sm:text-2xl">{sub.hours}h</span> / month</p>
 				{#if i === 2}
-					<Link
+					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
 						class="variant-filled-primary btn"
 					>
 						Subscribe
-					</Link>
+					</a>
 				{:else if i === 4}
-					<Link
+					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
 						class="variant-outline-primary btn ring-2"
 						>Subscribe
-					</Link>
+					</a>
 				{:else}
-					<Link
+					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
 						class="variant-outline-primary btn ring-2"
 					>
 						Subscribe
-					</Link>
+					</a>
 				{/if}
 			</div>
 		{/each}

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 	import UserProfile from '$lib/components/Profile/UserProfile.svelte'
 
@@ -21,23 +22,25 @@
 		<p class="mb-8 text-2xl">No student have reached out to you yet</p>
 	{:else}
 		<p class="mb-8 text-2xl">
-			You don't have any conversations yet. Start by sending a message to a <Link
-				href="/teachers"
-				class="anchor"
-				>teacher
-			</Link>
+			You don't have any conversations yet. Start by sending a message to a
+			<a href={route('/teachers', langParams())} class="anchor"> teacher </a>
 		</p>
 	{/if}
 
 	<section>
 		<nav class="list-nav">
 			{#each data.chats as chat, i}
-				<Link href="/dashboard/messages/{chat.id}">
+				<a
+					href={route('/dashboard/messages/[id]', {
+						id: chat.id,
+						lang: langParams().lang
+					})}
+				>
 					<UserProfile profile={recipients[i]} avatarHeight="h-12" avatarWidth="w-12" />
 					<small class="opacity-50">
 						{new Date(chat.createdAt).toLocaleString()}
 					</small>
-				</Link>
+				</a>
 			{/each}
 		</nav>
 	</section>

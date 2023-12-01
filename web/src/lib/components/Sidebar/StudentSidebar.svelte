@@ -10,7 +10,8 @@
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
-	import Link from '$components/Link.svelte'
+	import { route } from '$lib/ROUTES'
+	import { langParams } from '$i18n'
 
 	const drawerStore = getDrawerStore()
 
@@ -38,8 +39,8 @@
 		<nav class="list-nav">
 			<ul>
 				<li>
-					<Link
-						href="/teachers"
+					<a
+						href={route('/teachers', langParams())}
 						class="flex {activeUrl ===
 						`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}teachers`
 							? 'bg-primary-active-token'
@@ -48,11 +49,11 @@
 					>
 						<TeachIcon />
 						<span> Teachers </span>
-					</Link>
+					</a>
 				</li>
 				<li>
-					<Link
-						href="/dashboard/student/classes"
+					<a
+						href={route('/dashboard/student/classes', langParams())}
 						class="flex {activeUrl ===
 						`/${$page.params.lang ?? ''}${
 							$page.params.lang ? '/' : ''
@@ -63,11 +64,11 @@
 					>
 						<ClassesIcon />
 						<span> Classes </span>
-					</Link>
+					</a>
 				</li>
 				<li>
-					<Link
-						href="/dashboard/student/calendar"
+					<a
+						href={route('/dashboard/student/calendar', langParams())}
 						class="flex {activeUrl ===
 						`/${$page.params.lang ?? ''}${
 							$page.params.lang ? '/' : ''
@@ -78,11 +79,11 @@
 					>
 						<CalendarIcon />
 						<span> Calendar </span>
-					</Link>
+					</a>
 				</li>
 				<li>
-					<Link
-						href="/dashboard/messages"
+					<a
+						href={route('/dashboard/messages', langParams())}
 						class="flex {activeUrl ===
 						`/${$page.params.lang ?? ''}${
 							$page.params.lang ? '/' : ''
@@ -93,12 +94,15 @@
 					>
 						<MessagesSquare size="32" />
 						<span> Messages </span>
-					</Link>
+					</a>
 				</li>
 				{#if $currentClassDetailsStore}
 					<li>
-						<Link
-							href="/class/{$currentClassDetailsStore?.class.id}"
+						<a
+							href={route('/dashboard/class/[id]', {
+								id: $currentClassDetailsStore?.class.id,
+								lang: langParams().lang
+							})}
 							class="flex {activeUrl ===
 							`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}class/${
 								$currentClassDetailsStore?.class.id
@@ -109,12 +113,10 @@
 						>
 							<CurrentClass />
 							<span> Current Class </span>
-						</Link>
+						</a>
 					</li>
 				{/if}
 			</ul>
 		</nav>
 	</div>
-
-	<!-- <hr class="border-surface-token divider border-t" /> -->
 </div>

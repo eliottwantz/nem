@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 </script>
 
@@ -9,7 +10,9 @@
 		<span class="h1 text-error-500">{$page.status}</span>: {$page.error?.message}
 	</h1>
 	{#if $page.status === 404}
-		<p>There's nothing here. <Link href="/" class="anchor">Go back home</Link></p>
+		<p>
+			There's nothing here. <a href={route('/', langParams())} class="anchor">Go back home</a>
+		</p>
 	{:else}
 		<p>There was an unexpected error. Please try again.</p>
 	{/if}

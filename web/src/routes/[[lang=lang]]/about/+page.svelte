@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Link from '$components/Link.svelte'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 </script>
 
@@ -8,5 +8,5 @@
 
 	<div>About content</div>
 
-	<Link href="/contact">Go to contact</Link>
+	<a href={route('/contact')}>Go to contact</a>
 </Layout>

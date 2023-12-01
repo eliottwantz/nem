@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
+	import { safeFetch } from '$lib/api'
 	import Layout from '$lib/components/Layout.svelte'
 	import SelectTeach from '$lib/components/SelectTeach.svelte'
 	import { getToastStore } from '@skeletonlabs/skeleton'

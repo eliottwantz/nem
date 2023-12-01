@@ -9,7 +9,8 @@
 		Topic
 	} from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
-	import Link from '$components/Link.svelte'
+	import { route } from '$lib/ROUTES'
+	import { langParams } from '$i18n'
 
 	export let teacher: Teacher & {
 		profile: Profile
@@ -35,7 +36,10 @@
 	<!-- Show only mobile -->
 	<div class="card flex flex-col gap-y-4 p-2 shadow-md sm:p-4 md:hidden md:flex-row">
 		<div class="flex items-center gap-3">
-			<Link href="/teachers/{teacher.id}" class="relative inline-block">
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="relative inline-block"
+			>
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -47,15 +51,15 @@
 					src={teacher.profile.avatarUrl ?? undefined}
 					initials={getInitials(teacher.profile)}
 				/>
-			</Link>
-			<Link href="/teachers/{teacher.id}">
+			</a>
+			<a href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}>
 				<p class="font-semibold sm:text-lg">
 					{getPublicName(teacher.profile)}
 				</p>
 				{#if teacher.topAgent}
 					<span class="font-bold text-primary-600"> TopAgent </span>
 				{/if}
-			</Link>
+			</a>
 			<div class="flex items-center justify-around gap-4 sm:text-lg">
 				<div>
 					{#if teacher.rating === 0}
@@ -106,7 +110,10 @@
 	<!-- Show for tablet and laptops -->
 	<div class="card hidden flex-row gap-4 p-4 shadow-md md:flex">
 		<div class="flex flex-col items-center">
-			<Link href="/teachers/{teacher.id}" class="relative">
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="relative"
+			>
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-2 z-10 h-8 w-8">
 						<img class="h-6 w-8" src="/topagent.png" alt="TopAgent" />
@@ -118,15 +125,18 @@
 					src={teacher.profile.avatarUrl ?? undefined}
 					initials={getInitials(teacher.profile)}
 				/>
-			</Link>
-			<Link href="/teachers/{teacher.id}" class="flex flex-col items-center">
+			</a>
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="flex flex-col items-center"
+			>
 				<p class="font-semibold sm:text-lg">
 					{getPublicName(teacher.profile)}
 				</p>
 				{#if teacher.topAgent}
 					<span class="font-bold text-primary-600"> TopAgent </span>
 				{/if}
-			</Link>
+			</a>
 			<div class="flex flex-col items-center justify-around sm:text-lg">
 				<div>
 					{#if teacher.rating === 0}
@@ -176,9 +186,12 @@
 				</div>
 			</div>
 			<div class="self-end">
-				<Link href="/teachers/{teacher.id}" class="variant-filled-primary btn"
-					>Show more</Link
+				<a
+					href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+					class="variant-filled-primary btn"
 				>
+					Show more
+				</a>
 			</div>
 		</div>
 	</div>

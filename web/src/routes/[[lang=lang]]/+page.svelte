@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Link from '$components/Link.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 	import ImageNem from '$lib/icons/ImageNEM.svelte'
 </script>
@@ -13,9 +14,13 @@
 				<h2 class="h2">Notre Education Moderne</h2>
 				<h1 class="h1">NEM Pass, your access to an education without borders.</h1>
 				<h4 class="h3">Improve and develop your skills</h4>
-				<Link href="/signin" role="button" class="variant-filled-primary btn self-center">
+				<a
+					href={route('/signin', langParams())}
+					role="button"
+					class="variant-filled-primary btn self-center"
+				>
 					Get your NEM Pass
-				</Link>
+				</a>
 			</div>
 			<div class="flex justify-center">
 				<ImageNem />

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { m } from '$i18n'
+	import { langParams, m } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import Link from './Link.svelte'
 	const drawerStore = getDrawerStore()
 
 	export let horizontal: boolean = true
@@ -13,19 +13,19 @@
 <nav class="select-none sm:text-lg {horizontal ? '' : 'list-nav'}">
 	<ul class={horizontal ? 'flex items-center justify-center space-x-8' : 'space-y-4'}>
 		<li>
-			<Link
-				href="/"
+			<a
+				href={route('/', langParams())}
 				class="flex text-black {activeUrl === `/${$page.params.lang ?? ''}` && !horizontal
 					? 'bg-primary-active-token'
 					: ''}"
 				on:click={() => drawerStore.close()}
 			>
 				{m.home()}
-			</Link>
+			</a>
 		</li>
 		<li>
-			<Link
-				href="/about"
+			<a
+				href={route('/about', langParams())}
 				class="flex text-black {activeUrl ===
 					`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}about` && !horizontal
 					? 'bg-primary-active-token'
@@ -33,11 +33,11 @@
 				on:click={() => drawerStore.close()}
 			>
 				{m.about()}
-			</Link>
+			</a>
 		</li>
 		<li>
-			<Link
-				href="/contact"
+			<a
+				href={route('/contact', langParams())}
 				class="flex text-black {activeUrl ===
 					`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}contact` &&
 				!horizontal
@@ -46,7 +46,7 @@
 				on:click={() => drawerStore.close()}
 			>
 				{m.contact()}
-			</Link>
+			</a>
 		</li>
 	</ul>
 </nav>

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import Link from '$components/Link.svelte'
 	import AutocompleteSelect from '$lib/components/AutocompleteSelect/AutocompleteSelect.svelte'
 	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte'
 	import Layout from '$lib/components/Layout.svelte'
@@ -151,9 +150,7 @@
 				/>
 			</div>
 		</div>
-		<Link class="variant-filled-primary btn w-full max-w-2xl self-center" href={url}>
-			Search
-		</Link>
+		<a class="variant-filled-primary btn w-full max-w-2xl self-center" href={url}> Search </a>
 	</section>
 
 	<section class="flex w-full flex-col gap-y-4 py-6 lg:hidden">
@@ -282,7 +279,7 @@
 			</div>
 		</div>
 
-		<Link class="variant-filled-primary btn w-full" href={url}>Search</Link>
+		<a class="variant-filled-primary btn w-full" href={url}>Search</a>
 	</section>
 
 	<strong class="mb-4 text-xl">{data.teachers.count} teachers available</strong>
@@ -296,7 +293,7 @@
 	<div class="mt-4 flex flex-col items-center gap-y-4">
 		<div>
 			{#each Array.from({ length: totalPages }) as _, idx}
-				<Link
+				<a
 					class="text-xl hover:underline {currentPage === idx
 						? 'font-semibold text-primary-700'
 						: ''}"
@@ -304,7 +301,7 @@
 					on:click={scrollTop}
 				>
 					{idx + 1}
-				</Link>
+				</a>
 			{/each}
 		</div>
 		<button class="variant-glass btn flex items-center gap-x-2" on:click={scrollTop}>
