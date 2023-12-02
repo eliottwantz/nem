@@ -7,7 +7,19 @@ export async function load({ locals: { session, redirect, db }, params }) {
 			where: { id: params.id },
 			include: {
 				timeSlot: true,
-				teacher: true
+				teacher: {
+					select: {
+						id: true,
+						topAgent: true,
+						profile: true
+					}
+				},
+				students: {
+					select: {
+						id: true,
+						profile: true
+					}
+				}
 			}
 		})
 	)

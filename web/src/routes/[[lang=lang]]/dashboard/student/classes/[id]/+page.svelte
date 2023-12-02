@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { page } from '$app/stores'
 	import { langParams } from '$i18n'
 	import { languageTag } from '$i18n/paraglide/runtime'
 	import { route } from '$lib/ROUTES'
@@ -14,11 +13,8 @@
 	import { onMount } from 'svelte'
 
 	export let data
-	console.log(data.class)
-
 	const start = new Date(data.class.timeSlot.startAt)
 	const end = new Date(data.class.timeSlot.endAt)
-	$: lang = languageTag()
 
 	const modalStore = getModalStore()
 	const toastStore = getToastStore()
@@ -36,6 +32,7 @@
 		}
 	})
 
+	$: lang = languageTag()
 	$: {
 		if (currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)) {
 			showTimer = true
@@ -43,10 +40,7 @@
 			showTimer = false
 		}
 	}
-	$: console.log('showTimer', showTimer)
-
 	$: canSignalNotPresentTeacher = currentTime >= new Date(start.getTime() + 10 * 60 * 1000) // Only available if it's 10 minutes after the start time
-
 	$: canCancelClassWithRefund = currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)
 
 	async function joinClass() {
@@ -161,12 +155,12 @@
 				<Avatar
 					width="w-8 sm:w-12"
 					height="h-8 sm:h-12"
-					src={data.class.teacher.avatarUrl}
-					initials={getInitials(data.class.teacher)}
+					src={data.class.teacher.profile.avatarUrl ?? undefined}
+					initials={getInitials(data.class.teacher.profile)}
 				/>
 				<div>
 					<p class="font-semibold sm:text-lg">
-						{getPublicName(data.class.teacher)}
+						{getPublicName(data.class.teacher.profile)}
 					</p>
 					{#if data.class.teacher.topAgent}
 						<span class="font-bold text-primary-600"> TopAgent </span>
@@ -176,20 +170,20 @@
 		</div>
 		<h3 class="h3">Students</h3>
 		<ul class="list grid grid-cols-2">
-			{#each data.class.users as user}
+			{#each data.class.students as student}
 				<li>
 					<a
 						class="flex items-center gap-2 p-2"
-						href={route('/users/[id]', { id: user.id, lang: langParams().lang })}
+						href={route('/users/[id]', { id: student.id, lang: langParams().lang })}
 					>
 						<Avatar
 							width="w-8 sm:w-12"
 							height="h-8 sm:h-12"
-							src={user.avatarUrl}
-							initials={getInitials(user)}
+							src={student.profile.avatarUrl ?? undefined}
+							initials={getInitials(student.profile)}
 						/>
 						<p class="font-semibold sm:text-lg">
-							{getPublicName(user)}
+							{getPublicName(student.profile)}
 						</p>
 					</a>
 				</li>

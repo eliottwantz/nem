@@ -2,7 +2,7 @@
 	import { dev } from '$app/environment'
 	import { page } from '$app/stores'
 	import { PUBLIC_VIDEO_SDK_API_KEY } from '$env/static/public'
-	import LocalVideo from '$lib/components/MeetingVideo/LocalVideo.svelte'
+	import LocalVideo from '$components/LocalVideo/LocalVideo.svelte'
 	import { getPublicName } from '$lib/utils/initials'
 	//@ts-expect-error
 	import VideoSDKMeeting from '@videosdk.live/rtc-js-prebuilt/dist/index'

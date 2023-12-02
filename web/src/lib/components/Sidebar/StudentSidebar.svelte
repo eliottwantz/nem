@@ -6,7 +6,6 @@
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
 	import CurrentClass from '$lib/icons/CurrentClass.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
-	import { currentClassDetailsStore } from '$lib/stores/currentClass'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
@@ -96,26 +95,6 @@
 						<span> Messages </span>
 					</a>
 				</li>
-				{#if $currentClassDetailsStore}
-					<li>
-						<a
-							href={route('/dashboard/class/[id]', {
-								id: $currentClassDetailsStore?.class.id,
-								lang: langParams().lang
-							})}
-							class="flex {activeUrl ===
-							`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}class/${
-								$currentClassDetailsStore?.class.id
-							}`
-								? 'bg-primary-active-token'
-								: ''}"
-							on:click={() => drawerStore.close()}
-						>
-							<CurrentClass />
-							<span> Current Class </span>
-						</a>
-					</li>
-				{/if}
 			</ul>
 		</nav>
 	</div>

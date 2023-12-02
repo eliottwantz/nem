@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import CalendarIcon from '$lib/icons/CalendarIcon.svelte'
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
-	import CurrentClass from '$lib/icons/CurrentClass.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
-	import { currentClassDetailsStore } from '$lib/stores/currentClass'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
-	import { route } from '$lib/ROUTES'
-	import { langParams } from '$i18n'
 
 	const drawerStore = getDrawerStore()
 
@@ -90,26 +88,6 @@
 						<span> Messages </span>
 					</a>
 				</li>
-				{#if $currentClassDetailsStore}
-					<li>
-						<a
-							href={route('/dashboard/class/[id]', {
-								id: $currentClassDetailsStore?.class.id,
-								lang: langParams().lang
-							})}
-							class="flex {activeUrl ===
-							`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}class/${
-								$currentClassDetailsStore?.class.id
-							}`
-								? 'bg-primary-active-token'
-								: ''}"
-							on:click={() => drawerStore.close()}
-						>
-							<CurrentClass />
-							<span> CurrentClass </span>
-						</a>
-					</li>
-				{/if}
 			</ul>
 		</nav>
 	</div>

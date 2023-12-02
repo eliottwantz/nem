@@ -7,7 +7,6 @@
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
-
 	import {
 		Tab,
 		TabGroup,

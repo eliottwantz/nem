@@ -1,5 +1,5 @@
 import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
-import type { Chat, Subscription } from '@prisma/client'
+import type { Chat, Class, Subscription } from '@prisma/client'
 import { error } from '@sveltejs/kit'
 
 export async function load({ params, locals: { session, user, redirect, db } }) {
@@ -68,27 +68,50 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 						}
 					})
 				).then((res) => (res.ok ? resolve(res.value) : resolve(null)))
-			})
-			// availabilities: new Promise<TimeSlot[]>((resolve) => {
-			// 	safeFetch(
-			// 		fetchers
-			// 			.studentService(fetch, session)
-			// 			.listAvailabilitiesOfTeacher({ teacherId: params.id })
-			// 	).then((res) => {
-			// 		if (res.ok) resolve(res.data.timeSlots)
-			// 		else resolve([])
-			// 	})
-			// }),
-			// classes: new Promise<Class[]>((resolve) => {
-			// 	safeFetch(
-			// 		fetchers
-			// 			.teacherService(fetch, session)
-			// 			.listClassesOfTeacher({ teacherId: params.id })
-			// 	).then((res) => {
-			// 		if (res.ok) resolve(res.data.classes)
-			// 		else resolve([])
-			// 	})
-			// })
+			}),
+			availabilities: dbLoadPromise(
+				safeDBCall(
+					db.$transaction(async (tx) => {
+						// List all timeSlots for the teacher where there is not private class, or not class with 4 students already, and the timeslot is not in the past.
+						const timeSlots = await tx.timeSlot.findMany({
+							include: {
+								class: {
+									include: {
+										_count: { select: { students: true } },
+										students: {
+											select: {
+												id: true
+											}
+										}
+									}
+								}
+							},
+							where: {
+								teacherId: { equals: params.id },
+								class: {
+									isPrivate: { not: true }
+								},
+								startAt: { lt: new Date() }
+							}
+						})
+						return timeSlots.filter((t) => {
+							if (t.class && t.class._count.students >= 4) return false
+							if (t.class?.students.map((s) => s.id).includes(user.id)) return false
+							return true
+						})
+					})
+				),
+				[]
+			),
+			classes: dbLoadPromise(
+				safeDBCall(
+					db.class.findMany({
+						where: { teacherId: { equals: params.id } },
+						include: { timeSlot: true }
+					})
+				),
+				[]
+			)
 		}
 	}
 }
