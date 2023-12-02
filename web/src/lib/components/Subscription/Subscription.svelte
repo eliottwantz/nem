@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import type { Subscription, Teacher } from '$lib/api/api.gen'
+	import type { Subscription, Teacher } from '@prisma/client'
 
 	export let teacher: Teacher
 	export let subscriptions: Subscription[]

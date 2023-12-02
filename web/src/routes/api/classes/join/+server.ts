@@ -1,4 +1,3 @@
-import type { APIErrorJson } from '$lib/api'
 import { AppError, safeDBCall } from '$lib/utils/error'
 import type { Class } from '@prisma/client'
 import { json } from '@sveltejs/kit'
@@ -13,9 +12,8 @@ export type JoinClassRequest = {
 	timeSlotId: string
 }
 
-export async function POST({ locals: { session, user, db }, request }) {
-	if (!session || !user)
-		return json({ message: 'Unauthorized' } satisfies APIErrorJson, { status: 401 })
+export const POST = async ({ locals: { session, user, db, message }, request }) => {
+	if (!session || !user) return message({ type: 'error', text: 'Unauthorized' }, { status: 401 })
 	const req = (await request.json()) as JoinClassRequest
 
 	const res = await safeDBCall(
@@ -68,10 +66,11 @@ export async function POST({ locals: { session, user, db }, request }) {
 		})
 	)
 	if (!res.ok)
-		return json(
+		return message(
 			{
-				message: res.error instanceof AppError ? res.error.message : 'Internal Server Error'
-			} satisfies APIErrorJson,
+				type: 'error',
+				text: res.error instanceof AppError ? res.error.message : 'Internal Server Error'
+			},
 			{ status: 500 }
 		)
 	return json(res.value)

@@ -1,11 +1,12 @@
 import { dev } from '$app/environment'
 import { STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_DEV } from '$env/static/private'
-import { fetchers, safeFetch } from '$lib/api'
-import type { Subscription } from '$lib/api/api.gen'
+import { prisma } from '$lib/server/prisma'
 import { stripe, type ClassPaymentMetaData, type SubscriptionMetadata } from '$lib/server/stripe'
+import { AppError, safeDBCall } from '$lib/utils/error'
+import { json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request }) {
+export const POST = async ({ request }) => {
 	const body = await request.text()
 	const sig = request.headers.get('stripe-signature') ?? ''
 
@@ -30,37 +31,107 @@ export async function POST({ request }) {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: ClassPaymentMetaData
 				}
-				const res = await safeFetch(
-					fetchers.publicService(fetch).createOrJoinClass({
-						req: {
-							userId: stripeSession.metadata.userId,
-							isPrivate: Boolean(stripeSession.metadata.isPrivate),
-							isTrial: Boolean(stripeSession.metadata.isTrial),
-							language: stripeSession.metadata.language,
-							topic: stripeSession.metadata.topic,
-							name: stripeSession.metadata.name,
-							timeSlotId: stripeSession.metadata.timeSlotId
+				const res = await safeDBCall(
+					prisma.$transaction(async (tx) => {
+						const exists = await tx.class.findFirst({
+							where: { timeSlotId: stripeSession.metadata.timeSlotId },
+							include: {
+								students: true
+							}
+						})
+						let teacherId: string = ''
+						if (exists) {
+							teacherId = exists.teacherId
+							if (exists.isPrivate)
+								throw new AppError('Cannot join private class', 403)
+							if (exists.students.length >= 4)
+								throw new AppError('Class is full', 403)
+							// Add student to this class
+							await tx.class.update({
+								where: { id: exists.id },
+								data: {
+									students: { connect: { id: stripeSession.metadata.userId } }
+								}
+							})
+						} else {
+							const timeSlot = await tx.timeSlot.findUnique({
+								where: { id: stripeSession.metadata.timeSlotId }
+							})
+							if (!timeSlot)
+								throw new AppError(
+									'Time slot not found: ' + stripeSession.metadata.timeSlotId,
+									404
+								)
+							// Create class
+							const newClass = await tx.class.create({
+								data: {
+									timeSlotId: timeSlot.id,
+									teacherId: timeSlot.teacherId,
+									name: stripeSession.metadata.name,
+									isPrivate: Boolean(stripeSession.metadata.isPrivate),
+									isTrial: Boolean(stripeSession.metadata.isTrial),
+									language: stripeSession.metadata.language,
+									topic: stripeSession.metadata.topic,
+									students: {
+										connect: { id: stripeSession.metadata.userId }
+									}
+								}
+							})
+							teacherId = newClass.teacherId
 						}
+						// Remove one hour from bank
+						const newHourBank = await tx.hoursBank.update({
+							where: {
+								studenId_teacherId: {
+									studenId: stripeSession.metadata.userId,
+									teacherId
+								}
+							},
+							data: {
+								hours: { decrement: 1 }
+							}
+						})
+						if (newHourBank.hours < 0) throw new AppError('Hour bank is empty', 400)
 					})
 				)
 				if (!res.ok) {
 					console.log(res.error)
-					return new Response(res.cause, { status: res.error.status })
+					return res.error instanceof AppError
+						? new Response(res.error.message, { status: res.error.status })
+						: new Response(
+								'Failed to process payment for trial class for user ' +
+									stripeSession.metadata.userId,
+								{ status: 500 }
+						  )
 				}
 			} else if (event.data.object.mode === 'subscription') {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: SubscriptionMetadata
 				}
-				const res = await safeFetch(
-					fetchers.subscriptionService(fetch).addSubscriptionForStudent({
-						studentId: stripeSession.metadata.studentId,
-						subscriptionId: stripeSession.metadata.subId,
-						teacherId: stripeSession.metadata.teacherId
+				// const res = await safeFetch(
+				// 	fetchers.subscriptionService(fetch).addSubscriptionForStudent({
+				// 		studentId: stripeSession.metadata.studentId,
+				// 		subscriptionId: stripeSession.metadata.subId,
+				// 		teacherId: stripeSession.metadata.teacherId
+				// 	})
+				// )
+				const res = await safeDBCall(
+					prisma.studentSubscription.create({
+						data: {
+							studentId: stripeSession.metadata.studentId,
+							teacherId: stripeSession.metadata.teacherId,
+							subscriptionId: stripeSession.metadata.subId
+						}
 					})
 				)
 				if (!res.ok) {
 					console.log(res.error)
-					return new Response(res.cause, { status: res.error.status })
+					return res.error instanceof AppError
+						? new Response(res.error.message, { status: res.error.status })
+						: new Response(
+								`Failed to create subscription for user ${stripeSession.metadata.studentId} with teacher ${stripeSession.metadata.teacherId}`,
+								{ status: 500 }
+						  )
 				}
 			}
 			break
@@ -70,20 +141,33 @@ export async function POST({ request }) {
 			const stripeSub = event.data.object as Stripe.Subscription & {
 				metadata: SubscriptionMetadata
 			}
-			const res = await safeFetch(
-				fetchers.publicService(fetch).addHoursToHoursBank({
-					hours: Number(stripeSub.metadata.hours),
-					studentId: stripeSub.metadata.studentId,
-					teacherId: stripeSub.metadata.teacherId
+			const res = await safeDBCall(
+				prisma.hoursBank.update({
+					where: {
+						studenId_teacherId: {
+							studenId: stripeSub.metadata.studentId,
+							teacherId: stripeSub.metadata.teacherId
+						}
+					},
+					data: {
+						hours: {
+							increment: Number(stripeSub.metadata.hours)
+						}
+					}
 				})
 			)
 			if (!res.ok) {
 				console.log(res.error)
-				return new Response(res.cause, { status: res.error.status })
+				return res.error instanceof AppError
+					? new Response(res.error.message, { status: res.error.status })
+					: new Response(`Failed to add hours for user ${stripeSub.metadata.studentId}`, {
+							status: 500
+					  })
 			}
 			break
 		default:
 			console.log(`Unhandled event type ${event.type}`)
+			return new Response(null, { status: 400 })
 	}
 	return new Response(null, { status: 200 })
 }

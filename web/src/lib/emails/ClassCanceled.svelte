@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Class } from '$lib/api/api.gen'
+	import type { Class, TimeSlot } from '@prisma/client'
 	import { Html, Text } from 'svelte-email'
 
-	export let classs: Class
+	export let classs: Class & { timeSlot: TimeSlot }
 	export let teacherName: string
 
 	const fontFamily =
@@ -26,7 +26,8 @@
 	<Text style={h1}>Class {classs.name} canceled by your teacher {teacherName}</Text>
 
 	<Text>
-		Please note that your class at {classs.startAt} - {classs.endAt} has been canceled by your teacher
+		Please note that your class at {classs.timeSlot.startAt} - {classs.timeSlot.endAt} has been canceled
+		by your teacher
 		{teacherName}.
 	</Text>
 

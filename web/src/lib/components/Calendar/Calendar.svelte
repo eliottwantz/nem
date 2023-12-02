@@ -20,12 +20,12 @@
 
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import type { Class } from '$lib/api/api.gen'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { calendarViews } from '.'
 	import AddCalendarEvent from './AddCalendarEvent.svelte'
 	import ManageCalendarEvent from './ManageCalendarEvent.svelte'
 	import { languageTag } from '$i18n/paraglide/runtime'
+	import type { Class } from '@prisma/client'
 
 	export let events: CalendarEntry[]
 	export let calendarMode: CalendarMode

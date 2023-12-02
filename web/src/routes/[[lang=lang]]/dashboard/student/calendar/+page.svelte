@@ -9,7 +9,7 @@
 	const toastStore = getToastStore()
 	$: if (!data.success) {
 		toastStore.trigger({
-			message: data.message,
+			message: 'Could not get your classes',
 			background: 'bg-error-500'
 		})
 	}

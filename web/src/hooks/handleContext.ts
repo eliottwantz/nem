@@ -1,5 +1,6 @@
 import { sourceLanguageTag, type AvailableLanguageTag } from '$i18n/paraglide/runtime'
 import { prisma } from '$lib/server/prisma'
+import { appJsonMessage } from '$lib/utils/json'
 import { appRedirect } from '$lib/utils/redirect'
 import { Prisma } from '@prisma/client'
 import { redirect, type Handle } from '@sveltejs/kit'
@@ -14,6 +15,7 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 	event.locals.db = prisma
 	event.locals.lang = (event.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
 	event.locals.redirect = appRedirect(event.locals.lang)
+	event.locals.message = appJsonMessage
 
 	if (event.url.pathname.startsWith('/verifyRequest')) {
 		let lang = event.cookies.get('lang') ?? event.locals.lang

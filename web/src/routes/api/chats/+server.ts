@@ -1,4 +1,4 @@
-import type { APIErrorJson } from '$lib/api'
+import { safeDBCall } from '$lib/utils/error'
 import { json } from '@sveltejs/kit'
 
 export type CreateChatRequest = {
@@ -8,23 +8,21 @@ export type CreateChatResponse = {
 	id: string
 }
 
-export async function POST({ locals: { session, user, db }, request }) {
-	if (!session || !user)
-		return json({ message: 'Unauthorized!!!' } satisfies APIErrorJson, { status: 401 })
+export const POST = async ({ locals: { session, user, db, message }, request }) => {
+	if (!session || !user) return message({ type: 'error', text: 'Unauthorized' }, { status: 401 })
 	const req = (await request.json()) as CreateChatRequest
-	// Create a new conversation
-	const res = await db.$transaction(async (tx) => {
-		const convo = await tx.chat.create({
+	// Create a new chat
+	const res = await safeDBCall(
+		db.chat.create({
 			data: {
 				users: {
 					connect: req.withUserIds.concat(user.id).map((id) => ({ id }))
 				}
 			}
 		})
-		return convo.id
-	})
-	if (!res) {
-		return json({ message: 'Internal Server Error' } satisfies APIErrorJson, { status: 500 })
+	)
+	if (!res.ok) {
+		return message({ type: 'error', text: 'Could not create chat' }, { status: 500 })
 	}
 	return json({ id: res })
 }

@@ -1,32 +1,27 @@
 import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/static/private'
-import { fetchers, safeFetch } from '$lib/api'
-import { createStripeCustomer, stripe, type ClassPaymentMetaData } from '$lib/server/stripe'
+import { stripe, type ClassPaymentMetaData } from '$lib/server/stripe'
 import type { TakeClassStore } from '$lib/stores/takeClassStore'
-import { error, json } from '@sveltejs/kit'
+import { safeDBCall } from '$lib/utils/error'
+import { json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request, locals: { session, user, redirect }, fetch, url, params }) {
+export const POST = async ({
+	request,
+	locals: { session, user, redirect, db, message },
+	url,
+	params
+}) => {
 	if (!session || !user) throw redirect(307, '/signin')
 
-	const res = await safeFetch(
-		fetchers.teacherService(fetch, session).findTeacherByID({ id: params.id })
-	)
+	const res = await safeDBCall(db.teacher.findUnique({ where: { id: params.id } }))
 	if (!res.ok) {
 		console.log(res.error)
-		return json({ message: 'Teacher not Found' }, { status: res.error.status })
+		return message({ type: 'error', text: 'Teacher not Found' }, { status: 404 })
 	}
 
 	try {
 		const req = (await request.json()) as TakeClassStore
-
-		debugger
-		let customer: Stripe.Customer
-		if (user.stripeCustomerId) {
-			const customerRes = await stripe.customers.retrieve(user.stripeCustomerId)
-			if (!customerRes.deleted) customer = customerRes
-			else customer = await createStripeCustomer(user, fetch, session)
-		} else customer = await createStripeCustomer(user, fetch, session)
-
+		const customer = await stripe.customers.retrieve(user.stripeCustomerId)
 		const stripeSession = await stripe.checkout.sessions.create({
 			customer: customer.id,
 			invoice_creation: { enabled: true },
@@ -45,7 +40,7 @@ export async function POST({ request, locals: { session, user, redirect }, fetch
 				{
 					price_data: {
 						currency: 'USD',
-						unit_amount: res.data.teacher.hourRate * 100,
+						unit_amount: res.value.hourRate * 100,
 						product: STRIPE_PRODUCT_ID_TRIAL
 					},
 					quantity: 1
@@ -70,10 +65,16 @@ export async function POST({ request, locals: { session, user, redirect }, fetch
 				'?take-trial-class=cancel'
 			)
 		})
-		if (!stripeSession.url) throw error(500, 'Something went wrong')
+		if (!stripeSession.url) {
+			console.log('Failed to get url for stripe session with id:', stripeSession.id)
+			return message(
+				{ type: 'error', text: 'Something went wrong getting page checkout url' },
+				{ status: 500 }
+			)
+		}
 		return json({ url: stripeSession.url }, { status: 200 })
 	} catch (e) {
 		console.log(e)
-		return json({ message: 'Something went wrong' }, { status: 500 })
+		return message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
 	}
 }

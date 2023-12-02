@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import type { Subscription } from '$lib/api/api.gen'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import type { StripeSubscriptionRequest } from '$lib/server/stripe'
@@ -10,8 +10,7 @@
 
 	export let data
 
-	let planId = $page.url.searchParams.get('plan-id')
-	let sub = data.subscriptions.find((s) => s.id === planId)
+	let sub = data.subscription
 	let pricePerMonth: number
 	let priceWithFees: number
 	let total: number
@@ -21,6 +20,10 @@
 	onMount(async () => {
 		modalStore.close()
 		if (!sub) {
+			toastStore.trigger({
+				message: 'Subscription not found',
+				background: 'bg-error-500'
+			})
 			await goto($page.url.pathname)
 			return
 		}
@@ -43,11 +46,11 @@
 
 	async function takeSubscription() {
 		try {
-			const res = await fetch(`${$page.url.pathname}`, {
+			const res = await fetch(route('/teachers/[id]/subscribe', { id: $page.params.id }), {
 				method: 'POST',
 				body: JSON.stringify({
 					teacherId: data.teacher.id,
-					subscription: sub as Subscription,
+					subscription: sub!,
 					price: total,
 					hours: sub!.hours
 				} satisfies StripeSubscriptionRequest)

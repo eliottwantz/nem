@@ -14,6 +14,13 @@ export default defineConfig({
 		kitRoutes<KIT_ROUTES>({
 			override_params: {
 				lang: { type: 'string' }
+			},
+			SERVERS: {
+				'GET /api/messages/[chatId]': {
+					explicit_search_params: {
+						cursor: { type: 'number' }
+					}
+				}
 			}
 		})
 	]

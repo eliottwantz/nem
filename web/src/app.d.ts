@@ -3,6 +3,7 @@ import type { AdapterUser } from '@auth/core/adapters'
 import type { DefaultSession, Session } from '@auth/core/types'
 import type { PrismaClient, Profile, User } from '@prisma/client'
 import type { AvailableLanguageTag } from '$i18n/paraglide/runtime'
+import type { AppJsonMessage } from '$lib/utils/json'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 
@@ -21,6 +22,7 @@ declare global {
 			db: PrismaClient
 			lang: AvailableLanguageTag
 			redirect: AppRedirect
+			message: AppJsonMessage
 		}
 		interface PageData {
 			user: Profile

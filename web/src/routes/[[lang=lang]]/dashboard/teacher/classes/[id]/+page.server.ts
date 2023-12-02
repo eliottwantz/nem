@@ -23,6 +23,6 @@ export async function load({ locals: { session, redirect, db }, params }) {
 	}
 	console.log(res.value)
 	return {
-		classDetails: res.value
+		class: res.value
 	}
 }

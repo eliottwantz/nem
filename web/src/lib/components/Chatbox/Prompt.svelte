@@ -8,6 +8,7 @@
 	import type { CreateChatRequest, CreateChatResponse } from '$routes/api/chats/+server'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
 	import type { SendMessageRequest } from '$routes/api/chats/send/[chatId]/+server'
+	import { route } from '$lib/ROUTES'
 
 	export let chatId: string | undefined
 	export let recepient: Profile | undefined
@@ -35,7 +36,7 @@
 
 		if (!chatId) {
 			const res = await safeFetch<CreateChatResponse>(
-				fetch('/api/chats', {
+				fetch(route('POST /api/chats'), {
 					method: 'POST',
 					body: JSON.stringify({
 						withUserIds: [recepient!.id]
@@ -60,7 +61,7 @@
 		currentlyTyping = false
 
 		const res = await safeFetch<Message>(
-			fetch(`/api/chats/send/${chatId}`, {
+			fetch(route('POST /api/chats/send/[chatId]', { chatId }), {
 				method: 'POST',
 				body: JSON.stringify({
 					text: prompt.trim()

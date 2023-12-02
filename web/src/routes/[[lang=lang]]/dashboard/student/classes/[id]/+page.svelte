@@ -14,10 +14,10 @@
 	import { onMount } from 'svelte'
 
 	export let data
-	console.log(data.classDetails)
+	console.log(data.class)
 
-	const start = new Date(data.classDetails.class.startAt)
-	const end = new Date(data.classDetails.class.endAt)
+	const start = new Date(data.class.timeSlot.startAt)
+	const end = new Date(data.class.timeSlot.endAt)
 	$: lang = languageTag()
 
 	const modalStore = getModalStore()
@@ -56,7 +56,9 @@
 			body: 'Are you sure you want to join the class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-				await goto(`/dashboard/class/${data.classDetails.class.id}`)
+				await goto(
+					route('/dashboard/class/[id]', { id: data.class.id, lang: langParams().lang })
+				)
 			}
 		})
 	}
@@ -70,13 +72,13 @@
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
 				const res = await safeFetch(
-					fetchers.studentService(fetch, $page.data.session).cancelClass({
-						classId: data.classDetails.class.id
+					fetch(route('POST /api/classes/[id]/cancel', { id: data.class.id }), {
+						method: 'POST'
 					})
 				)
 				if (!res.ok) {
 					toastStore.trigger({
-						message: res.cause,
+						message: res.error.message,
 						background: 'bg-red-500'
 					})
 					return
@@ -92,7 +94,7 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">Class: {data.classDetails.class.name}</h1>
+	<h1 class="h1" slot="title">Class: {data.class.name}</h1>
 	<p>
 		<span class="text-xl">{start.toLocaleDateString(lang)}</span>
 		<span class="text-xl">
@@ -106,7 +108,7 @@
 		<div class="flex flex-col items-center gap-2 sm:flex-row">
 			<button
 				class="variant-filled-primary btn"
-				title={data.classDetails.class.hasStarted
+				title={data.class.hasStarted
 					? 'Join Class'
 					: 'Wait for the teacher to start the class'}
 				on:click={joinClass}>Join class</button
@@ -116,7 +118,7 @@
 					Teacher is not there
 				</button>
 			{/if}
-			{#if !data.classDetails.class.isTrial}
+			{#if !data.class.isTrial}
 				<button on:click={cancelClass} title="Cancel class" class="variant-ghost-error btn">
 					<DeleteIcon class="h-6 w-6" />
 					{#if canCancelClassWithRefund}
@@ -146,12 +148,12 @@
 		<div class="flex gap-x-2">
 			<a
 				href={route('/teachers/[id]', {
-					id: data.classDetails.teacher.id,
+					id: data.class.teacher.id,
 					lang: langParams().lang
 				})}
 				class="relative flex gap-2"
 			>
-				{#if data.classDetails.teacher.topAgent}
+				{#if data.class.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
 					</span>
@@ -159,14 +161,14 @@
 				<Avatar
 					width="w-8 sm:w-12"
 					height="h-8 sm:h-12"
-					src={data.classDetails.teacher.avatarUrl}
-					initials={getInitials(data.classDetails.teacher)}
+					src={data.class.teacher.avatarUrl}
+					initials={getInitials(data.class.teacher)}
 				/>
 				<div>
 					<p class="font-semibold sm:text-lg">
-						{getPublicName(data.classDetails.teacher)}
+						{getPublicName(data.class.teacher)}
 					</p>
-					{#if data.classDetails.teacher.topAgent}
+					{#if data.class.teacher.topAgent}
 						<span class="font-bold text-primary-600"> TopAgent </span>
 					{/if}
 				</div>
@@ -174,7 +176,7 @@
 		</div>
 		<h3 class="h3">Students</h3>
 		<ul class="list grid grid-cols-2">
-			{#each data.classDetails.users as user}
+			{#each data.class.users as user}
 				<li>
 					<a
 						class="flex items-center gap-2 p-2"

@@ -5,9 +5,10 @@
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import type { MessagesResponse } from '$routes/api/messages/[id]/+server'
+	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
+	import { route } from '$lib/ROUTES'
 
 	export let chatId: string | undefined
 	export let recepient: Profile
@@ -20,7 +21,9 @@
 
 	onMount(async () => {
 		if (chatId) {
-			const res = await safeFetch<MessagesResponse>(fetch(`/api/messages/${chatId}`))
+			const res = await safeFetch<MessagesResponse>(
+				fetch(route('GET /api/messages/[chatId]', { chatId }))
+			)
 			if (res.ok) {
 				console.log('got message', res.data)
 				chatStore.addOldMessages(res.data.messages)
@@ -39,6 +42,7 @@
 	$: if (elemChat) console.log('elemChat.scrollHeight', elemChat.scrollHeight)
 
 	async function fetchOlderMessage(e: WheelEvent) {
+		if (!chatId) return
 		if (isFetching) return
 		const isUp = e.deltaY < 0
 		if (!isUp) return
@@ -47,7 +51,9 @@
 		if (!chatStore.oldestMessage) return
 		isFetching = true
 		const res = await safeFetch<MessagesResponse>(
-			fetch(`/api/messages/${chatId}?cursor=${chatStore.oldestMessage.id}`)
+			fetch(
+				route('GET /api/messages/[chatId]', { chatId, cursor: chatStore.oldestMessage.id })
+			)
 		)
 		if (!res.ok) {
 			toastStore.trigger({

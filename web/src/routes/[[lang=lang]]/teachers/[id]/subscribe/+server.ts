@@ -1,35 +1,28 @@
-import { fetchers, safeFetch } from '$lib/api'
-import type { Subscription } from '$lib/api/api.gen'
 import {
-	createStripeCustomer,
 	stripe,
 	type StripeSubscriptionRequest,
 	type SubscriptionMetadata
 } from '$lib/server/stripe'
+import { safeDBCall } from '$lib/utils/error'
 import { error, json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request, locals: { session, user, redirect }, fetch, url, params }) {
+export const POST = async ({
+	request,
+	locals: { db, session, user, redirect, message },
+	url,
+	params
+}) => {
 	if (!session || !user) throw redirect(307, '/signin')
 
-	const res = await safeFetch(
-		fetchers.teacherService(fetch, session).findTeacherByID({ id: params.id })
-	)
+	const res = await safeDBCall(db.teacher.findUnique({ where: { id: params.id } }))
 	if (!res.ok) {
 		console.log(res.error)
-		return json({ message: 'Teacher not Found' }, { status: res.error.status })
+		return message({ type: 'error', text: 'Teacher not Found' }, { status: 404 })
 	}
 	try {
 		const req = (await request.json()) as StripeSubscriptionRequest
-
-		let customer: Stripe.Customer
-		if (user.stripeCustomerId) {
-			const customerRes = await stripe.customers.retrieve(user.stripeCustomerId)
-			if (!customerRes.deleted) customer = customerRes
-			else customer = await createStripeCustomer(user, fetch, session)
-		} else customer = await createStripeCustomer(user, fetch, session)
-
-		debugger
+		const customer = await stripe.customers.retrieve(user.stripeCustomerId)
 		const stripeSession = await stripe.checkout.sessions.create({
 			customer: customer.id,
 			subscription_data: {
@@ -75,6 +68,6 @@ export async function POST({ request, locals: { session, user, redirect }, fetch
 		return json({ url: stripeSession.url }, { status: 200 })
 	} catch (e) {
 		console.log(e)
-		return json({ message: 'Something went wrong' }, { status: 500 })
+		return message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
 	}
 }

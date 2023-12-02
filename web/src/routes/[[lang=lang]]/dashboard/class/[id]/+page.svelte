@@ -12,15 +12,15 @@
 	let audioEnabled = false
 	let videoEnabled = false
 
-	let isTeacher = data.user.role === 'teacher' && data.classDetails.teacher.id === data.user.id
+	let isTeacher = data.user.role === 'teacher' && data.class.teacher.id === data.user.id
 
 	function initMeeting() {
 		hasJoined = true
 		const config = {
 			debug: dev ? true : false,
 			apiKey: PUBLIC_VIDEO_SDK_API_KEY,
-			meetingId: data.classDetails.class.id,
-			name: getPublicName(data.user.firstName, data.user.lastName),
+			meetingId: data.class.id,
+			name: getPublicName(data.user),
 			containerId: 'meetingDiv',
 
 			micEnabled: audioEnabled,
@@ -35,7 +35,7 @@
 			joinWithoutUserInteraction: true,
 			joinScreen: {
 				visible: false,
-				title: data.classDetails.class.name,
+				title: data.class.name,
 				meetingUrl: window.location.href
 			},
 			notificationSoundEnabled: false,

@@ -18,6 +18,7 @@
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
+	import { route } from '$lib/ROUTES'
 
 	export let teacher: Teacher & { topicsTaught: string[]; spokenLanguages: SpokenLanguage[] }
 	export let classes: (Class & { timeSlot: TimeSlot })[]
@@ -96,7 +97,7 @@
 			}
 		} else {
 			const res = await safeFetch(
-				fetch('/api/classes/join', {
+				fetch(route('POST /api/classes/join'), {
 					method: 'POST',
 					body: JSON.stringify({
 						isPrivate: $takeClassStore.selectedIsPrivate,

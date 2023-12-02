@@ -1,13 +1,26 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { safeDBCall } from '$lib/utils/error'
 
-export async function load({ locals: { session, redirect }, fetch }) {
+export async function load({ locals: { session, redirect, db } }) {
 	if (!session) throw redirect(302, '/signin')
 
-	const res = await safeFetch(fetchers.studentService(fetch, session).listClasses())
+	// const res = await safeFetch(fetchers.studentService(fetch, session).listClasses())
+	const res = await safeDBCall(
+		db.class.findMany({
+			where: {
+				students: {
+					some: {
+						id: session.user.id
+					}
+				}
+			},
+			include: {
+				timeSlot: true
+			}
+		})
+	)
 
 	return {
 		success: res.ok,
-		message: !res.ok ? res.cause : '',
-		classes: res.ok ? res.data.classes : []
+		classes: res.ok ? res.value : []
 	}
 }

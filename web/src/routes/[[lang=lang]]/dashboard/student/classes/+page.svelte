@@ -8,11 +8,11 @@
 	export let data
 	let classes = data.classes
 	let upcomingClasses = data.classes.filter((c) => {
-		if (new Date(c.endAt) >= new Date()) return true
+		if (new Date(c.timeSlot.endAt) >= new Date()) return true
 		else return false
 	})
 	let pastClasses = data.classes.filter((c) => {
-		if (new Date(c.endAt) < new Date()) return true
+		if (new Date(c.timeSlot.endAt) < new Date()) return true
 		else return false
 	})
 	let tabSet: number = 0
@@ -54,22 +54,16 @@
 											<UserProfile
 												avatarHeight="h-10"
 												avatarWidth="w-10"
-												profile={{
-													avatarFilePath: row.teacherAvatarFilePath,
-													avatarUrl: row.teacherAvatarUrl,
-													firstName: row.teacherFirstName,
-													lastName: row.teacherLastName,
-													id: row.teacherId
-												}}
+												profile={row.teacher.profile}
 											/>
 										</td>
 										<td class="!align-middle"
-											>{new Date(row.startAt).toLocaleString(
+											>{new Date(row.timeSlot.startAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}</td
 										>
 										<td class="!align-middle"
-											>{new Date(row.endAt).toLocaleString(
+											>{new Date(row.timeSlot.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>
@@ -113,22 +107,16 @@
 											<UserProfile
 												avatarHeight="h-10"
 												avatarWidth="w-10"
-												profile={{
-													avatarFilePath: row.teacherAvatarFilePath,
-													avatarUrl: row.teacherAvatarUrl,
-													firstName: row.teacherFirstName,
-													lastName: row.teacherLastName,
-													id: row.teacherId
-												}}
+												profile={row.teacher.profile}
 											/>
 										</td>
 										<td class="!align-middle"
-											>{new Date(row.startAt).toLocaleString(
+											>{new Date(row.timeSlot.startAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}</td
 										>
 										<td class="!align-middle"
-											>{new Date(row.endAt).toLocaleString(
+											>{new Date(row.timeSlot.endAt).toLocaleString(
 												$page.data.user.preferedLanguage
 											)}
 										</td>

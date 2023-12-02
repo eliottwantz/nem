@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { TimeSlot } from '$lib/api/api.gen'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 	import type {
 		DeleteCalendarAvailability,
@@ -10,6 +9,9 @@
 	import { onMount } from 'svelte'
 	import type { CalendarEvent, CalendarInteractEvent, CalendarResizeInfo } from '.'
 	import TimeInput from './TimeInput.svelte'
+	import type { TimeSlot } from '@prisma/client'
+	import { route } from '$lib/ROUTES'
+	import { safeFetch } from '$lib/api'
 
 	export let cal: any
 	export let info:
@@ -76,74 +78,64 @@
 			}
 		}
 
-		try {
-			const res:
-				| { success: false; message: string }
-				| { success: true; timeSlots: TimeSlot[] } = await (
-				await fetch(`/api/teacher/availabilities/${info.event.id}`, {
-					method: 'PUT',
-					body: JSON.stringify(reqBody)
-				})
-			).json()
-			if (!res.success) {
-				errorMsg = res.message
-				return
-			}
-			console.log('Modified event', info.event.id)
-			if (res.timeSlots.length === 1) {
-				const event: CalendarEvent = {
-					...info.event,
-					start: new Date(res.timeSlots[0].startAt),
-					end: new Date(res.timeSlots[0].endAt)
-				}
-				cal.updateEvent(event)
-			} else {
-				// Delete old event
-				cal.removeEventById(info.event.id)
-
-				// Add new ones
-				res.timeSlots.forEach((t) => {
-					const event: CalendarEvent = {
-						id: `${t.id}`,
-						title: 'Available',
-						backgroundColor: '#fbdc90',
-						textColor: '#000',
-						start: new Date(t.startAt),
-						end: new Date(t.endAt),
-						allDay: false,
-						editable: true,
-						startEditable: true,
-						durationEditable: true
-					}
-					cal.addEvent(event)
-				})
-			}
-			modalStore.close()
-		} catch (error) {
-			errorMsg = (error as Error).message
+		const res = await safeFetch<TimeSlot[]>(
+			fetch(route('PUT /api/teacher/availabilities/[id]', { id: info.event.id }), {
+				method: 'PUT',
+				body: JSON.stringify(reqBody)
+			})
+		)
+		if (!res.ok) {
+			errorMsg = res.error.message
+			return
 		}
+		console.log('Modified event', info.event.id)
+		if (res.data.length === 1) {
+			const event: CalendarEvent = {
+				...info.event,
+				start: new Date(res.data[0].startAt),
+				end: new Date(res.data[0].endAt)
+			}
+			cal.updateEvent(event)
+		} else {
+			// Delete old event
+			cal.removeEventById(info.event.id)
+
+			// Add new ones
+			res.data.forEach((t) => {
+				const event: CalendarEvent = {
+					id: `${t.id}`,
+					title: 'Available',
+					backgroundColor: '#fbdc90',
+					textColor: '#000',
+					start: new Date(t.startAt),
+					end: new Date(t.endAt),
+					allDay: false,
+					editable: true,
+					startEditable: true,
+					durationEditable: true
+				}
+				cal.addEvent(event)
+			})
+		}
+		modalStore.close()
 	}
 	async function deleteEvent() {
 		const reqBody: DeleteCalendarAvailability = {
 			id: info.event.id
 		}
-		try {
-			const res: { success: false; message: string } | { success: true } = await (
-				await fetch(`/api/teacher/availabilities/${info.event.id}`, {
-					method: 'DELETE',
-					body: JSON.stringify(reqBody)
-				})
-			).json()
-			if (!res.success) {
-				errorMsg = res.message
-				return
-			}
-			console.log('Deleted event', info.event.id)
-			cal.removeEventById(info.event.id)
-			modalStore.close()
-		} catch (error) {
-			errorMsg = (error as Error).message
+		const res = await safeFetch(
+			fetch(route('DELETE /api/teacher/availabilities/[id]', { id: info.event.id }), {
+				method: 'DELETE',
+				body: JSON.stringify(reqBody)
+			})
+		)
+		if (!res.ok) {
+			errorMsg = res.error.message
+			return
 		}
+		console.log('Deleted event', info.event.id)
+		cal.removeEventById(info.event.id)
+		modalStore.close()
 	}
 
 	function cancel() {

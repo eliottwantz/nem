@@ -3,6 +3,7 @@
 	import { langParams } from '$i18n'
 	import { languageTag } from '$i18n/paraglide/runtime'
 	import { route } from '$lib/ROUTES'
+	import { safeFetch } from '$lib/api'
 	import Avatar from '$lib/components/Avatar.svelte'
 	import Layout from '$lib/components/Layout.svelte'
 	import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
@@ -11,8 +12,8 @@
 
 	export let data
 
-	const start = new Date(data.classDetails.timeSlot.startAt)
-	const end = new Date(data.classDetails.timeSlot.endAt)
+	const start = new Date(data.class.timeSlot.startAt)
+	const end = new Date(data.class.timeSlot.endAt)
 	$: lang = languageTag()
 
 	const modalStore = getModalStore()
@@ -43,7 +44,7 @@
 			body: 'Are you sure you want to start the class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-				await goto(`/dashboard/class/${data.classDetails.id}`)
+				await goto(`/dashboard/class/${data.class.id}`)
 			}
 		})
 	}
@@ -59,16 +60,24 @@
 			body: 'Are you sure you want to cancel this class?',
 			response: async (confirmed: boolean) => {
 				if (!confirmed) return
-				try {
-					await fetch('/dashboard/teacher/classes/', {
-						method: 'DELETE',
-						body: JSON.stringify(data.classDetails)
-					})
-					window.location.reload()
-				} catch (error) {
+				const res = await safeFetch(
+					fetch(
+						route('DELETE /api/teacher/classes/[id]/cancel', {
+							id: data.class.id
+						}),
+						{ method: 'DELETE' }
+					)
+				)
+				if (!res.ok) {
 					toastStore.trigger({
-						message: error instanceof Error ? error.message : 'An error occured',
-						background: 'variant-filled-error'
+						message: res.error.message,
+						background: 'bg-error-500'
+					})
+				} else {
+					await goto(route('/dashboard/teacher/classes', langParams()))
+					toastStore.trigger({
+						message: 'Class cancelled',
+						background: 'bg-success-500'
 					})
 				}
 			}
@@ -78,7 +87,7 @@
 
 <Layout>
 	<h1 class="h1" slot="title">
-		{data.classDetails.isTrial ? 'Trial' : ''} Class: {data.classDetails.name}
+		{data.class.isTrial ? 'Trial' : ''} Class: {data.class.name}
 	</h1>
 	<p class="text-xl">
 		<span>{start.toLocaleDateString(lang)}</span>
@@ -114,9 +123,9 @@
 	<br />
 
 	<div class="card w-full max-w-sm p-4">
-		<h3 class="h3 mb-1">Students: {data.classDetails.students.length}</h3>
+		<h3 class="h3 mb-1">Students: {data.class.students.length}</h3>
 		<ul class="list grid grid-cols-2">
-			{#each data.classDetails.students as user}
+			{#each data.class.students as user}
 				<li>
 					<a
 						class="flex items-center gap-2 p-2"

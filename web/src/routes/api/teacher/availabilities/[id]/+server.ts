@@ -6,9 +6,10 @@ import {
 } from '$lib/schemas/calendar'
 import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
+import { json } from '@sveltejs/kit'
 import type { TimesRequest } from '../+server'
 
-export const PUT = async ({ request, locals: { session, redirect, db } }) => {
+export const PUT = async ({ request, locals: { session, redirect, db, message } }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as UpdateCalendarAvailability
@@ -17,14 +18,9 @@ export const PUT = async ({ request, locals: { session, redirect, db } }) => {
 		const parseRes = await modifyAvailabilitySchema.safeParseAsync(body)
 
 		if (!parseRes.success)
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message: issuesToString(parseRes.error.issues)
-				}),
-				{
-					status: 400
-				}
+			return message(
+				{ type: 'error', text: issuesToString(parseRes.error.issues) },
+				{ status: 400 }
 			)
 
 		console.log(`UPDATE TIME SLOT: ${body.startAt} - ${body.endAt}`)
@@ -75,26 +71,20 @@ export const PUT = async ({ request, locals: { session, redirect, db } }) => {
 			})
 		)
 		if (!res.ok) {
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message: 'Failed to update availabilities'
-				})
+			return message(
+				{ type: 'error', text: 'Failed to update availabilities' },
+				{ status: 500 }
 			)
 		}
 
-		return new Response(
-			JSON.stringify({
-				success: true,
-				timeSlots: res.value
-			})
-		)
+		return json({
+			success: true,
+			timeSlots: res.value
+		})
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				success: false,
-				message: 'Invalid request body: ' + (error as Error).message
-			})
+		return message(
+			{ type: 'error', text: 'Invalid request body: ' + (error as Error).message },
+			{ status: 400 }
 		)
 	}
 }

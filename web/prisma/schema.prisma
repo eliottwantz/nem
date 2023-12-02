@@ -88,9 +88,9 @@ model Profile {
     birdthday        DateTime
     role             Role
     preferedLanguage Locale    @default(en)
+    stripeCustomerId String
     avatarFilePath   String?
     avatarUrl        String?
-    stripeCustomerId String?
     student          Student?
     teacher          Teacher?
     createdAt        DateTime  @default(now())

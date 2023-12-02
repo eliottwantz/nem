@@ -1,5 +1,6 @@
 import type { ServerMessage } from '$lib/schemas/error'
 import { createTeacherSchema } from '$lib/schemas/profile'
+import { stripe } from '$lib/server/stripe'
 import { safeDBCall } from '$lib/utils/error'
 import { fail } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
@@ -27,7 +28,7 @@ export const load = async ({ locals: { session, user, db, redirect } }) => {
 }
 
 export const actions = {
-	default: async ({ request, locals: { session, db, locale, redirect } }) => {
+	default: async ({ request, locals: { session, db, lang, redirect } }) => {
 		if (!session) throw redirect(302, '/signin')
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
 			request,
@@ -41,13 +42,24 @@ export const actions = {
 
 		const res = await safeDBCall(
 			db.$transaction(async (tx) => {
+				const customer = await stripe.customers.create({
+					email: session.user.email,
+					name: form.data.firstName + ' ' + form.data.lastName,
+					preferred_locales: [lang, 'en'],
+					metadata: {
+						userId: session.user.id,
+						role: 'teacher'
+					}
+				})
 				await tx.profile.create({
 					data: {
 						id: session.user.id,
 						firstName: form.data.firstName,
 						lastName: form.data.lastName,
 						role: 'teacher',
-						preferedLanguage: locale
+						preferedLanguage: lang,
+						birdthday: form.data.birthday,
+						stripeCustomerId: customer.id
 					}
 				})
 				await tx.teacher.create({

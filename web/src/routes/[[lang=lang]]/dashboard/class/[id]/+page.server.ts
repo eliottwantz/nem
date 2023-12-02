@@ -1,8 +1,8 @@
-import { fetchers, safeFetch } from '$lib/api'
+import { safeDBCall } from '$lib/utils/error'
 
 export const ssr = false
 
-export async function load({ locals: { session, user, redirect }, params, fetch }) {
+export async function load({ locals: { session, user, redirect, db }, params }) {
 	console.log('In class load')
 	if (!session || !user) throw redirect(302, '/')
 
@@ -19,15 +19,20 @@ export async function load({ locals: { session, user, redirect }, params, fetch 
 			break
 	}
 
-	const res = await safeFetch(
-		fetchers.classService(fetch, session).showClassDetails({ classId: params.id })
+	const res = await safeDBCall(
+		db.class.findUnique({
+			where: { id: params.id },
+			include: {
+				teacher: { select: { id: true } }
+			}
+		})
 	)
 	if (!res.ok) {
 		throw redirect(302, disconnectUrl)
 	}
 	return {
 		user,
-		classDetails: res.data.classDetails,
+		class: res.value,
 		disconnectUrl
 	}
 }
