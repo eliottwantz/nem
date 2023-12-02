@@ -9,7 +9,6 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
-	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -32,23 +31,15 @@ type Hub struct {
 	unregister chan *Client
 	rooms      map[*Room]struct{}
 	logger     *log.Logger
-
-	redisClient *redis.Client
 }
 
-type Config struct {
-	RedisClient *redis.Client
-}
-
-func NewHub(c *Config) *Hub {
+func NewHub() *Hub {
 	h := &Hub{
 		clients:    make(map[*Client]struct{}),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		rooms:      make(map[*Room]struct{}),
 		logger:     log.WithPrefix("WS Hub"),
-
-		redisClient: c.RedisClient,
 	}
 
 	return h
@@ -77,42 +68,32 @@ type QueryChatRes struct {
 	LastSent  time.Time `json:"lastSent" db:"lastSent"`
 }
 
-func queryConversations(userID string) ([]QueryChatRes, error) {
-	query := `SELECT c.*,
-	MAX(m."createdAt") as lastSent
-FROM "Chat" c
+func queryChats(userID string) ([]string, error) {
+	query := `SELECT DISTINCT c.id FROM "Chat" c
 	JOIN "_ChatToUser" ctu ON c.id = ctu."A"
 	JOIN "User" u ON ctu."B" = u.id
-	LEFT JOIN "Message" m ON c.id = m."chatId"
-WHERE ctu."B" = $1 
-GROUP BY c.id 
-ORDER BY MAX(m."createdAt") DESC;`
+WHERE ctu."B" = $1;`
 	rows, err := db.Pg.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	conversations := make([]QueryChatRes, 0)
+	chats := make([]string, 0)
 	for rows.Next() {
-		var conversation QueryChatRes
-		err = rows.Scan(
-			&conversation.ID,
-			&conversation.CreatedAt,
-			&conversation.UpdatedAt,
-			&conversation.LastSent,
-		)
+		var chatID string
+		err = rows.Scan(&chatID)
 		if err != nil {
 			return nil, err
 		}
-		conversations = append(conversations, conversation)
+		chats = append(chats, chatID)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return conversations, nil
+	return chats, nil
 }
 
 func (h *Hub) Run() {
@@ -122,14 +103,14 @@ func (h *Hub) Run() {
 		case c := <-h.register:
 			h.clients[c] = struct{}{}
 			// Add user to all rooms he is involved in
-			convos, err := queryConversations(c.id)
+			convos, err := queryChats(c.id)
 			if err != nil {
 				h.logger.Warn("failed to list conversations of user", "error", err)
 			} else {
-				for _, convo := range convos {
-					room, err := h.findRoomById(convo.ID)
+				for _, id := range convos {
+					room, err := h.findRoomById(id)
 					if err != nil {
-						room = h.createRoom(convo.ID)
+						room = h.createRoom(id)
 					}
 					room.register <- c
 				}
@@ -191,7 +172,7 @@ func (h *Hub) findClientById(id string) (*Client, error) {
 }
 
 func (h *Hub) createRoom(id string) *Room {
-	room := NewRoom(id, h.redisClient)
+	room := NewRoom(id)
 	go room.Run()
 	h.rooms[room] = struct{}{}
 

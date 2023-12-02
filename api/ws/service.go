@@ -3,8 +3,6 @@ package ws
 import (
 	"errors"
 
-	"nem/api/rpc"
-
 	"github.com/charmbracelet/log"
 )
 
@@ -82,15 +80,6 @@ func (s *Service) EndClass(roomId string) error {
 	}, roomId)
 
 	s.hub.removeRoom(r)
-
-	return nil
-}
-
-func (s *Service) EmitNewMessage(roomID string, message *rpc.Message) error {
-	s.hub.PublishToRoom(&EmittedMessage{
-		Action: ActionEmitNewMessage,
-		Data:   message,
-	}, roomID)
 
 	return nil
 }

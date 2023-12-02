@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"nem/api/helmet"
 	"nem/api/ws"
 	"nem/db"
 	"nem/utils"
@@ -22,7 +21,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/httprate"
 	"github.com/jwalton/gchalk"
 	"golang.org/x/mod/modfile"
 )
@@ -63,15 +61,11 @@ func New(
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	}).Handler,
-		helmet.New(),
 		middleware.RequestID,
 		middleware.RealIP,
 		middleware.Logger,
 		middleware.Recoverer,
 	)
-	if utils.IsProd() {
-		r.Use(httprate.LimitByIP(20, 10*time.Second))
-	}
 
 	api := &Api{
 		http: &http.Server{

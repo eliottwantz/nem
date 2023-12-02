@@ -38,16 +38,9 @@ func setup() error {
 
 	// Endpoints layer
 	log.Info("Creating websocket hub...")
-	wsHub := ws.NewHub(&ws.Config{
-		RedisClient: db.Redis,
-	})
+	wsHub := ws.NewHub()
 	go wsHub.Run()
 	wsService := ws.NewService(wsHub)
-	// teacherService := teacher.NewService(wsService)
-	// studentService := student.NewService(wsService)
-	// messageService := message.NewService(wsService)
-	// jwtAuth := jwtauth.New("HS256", []byte(utils.Cfg.JWTSignKey), nil)
-
 	api := api.New(&api.Services{
 		WsHub:     wsHub,
 		WsService: wsService,
