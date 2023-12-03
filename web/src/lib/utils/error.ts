@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client'
+
 export class AppError extends Error {
 	status: number
 	metadata?: Record<string, string>
@@ -11,7 +13,9 @@ export class AppError extends Error {
 export async function safeDBCall<T>(prismaPromise: Promise<T | null>): Promise<DBResult<T>> {
 	try {
 		const res = await prismaPromise
-		if (!res) return { ok: false, error: new Error('Not found') }
+		if (!res) return { ok: false, error: new AppError('Not found', 404) }
+		else if (res instanceof Array && res.length === 0)
+			return { ok: false, error: new AppError('Not found', 404) }
 		else return { ok: true, value: res }
 	} catch (e) {
 		return { ok: false, error: e as Error }

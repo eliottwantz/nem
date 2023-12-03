@@ -2,7 +2,7 @@
 	import { page } from '$app/stores'
 	import { langParams } from '$i18n'
 	import { route } from '$lib/ROUTES'
-	import { drawerStoreIds } from '$lib/components/Drawer'
+	import { drawerStoreIds, type DrawerMetaChat } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
@@ -101,15 +101,20 @@
 	}
 
 	async function openChat() {
-		const res = await data.streamed.convo
-		let chatId = undefined
-		if (res) chatId = res.id
+		const chat = await data.streamed.chat
+		if (chat instanceof Error) {
+			toastStore.trigger({
+				message: 'Error occurred while trying to open chat. Please try again later',
+				background: 'bg-error-500'
+			})
+			return
+		}
 		drawerStore.open({
 			id: drawerStoreIds.chat,
 			meta: {
-				chatId,
+				chatId: chat?.id,
 				recepient: data.teacher.profile
-			},
+			} satisfies DrawerMetaChat,
 			position: 'right',
 			width: 'w-2/3'
 		})

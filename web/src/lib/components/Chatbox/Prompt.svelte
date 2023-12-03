@@ -11,9 +11,9 @@
 	import { route } from '$lib/ROUTES'
 
 	export let chatId: string | undefined
-	export let recepient: Profile | undefined
+	export let recepient: Profile
 
-	$: console.log('ChatID', chatId)
+	$: console.log('ChatID in Prompt', chatId)
 
 	const toastStore = getToastStore()
 	const maxChars = 1000
@@ -39,7 +39,7 @@
 				fetch(route('POST /api/chats'), {
 					method: 'POST',
 					body: JSON.stringify({
-						withUserIds: [recepient!.id]
+						withUserIds: [recepient.id]
 					} satisfies CreateChatRequest)
 				})
 			)
@@ -51,6 +51,12 @@
 				return
 			}
 			chatId = res.data.id
+			// Join in ws server the new chat room
+			ws.send({
+				action: 'usersJoinRoom',
+				chatId,
+				data: [$page.data.user.id, recepient.id]
+			})
 		}
 
 		ws.send({

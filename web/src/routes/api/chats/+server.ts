@@ -24,5 +24,5 @@ export const POST = async ({ locals: { session, user, db, message }, request }) 
 	if (!res.ok) {
 		return message({ type: 'error', text: 'Could not create chat' }, { status: 500 })
 	}
-	return json({ id: res })
+	return json({ id: res.value.id } satisfies CreateChatResponse)
 }

@@ -231,7 +231,7 @@ model Message {
     senderId    String
     sender      User      @relation("SentMessages", fields: [senderId], references: [id])
     chatId      String
-    chat        Chat      @relation(fields: [chatId], references: [id])
+    chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
     readBy      User[]    @relation("ReceivedMessages")
     deliveredTo User[]    @relation("DeliveredMessages")
 }

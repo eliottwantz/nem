@@ -60,6 +60,7 @@
 			class="input text-lg lg:p-4"
 			type="search"
 			name="topic"
+			autocomplete="off"
 			on:pointerdown={onClick}
 			bind:this={input}
 			bind:value={val}

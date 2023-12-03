@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { route } from '$lib/ROUTES'
 	import { safeFetch } from '$lib/api'
 	import { createChatStore } from '$lib/stores/chatStore'
+	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
-	import { route } from '$lib/ROUTES'
 
 	export let chatId: string | undefined
 	export let recepient: Profile
+
+	$: console.log('ChatID in ChatBox', chatId)
 
 	const toastStore = getToastStore()
 
@@ -21,6 +23,7 @@
 
 	onMount(async () => {
 		if (chatId) {
+			console.log('Getting messages from chat', chatId)
 			const res = await safeFetch<MessagesResponse>(
 				fetch(route('GET /api/messages/[chatId]', { chatId }))
 			)
@@ -155,7 +158,7 @@
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
 		<div>
-			<Prompt {chatId} {recepient} />
+			<Prompt bind:chatId {recepient} />
 		</div>
 	</div>
 </div>

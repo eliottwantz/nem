@@ -2,19 +2,9 @@ package ws
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/charmbracelet/log"
 )
-
-type Message struct {
-	Id        int64     `json:"id"`
-	Text      string    `json:"text"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	SenderID  int64     `json:"senderId"`
-	ChatID    int64     `json:"chatId"`
-}
 
 // EmittedMessage represents an emitted message
 type EmittedMessage struct {
@@ -24,9 +14,9 @@ type EmittedMessage struct {
 
 // ReceivedMessage represents a received websocket message
 type ReceivedMessage struct {
-	Action Action `json:"action"`
-	ChatID string `json:"chatId"`
-	Data   any    `json:"data"`
+	Action Action          `json:"action"`
+	ChatID string          `json:"chatId"`
+	Data   json.RawMessage `json:"data"`
 }
 
 // encode encodes the given EmittedMessage into a byte slice.

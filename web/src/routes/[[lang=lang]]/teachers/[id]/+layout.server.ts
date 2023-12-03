@@ -1,5 +1,5 @@
-import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
-import type { Chat, Class, Subscription } from '@prisma/client'
+import { AppError, dbLoadPromise, safeDBCall } from '$lib/utils/error'
+import type { Chat, Subscription } from '@prisma/client'
 import { error } from '@sveltejs/kit'
 
 export async function load({ params, locals: { session, user, redirect, db } }) {
@@ -49,25 +49,54 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 			subscriptions: new Promise<Subscription[]>((resolve) => {
 				safeDBCall(db.subscription.findMany({}).then((res) => resolve(res)))
 			}),
-			convo: new Promise<Chat | null>((resolve) => {
-				safeDBCall(
+			chat: new Promise<(Chat | null) | Error>(async (resolve) => {
+				const res = await safeDBCall(
 					db.chat.findFirst({
 						where: {
 							users: {
 								some: {
-									OR: [
-										{
-											id: { contains: user.id }
-										},
-										{
-											id: { contains: params.id }
-										}
-									]
+									id: {
+										in: [user.id, params.id]
+									}
 								}
 							}
 						}
 					})
-				).then((res) => (res.ok ? resolve(res.value) : resolve(null)))
+				)
+				if (res.ok) resolve(res.value)
+				else if (res.error instanceof AppError) resolve(null)
+				else {
+					console.log(res.error)
+					resolve(null)
+				}
+				// if (res.ok) resolve(res.value)
+				// else if (res.error instanceof AppError) {
+				// 	// If the error is that the chat was not found, then create it
+				// 	const res = await safeDBCall(
+				// 		db.chat.create({
+				// 			data: {
+				// 				users: {
+				// 					connect: [
+				// 						{
+				// 							id: user.id
+				// 						},
+				// 						{
+				// 							id: params.id
+				// 						}
+				// 					]
+				// 				}
+				// 			}
+				// 		})
+				// 	)
+				// 	if (res.ok) resolve(res.value)
+				// 	else {
+				// 		console.log(res.error)
+				// 		resolve(null)
+				// 	}
+				// } else {
+				// 	console.log(res.error)
+				// 	resolve(null)
+				// }
 			}),
 			availabilities: dbLoadPromise(
 				safeDBCall(

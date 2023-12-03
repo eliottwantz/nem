@@ -4,11 +4,12 @@ type Action string
 
 const (
 	// Subscribed actions from clients
-	ActionReceiveStartTyping Action = "startTyping"
-	ActionReceiveStopTyping  Action = "stopTyping"
-	ActionReceiveSetOnline   Action = "setOnline"
-	ActionReceiveSetOffline  Action = "setOffline"
-	ActionReceiveSendMessage Action = "sendMessage"
+	ActionReceiveStartTyping   Action = "startTyping"
+	ActionReceiveStopTyping    Action = "stopTyping"
+	ActionReceiveSetOnline     Action = "setOnline"
+	ActionReceiveSetOffline    Action = "setOffline"
+	ActionReceiveSendMessage   Action = "sendMessage"
+	ActionReceiveUsersJoinRoom Action = "usersJoinRoom"
 
 	// Emited actions to clients
 	ActionEmitJoinRoom      Action = "joinRoom"

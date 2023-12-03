@@ -9,8 +9,8 @@ type SendPayload =
 			chatId: string
 			data: string
 	  }
-	| { action: 'sendMessage'; chatId: string; data: Message }
-	| { action: 'editMessage'; chatId: string; data: Message }
+	| { action: 'sendMessage' | 'editMessage'; chatId: string; data: Message }
+	| { action: 'usersJoinRoom'; chatId: string; data: string[] }
 
 type ReceivePayload =
 	| { action: 'none' }
