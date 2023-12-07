@@ -6,6 +6,7 @@
 	import { getPublicName } from '$lib/utils/initials'
 	//@ts-expect-error
 	import VideoSDKMeeting from '@videosdk.live/rtc-js-prebuilt/dist/index'
+	import { route } from '$lib/ROUTES'
 
 	export let data
 	let hasJoined = false
@@ -108,6 +109,14 @@
 			<button class="variant-filled-primary btn w-full" on:click={initMeeting}>
 				Join class
 			</button>
+			<a
+				class="anchor mt-8 w-full"
+				href={$page.data.user.role === 'student'
+					? route('/dashboard/student/classes')
+					: route('/dashboard/teacher/classes')}
+			>
+				Go back to classes instead
+			</a>
 		</LocalVideo>
 	</div>
 {/if}

@@ -11,27 +11,6 @@ const PAGES = {
   "/": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: '/'}`
   },
-  "/error": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/error`
-  },
-  "/signin": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin`
-  },
-  "/signin/setup-profile": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile`
-  },
-  "/signin/setup-profile/student": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/student`
-  },
-  "/signin/setup-profile/teacher": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/teacher`
-  },
-  "/signout": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signout`
-  },
-  "/verifyRequest": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/verifyRequest`
-  },
   "/about": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/about`
   },
@@ -88,6 +67,27 @@ const PAGES = {
   },
   "/users/[id]": (params: { id: (string | number), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/users/${params.id}`
+  },
+  "/error": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/error`
+  },
+  "/signin": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin`
+  },
+  "/signin/setup-profile": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile`
+  },
+  "/signin/setup-profile/student": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/student`
+  },
+  "/signin/setup-profile/teacher": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/teacher`
+  },
+  "/signout": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signout`
+  },
+  "/verifyRequest": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/verifyRequest`
   }
 }
 
@@ -131,12 +131,6 @@ const SERVERS = {
  * ACTIONS
  */
 const ACTIONS = {
-  "default /signin/setup-profile/student": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/student`
-  },
-  "default /signin/setup-profile/teacher": (params?: { lang?: (string) }) => {
-    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/teacher`
-  },
   "updateAvatar /dashboard/profile/edit": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/profile/edit?/updateAvatar`
   },
@@ -145,6 +139,12 @@ const ACTIONS = {
   },
   "newTopic /dashboard/teacher/teach": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/teacher/teach?/newTopic`
+  },
+  "default /signin/setup-profile/student": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/student`
+  },
+  "default /signin/setup-profile/teacher": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/signin/setup-profile/teacher`
   }
 }
 
@@ -231,9 +231,9 @@ export function route<T extends keyof AllTypes>(key: T, ...params: any[]): strin
 * ```
 */
 export type KIT_ROUTES = { 
-  PAGES: { '/': 'lang', '/error': 'lang', '/signin': 'lang', '/signin/setup-profile': 'lang', '/signin/setup-profile/student': 'lang', '/signin/setup-profile/teacher': 'lang', '/signout': 'lang', '/verifyRequest': 'lang', '/about': 'lang', '/contact': 'lang', '/dashboard/class/[id]': 'id' | 'lang', '/dashboard/messages': 'lang', '/dashboard/messages/[id]': 'id' | 'lang', '/dashboard/profile': 'lang', '/dashboard/profile/edit': 'lang', '/dashboard/student/calendar': 'lang', '/dashboard/student/classes': 'lang', '/dashboard/student/classes/[id]': 'id' | 'lang', '/dashboard/teacher/calendar': 'lang', '/dashboard/teacher/classes': 'lang', '/dashboard/teacher/classes/[id]': 'id' | 'lang', '/dashboard/teacher/teach': 'lang', '/teachers': 'lang', '/teachers/[id]': 'id' | 'lang', '/teachers/[id]/subscribe': 'id' | 'lang', '/top-agent': 'lang', '/users/[id]': 'id' | 'lang' }
+  PAGES: { '/': 'lang', '/about': 'lang', '/contact': 'lang', '/dashboard/class/[id]': 'id' | 'lang', '/dashboard/messages': 'lang', '/dashboard/messages/[id]': 'id' | 'lang', '/dashboard/profile': 'lang', '/dashboard/profile/edit': 'lang', '/dashboard/student/calendar': 'lang', '/dashboard/student/classes': 'lang', '/dashboard/student/classes/[id]': 'id' | 'lang', '/dashboard/teacher/calendar': 'lang', '/dashboard/teacher/classes': 'lang', '/dashboard/teacher/classes/[id]': 'id' | 'lang', '/dashboard/teacher/teach': 'lang', '/teachers': 'lang', '/teachers/[id]': 'id' | 'lang', '/teachers/[id]/subscribe': 'id' | 'lang', '/top-agent': 'lang', '/users/[id]': 'id' | 'lang', '/error': 'lang', '/signin': 'lang', '/signin/setup-profile': 'lang', '/signin/setup-profile/student': 'lang', '/signin/setup-profile/teacher': 'lang', '/signout': 'lang', '/verifyRequest': 'lang' }
   SERVERS: { 'POST /teachers/[id]/subscribe': 'id' | 'lang', 'POST /teachers/[id]/take-trial-class': 'id' | 'lang', 'PUT /api/change-lang': never, 'POST /api/chats': never, 'POST /api/chats/send/[chatId]': 'chatId', 'POST /api/classes/[id]/cancel': 'id', 'POST /api/classes/join': never, 'GET /api/messages/[chatId]': 'chatId', 'POST /api/teacher/availabilities': never, 'PUT /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/classes/[id]/cancel': 'id', 'PATCH /api/teacher/topics': never, 'POST /stripe/webhooks': never }
-  ACTIONS: { 'default /signin/setup-profile/student': 'lang', 'default /signin/setup-profile/teacher': 'lang', 'updateAvatar /dashboard/profile/edit': 'lang', 'deleteAvatar /dashboard/profile/edit': 'lang', 'newTopic /dashboard/teacher/teach': 'lang' }
+  ACTIONS: { 'updateAvatar /dashboard/profile/edit': 'lang', 'deleteAvatar /dashboard/profile/edit': 'lang', 'newTopic /dashboard/teacher/teach': 'lang', 'default /signin/setup-profile/student': 'lang', 'default /signin/setup-profile/teacher': 'lang' }
   LINKS: Record<string, never>
   Params: { lang: never, id: never, chatId: never, cursor: never }
 }

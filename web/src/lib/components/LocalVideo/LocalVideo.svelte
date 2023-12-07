@@ -56,7 +56,7 @@
 	}
 </script>
 
-<div id="prejoin" class="w-[min(100%,30rem)] space-y-2 p-2">
+<div id="prejoin" class="flex w-[min(100%,30rem)] flex-col gap-y-2 p-2">
 	<div class="relative aspect-video overflow-hidden rounded-lg bg-black">
 		<!-- svelte-ignore a11y-media-has-caption -->
 		<video
