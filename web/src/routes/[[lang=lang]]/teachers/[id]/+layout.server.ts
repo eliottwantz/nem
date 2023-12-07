@@ -54,7 +54,7 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 					db.chat.findFirst({
 						where: {
 							users: {
-								some: {
+								every: {
 									id: {
 										in: [user.id, params.id]
 									}

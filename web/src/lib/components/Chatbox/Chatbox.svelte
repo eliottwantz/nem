@@ -3,14 +3,13 @@
 	import { route } from '$lib/ROUTES'
 	import { safeFetch } from '$lib/api'
 	import { createChatStore } from '$lib/stores/chatStore'
+	import { ws } from '$lib/ws'
 	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { onDestroy, onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
-	import { ws } from '$lib/ws'
-	import { browser } from '$app/environment'
 
 	export let chatId: string | undefined
 	export let recepient: Profile
