@@ -3,13 +3,14 @@
 	import { route } from '$lib/ROUTES'
 	import { safeFetch } from '$lib/api'
 	import { createChatStore } from '$lib/stores/chatStore'
-	import { ws } from '$lib/ws'
+	import { latestWSPayload, ws } from '$lib/ws'
 	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { onMount } from 'svelte'
+	import { onDestroy, onMount } from 'svelte'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
+	import type { Unsubscriber } from 'svelte/store'
 
 	export let chatId: string | undefined
 	export let recepient: Profile
@@ -20,7 +21,8 @@
 
 	let elemChat: HTMLElement
 	let isFetching = false
-	const chatStore = createChatStore(scrollChatBottom)
+	let unsubscriber: Unsubscriber | null = null
+	const chatStore = createChatStore()
 
 	onMount(async () => {
 		if (chatId) {
@@ -47,7 +49,27 @@
 			}
 			scrollChatBottom()
 		}
+		unsubscriber = latestWSPayload.subscribe((payload) => {
+			const user = $page.data.user
+			switch (payload.action) {
+				case 'newMessage':
+					chatStore.addNewMessage(payload.data)
+					scrollChatBottom()
+					break
+				case 'addToTyping':
+					if (payload.data !== user.firstName) chatStore.addTyping(payload.data)
+					break
+				case 'removeFromTyping':
+					if (payload.data !== user.firstName) chatStore.removeTyping(payload.data)
+					break
+			}
+		})
 	})
+
+	onDestroy(() => {
+		if (unsubscriber) unsubscriber()
+	})
+
 	$: console.log($chatStore.messages)
 	$: typingString = getTypingString($chatStore.peopleTyping)
 

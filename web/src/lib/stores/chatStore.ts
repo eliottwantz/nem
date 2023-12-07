@@ -3,7 +3,7 @@ import { get, writable } from 'svelte/store'
 import { latestWSPayload } from '../ws'
 import { page } from '$app/stores'
 
-type ChatState = {
+export type ChatState = {
 	chatId: number
 	messages: Message[]
 	unreadMessages: number
@@ -11,7 +11,7 @@ type ChatState = {
 	isMore: boolean
 }
 
-export const createChatStore = (scrollDownFunc: Function) => {
+export const createChatStore = () => {
 	console.log('CREATING CHAT STORE')
 	const { subscribe, update, set } = writable<ChatState>({
 		chatId: 0,
@@ -29,7 +29,6 @@ export const createChatStore = (scrollDownFunc: Function) => {
 				state.unreadMessages = state.unreadMessages + 1
 				return state
 			})
-			scrollDownFunc()
 		},
 		addOldMessages(messages: Message[]) {
 			update((state) => {
@@ -42,7 +41,6 @@ export const createChatStore = (scrollDownFunc: Function) => {
 				state.messages = [...state.messages.filter((m) => m.id !== message.id)]
 				return state
 			})
-			scrollDownFunc()
 		},
 		addTyping: (firstName: string) => {
 			update((state) => {
@@ -86,23 +84,6 @@ export const createChatStore = (scrollDownFunc: Function) => {
 			return value
 		}
 	}
-
-	latestWSPayload.subscribe((payload) => {
-		const user = get(page).data.user
-		switch (payload.action) {
-			case 'newMessage':
-				store.addNewMessage(payload.data)
-				break
-			case 'addToTyping':
-				if (!user) break
-				if (payload.data !== user.firstName) store.addTyping(payload.data)
-				break
-			case 'removeFromTyping':
-				if (!user) break
-				if (payload.data !== user.firstName) store.removeTyping(payload.data)
-				break
-		}
-	})
 
 	return store
 }
