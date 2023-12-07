@@ -44,8 +44,15 @@
 			{#if $errors.lastName}
 				<p class="text-error-500">{$errors.lastName}</p>
 			{/if}
+			<label class="label">
+				<span>Birthday</span>
+				<input class="input" type="date" name="birthday" bind:value={$superF.birthday} />
+			</label>
+			{#if $errors.birthday}
+				<p class="text-error-500">{$errors.birthday}</p>
+			{/if}
 		</div>
 
-		<button class="btn bg-primary-active-token"> Create profile </button>
+		<button type="submit" class="btn bg-primary-active-token"> Create profile </button>
 	</form>
 </Layout>

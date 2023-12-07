@@ -39,15 +39,9 @@ export const POST = async ({ request }) => {
 								students: true
 							}
 						})
-						let teacherId: string = ''
 						if (exists) {
-							teacherId = exists.teacherId
-							if (exists.isPrivate)
-								throw new AppError('Cannot join private class', 403)
-							if (exists.students.length >= 4)
-								throw new AppError('Class is full', 403)
 							// Add student to this class
-							await tx.class.update({
+							return await tx.class.update({
 								where: { id: exists.id },
 								data: {
 									students: { connect: { id: stripeSession.metadata.userId } }
@@ -63,7 +57,7 @@ export const POST = async ({ request }) => {
 									404
 								)
 							// Create class
-							const newClass = await tx.class.create({
+							return await tx.class.create({
 								data: {
 									timeSlotId: timeSlot.id,
 									teacherId: timeSlot.teacherId,
@@ -77,21 +71,7 @@ export const POST = async ({ request }) => {
 									}
 								}
 							})
-							teacherId = newClass.teacherId
 						}
-						// Remove one hour from bank
-						const newHourBank = await tx.hoursBank.update({
-							where: {
-								studenId_teacherId: {
-									studenId: stripeSession.metadata.userId,
-									teacherId
-								}
-							},
-							data: {
-								hours: { decrement: 1 }
-							}
-						})
-						if (newHourBank.hours < 0) throw new AppError('Hour bank is empty', 400)
 					})
 				)
 				if (!res.ok) {
@@ -108,13 +88,6 @@ export const POST = async ({ request }) => {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: SubscriptionMetadata
 				}
-				// const res = await safeFetch(
-				// 	fetchers.subscriptionService(fetch).addSubscriptionForStudent({
-				// 		studentId: stripeSession.metadata.studentId,
-				// 		subscriptionId: stripeSession.metadata.subId,
-				// 		teacherId: stripeSession.metadata.teacherId
-				// 	})
-				// )
 				const res = await safeDBCall(
 					prisma.studentSubscription.create({
 						data: {

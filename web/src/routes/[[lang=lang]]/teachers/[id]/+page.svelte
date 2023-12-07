@@ -17,6 +17,7 @@
 	import { onMount } from 'svelte'
 
 	export let data
+	console.log('data from teacher/id', data.streamed.availabilities)
 
 	const modalStore = getModalStore()
 	const drawerStore = getDrawerStore()
@@ -72,7 +73,8 @@
 					props: {
 						teacher: data.teacher,
 						classes: await data.streamed.classes,
-						availabilities: await data.streamed.availabilities
+						availabilities: await data.streamed.availabilities,
+						isTrial: false
 					}
 				}
 			})

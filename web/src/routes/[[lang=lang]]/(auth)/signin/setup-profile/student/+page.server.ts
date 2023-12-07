@@ -30,17 +30,17 @@ export const actions = {
 			return fail(400, { form })
 		}
 
+		const customer = await stripe.customers.create({
+			email: session.user.email,
+			name: form.data.firstName + ' ' + form.data.lastName,
+			preferred_locales: [lang, 'en'],
+			metadata: {
+				userId: session.user.id,
+				role: 'student'
+			}
+		})
 		const res = await safeDBCall(
 			db.$transaction(async (tx) => {
-				const customer = await stripe.customers.create({
-					email: session.user.email,
-					name: form.data.firstName + ' ' + form.data.lastName,
-					preferred_locales: [lang, 'en'],
-					metadata: {
-						userId: session.user.id,
-						role: 'student'
-					}
-				})
 				await tx.profile.create({
 					data: {
 						id: session.user.id,
@@ -48,15 +48,16 @@ export const actions = {
 						lastName: form.data.lastName,
 						role: 'student',
 						preferedLanguage: lang,
-						birdthday: form.data.birthday,
+						birdthday: new Date(form.data.birthday),
 						stripeCustomerId: customer.id
 					}
 				})
-				await tx.student.create({ data: { id: session.user.id } })
+				return await tx.student.create({ data: { id: session.user.id } })
 			})
 		)
 		if (!res.ok) {
 			console.log(res.error)
+			await stripe.customers.del(customer.id)
 			return message(form, {
 				type: 'error',
 				text: 'Something went wrong when creating your profile'

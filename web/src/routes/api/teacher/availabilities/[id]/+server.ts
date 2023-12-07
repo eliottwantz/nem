@@ -8,6 +8,7 @@ import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
 import { json } from '@sveltejs/kit'
 import type { TimesRequest } from '../+server'
+import type { ServerMessage } from '$lib/schemas/error'
 
 export const PUT = async ({ request, locals: { session, redirect, db, message } }) => {
 	if (!session) throw redirect(302, '/signin')
@@ -61,7 +62,7 @@ export const PUT = async ({ request, locals: { session, redirect, db, message } 
 						endAt: t.endAt
 					}))
 				})
-				return tx.timeSlot.findMany({
+				return await tx.timeSlot.findMany({
 					where: {
 						teacherId: session.user.id,
 						startAt: { gte: body.startAt },
@@ -71,25 +72,24 @@ export const PUT = async ({ request, locals: { session, redirect, db, message } 
 			})
 		)
 		if (!res.ok) {
+			console.log(res.error)
 			return message(
 				{ type: 'error', text: 'Failed to update availabilities' },
 				{ status: 500 }
 			)
 		}
 
-		return json({
-			success: true,
-			timeSlots: res.value
-		})
-	} catch (error) {
+		return json(res.value)
+	} catch (e) {
+		console.log(e)
 		return message(
-			{ type: 'error', text: 'Invalid request body: ' + (error as Error).message },
+			{ type: 'error', text: 'Invalid request body: ' + (e as Error).message },
 			{ status: 400 }
 		)
 	}
 }
 
-export const DELETE = async ({ request, locals: { session, redirect, db } }) => {
+export const DELETE = async ({ request, locals: { session, redirect, db, message } }) => {
 	if (!session) throw redirect(302, '/signin')
 	try {
 		const body = (await request.json()) as DeleteCalendarAvailability
@@ -98,37 +98,35 @@ export const DELETE = async ({ request, locals: { session, redirect, db } }) => 
 		const parseRes = await deleteAvailabilitySchema.safeParseAsync(body)
 
 		if (!parseRes.success)
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message: issuesToString(parseRes.error.issues)
-				}),
+			return message(
 				{
-					status: 400
-				}
+					type: 'error',
+					text: issuesToString(parseRes.error.issues)
+				},
+				{ status: 400 }
 			)
 
 		const res = await safeDBCall(db.timeSlot.delete({ where: { id: body.id } }))
 		if (!res.ok) {
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message: 'Failed to delete availability'
-				})
+			return message(
+				{
+					type: 'error',
+					text: 'Failed to delete availability. Maybe it is because you have a class in this time slot'
+				},
+				{ status: 500 }
 			)
 		}
 
-		return new Response(
-			JSON.stringify({
-				success: true
-			})
-		)
+		return json({
+			success: true
+		})
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				success: false,
-				message: 'Invalid request body: ' + (error as Error).message
-			})
+		return message(
+			{
+				type: 'error',
+				text: 'Invalid request body: ' + (error as Error).message
+			},
+			{ status: 400 }
 		)
 	}
 }

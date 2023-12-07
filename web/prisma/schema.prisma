@@ -85,7 +85,7 @@ model Profile {
     user             User      @relation(fields: [id], references: [id], onDelete: Cascade)
     firstName        String
     lastName         String
-    birdthday        DateTime
+    birdthday        DateTime  @db.Date
     role             Role
     preferedLanguage Locale    @default(en)
     stripeCustomerId String

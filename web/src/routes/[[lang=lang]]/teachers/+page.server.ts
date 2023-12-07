@@ -15,10 +15,7 @@ export async function load({ locals: { session, user, redirect, db }, url }) {
 	const topAgent = url.searchParams.get('topAgent')
 	const hourRate = url.searchParams.get('priceMax')
 	let firstName = url.searchParams.get('firstName')
-	if (firstName) {
-		firstName = firstName.trim()
-		// firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1)
-	}
+	if (firstName) firstName = firstName.trim()
 	const sortBy: SortType = url.searchParams.get('sortBy')
 		? (url.searchParams.get('sortBy') as SortType)
 		: 'Popularity'

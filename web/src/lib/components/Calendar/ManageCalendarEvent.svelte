@@ -89,34 +89,24 @@
 			return
 		}
 		console.log('Modified event', info.event.id)
-		if (res.data.length === 1) {
+		// Delete old event
+		cal.removeEventById(info.event.id)
+		// Add new events
+		res.data.forEach((t) => {
 			const event: CalendarEvent = {
-				...info.event,
-				start: new Date(res.data[0].startAt),
-				end: new Date(res.data[0].endAt)
+				id: t.id,
+				title: 'Available',
+				backgroundColor: '#fbdc90',
+				textColor: '#000',
+				start: new Date(t.startAt),
+				end: new Date(t.endAt),
+				allDay: false,
+				editable: true,
+				startEditable: true,
+				durationEditable: true
 			}
-			cal.updateEvent(event)
-		} else {
-			// Delete old event
-			cal.removeEventById(info.event.id)
-
-			// Add new ones
-			res.data.forEach((t) => {
-				const event: CalendarEvent = {
-					id: `${t.id}`,
-					title: 'Available',
-					backgroundColor: '#fbdc90',
-					textColor: '#000',
-					start: new Date(t.startAt),
-					end: new Date(t.endAt),
-					allDay: false,
-					editable: true,
-					startEditable: true,
-					durationEditable: true
-				}
-				cal.addEvent(event)
-			})
-		}
+			cal.addEvent(event)
+		})
 		modalStore.close()
 	}
 	async function deleteEvent() {

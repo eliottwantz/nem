@@ -6,10 +6,10 @@ import { Prisma } from '@prisma/client'
 import { redirect, type Handle } from '@sveltejs/kit'
 
 export const handleContext: Handle = async ({ event, resolve }) => {
+	console.log('\n', 'REQ. Method:', event.request.method, event.url.toString())
+	if (event.url.pathname.includes('stripe')) return await resolve(event)
+
 	const session = await event.locals.getSession()
-	console.log('######')
-	console.log('Have session:', session !== null)
-	console.log('Session:', session)
 
 	event.locals.session = session
 	event.locals.db = prisma
@@ -27,15 +27,7 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 
 	const { pathname } = event.url
 	const isProtectedRoute = pathname.includes('/dashboard')
-	console.log(
-		'REQ. Method:',
-		event.request.method,
-		event.url.toString(),
-		'isProtectedRoute:',
-		isProtectedRoute,
-		'Have session:',
-		session !== null
-	)
+	console.log('isProtectedRoute:', isProtectedRoute, 'Have session:', session !== null)
 
 	if (isProtectedRoute && !session) {
 		throw event.locals.redirect(302, '/signin')

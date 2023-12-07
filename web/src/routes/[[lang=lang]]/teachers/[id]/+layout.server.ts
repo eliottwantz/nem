@@ -16,19 +16,20 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 		console.log(teacher.error)
 		throw error(404, 'Teacher not found')
 	}
+	const isFirstClass = await dbLoadPromise(
+		safeDBCall(
+			db.studentSubscription
+				.count({
+					where: { studentId: user.id, teacherId: params.id }
+				})
+				.then((count) => count === 0)
+		),
+		true
+	)
 	return {
 		user,
 		teacher: teacher.value,
-		isFirstClass: dbLoadPromise(
-			safeDBCall(
-				db.studentSubscription
-					.count({
-						where: { studentId: user.id, teacherId: params.id }
-					})
-					.then((count) => count === 0)
-			),
-			true
-		),
+		isFirstClass,
 		hoursBank: dbLoadPromise(
 			safeDBCall(
 				db.hoursBank
@@ -69,34 +70,6 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 					console.log(res.error)
 					resolve(null)
 				}
-				// if (res.ok) resolve(res.value)
-				// else if (res.error instanceof AppError) {
-				// 	// If the error is that the chat was not found, then create it
-				// 	const res = await safeDBCall(
-				// 		db.chat.create({
-				// 			data: {
-				// 				users: {
-				// 					connect: [
-				// 						{
-				// 							id: user.id
-				// 						},
-				// 						{
-				// 							id: params.id
-				// 						}
-				// 					]
-				// 				}
-				// 			}
-				// 		})
-				// 	)
-				// 	if (res.ok) resolve(res.value)
-				// 	else {
-				// 		console.log(res.error)
-				// 		resolve(null)
-				// 	}
-				// } else {
-				// 	console.log(res.error)
-				// 	resolve(null)
-				// }
 			}),
 			availabilities: dbLoadPromise(
 				safeDBCall(
@@ -106,7 +79,6 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 							include: {
 								class: {
 									include: {
-										_count: { select: { students: true } },
 										students: {
 											select: {
 												id: true
@@ -117,15 +89,15 @@ export async function load({ params, locals: { session, user, redirect, db } }) 
 							},
 							where: {
 								teacherId: { equals: params.id },
-								class: {
-									isPrivate: { not: true }
-								},
-								startAt: { lt: new Date() }
+								startAt: { gt: new Date() }
 							}
 						})
 						return timeSlots.filter((t) => {
-							if (t.class && t.class._count.students >= 4) return false
-							if (t.class?.students.map((s) => s.id).includes(user.id)) return false
+							if (!t.class) return true
+							if (isFirstClass) return false
+							if (t.class.isPrivate) return false
+							if (t.class.students.length >= 4) return false
+							if (t.class.students.map((s) => s.id).includes(user.id)) return false
 							return true
 						})
 					})

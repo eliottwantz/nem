@@ -40,5 +40,5 @@ export const createTeacherSchema = z.object({
 export const createStudentSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	birthday: z.date({ required_error: 'Birthday is required' })
+	birthday: z.string({ required_error: 'Birthday is required' })
 })

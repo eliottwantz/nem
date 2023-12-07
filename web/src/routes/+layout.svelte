@@ -62,7 +62,7 @@
 	})
 
 	$: console.log('LAYOUT user', $page.data.user)
-	$: if (browser && data.session && !ws.socket) ws.Connect()
+	$: if (browser && data.user && !ws.socket) ws.Connect()
 
 	$: lang = ($page.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
 	$: setLanguageTag(lang)

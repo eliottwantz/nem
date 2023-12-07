@@ -29,7 +29,7 @@ export const POST = async ({
 			payment_method_types: ['card'],
 			metadata: {
 				userId: user.id,
-				isPrivate: `${req.selectedIsPrivate}`,
+				isPrivate: 'true',
 				isTrial: 'true',
 				language: req.selectedLanguage!,
 				topic: req.selectedTopic!,

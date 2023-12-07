@@ -2,7 +2,7 @@
 	import { page } from '$app/stores'
 	import { safeFetch } from '$lib/api'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
-	import type { Class, SpokenLanguage, Teacher, TimeSlot } from '@prisma/client'
+	import type { Class, SpokenLanguage, Teacher, TimeSlot, Topic } from '@prisma/client'
 	import {
 		ListBox,
 		ListBoxItem,
@@ -20,10 +20,11 @@
 	import Calendar from '../Calendar/Calendar.svelte'
 	import { route } from '$lib/ROUTES'
 
-	export let teacher: Teacher & { topicsTaught: string[]; spokenLanguages: SpokenLanguage[] }
+	export let teacher: Teacher & { topics: Topic[]; spokenLanguages: SpokenLanguage[] }
+	$: console.log('THE TEACHER SHIT', teacher)
 	export let classes: (Class & { timeSlot: TimeSlot })[]
 	export let availabilities: TimeSlot[]
-	export let isTrial: boolean | undefined = undefined
+	export let isTrial: boolean = false
 	$: if (isTrial) $takeClassStore.selectedIsPrivate = isTrial
 
 	const toastStore = getToastStore()
@@ -36,8 +37,6 @@
 	$: console.log('selectedTopic', $takeClassStore.selectedTopic)
 	$: console.log('selectedIsPrivate', $takeClassStore.selectedIsPrivate)
 	$: console.log('selectedTimeSlot', $takeClassStore.selectedEvent)
-	$: topics = teacher.topicsTaught
-	$: console.log('topics', topics)
 	$: events = availabilities
 		.filter((a) => {
 			const matchClass = classes.find(
@@ -153,7 +152,9 @@
 		<Step locked={lockedTopic}>
 			<svelte:fragment slot="header">Topic</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each topics.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
+				{#each teacher.topics
+					.map((t) => t.topic)
+					.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
 					<ListBoxItem
 						bind:group={$takeClassStore.selectedTopic}
 						name={topic}
