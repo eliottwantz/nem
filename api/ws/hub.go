@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"nem/db"
-
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
 )
@@ -68,53 +66,12 @@ type QueryChatRes struct {
 	LastSent  time.Time `json:"lastSent" db:"lastSent"`
 }
 
-func queryChats(userID string) ([]string, error) {
-	query := `SELECT DISTINCT c.id FROM "Chat" c
-	JOIN "_ChatToUser" ctu ON c.id = ctu."A"
-	JOIN "User" u ON ctu."B" = u.id
-WHERE ctu."B" = $1;`
-	rows, err := db.Pg.Query(query, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	chats := make([]string, 0)
-	for rows.Next() {
-		var chatID string
-		err = rows.Scan(&chatID)
-		if err != nil {
-			return nil, err
-		}
-		chats = append(chats, chatID)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return chats, nil
-}
-
 func (h *Hub) Run() {
 	for {
 		select {
 
 		case c := <-h.register:
 			h.clients[c] = struct{}{}
-			// Add user to all rooms he is involved in
-			convos, err := queryChats(c.id)
-			if err != nil {
-				h.logger.Warn("failed to list conversations of user", "error", err)
-			} else {
-				for _, id := range convos {
-					room, err := h.findRoomById(id)
-					if err != nil {
-						room = h.createRoom(id)
-					}
-					room.register <- c
-				}
-			}
 			h.logger.Info("ws client connected", userIDKey, c.id)
 
 		case c := <-h.unregister:

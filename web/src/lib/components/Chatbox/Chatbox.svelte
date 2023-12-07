@@ -6,9 +6,11 @@
 	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
 	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { onMount } from 'svelte'
+	import { onDestroy, onMount } from 'svelte'
 	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
+	import { ws } from '$lib/ws'
+	import { browser } from '$app/environment'
 
 	export let chatId: string | undefined
 	export let recepient: Profile
@@ -23,6 +25,19 @@
 
 	onMount(async () => {
 		if (chatId) {
+			if (!ws.connected) {
+				ws.socket?.addEventListener('open', () => {
+					ws.send({
+						action: 'joinRoom',
+						roomId: chatId!
+					})
+				})
+			} else {
+				ws.send({
+					action: 'joinRoom',
+					roomId: chatId!
+				})
+			}
 			console.log('Getting messages from chat', chatId)
 			const res = await safeFetch<MessagesResponse>(
 				fetch(route('GET /api/messages/[chatId]', { chatId }))
@@ -31,8 +46,8 @@
 				console.log('got message', res.data)
 				chatStore.addOldMessages(res.data.messages)
 			}
+			scrollChatBottom()
 		}
-		scrollChatBottom()
 	})
 	$: console.log($chatStore.messages)
 	$: typingString = getTypingString($chatStore.peopleTyping)

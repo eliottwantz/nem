@@ -6,11 +6,11 @@ import { derived, get, writable } from 'svelte/store'
 type SendPayload =
 	| {
 			action: 'startTyping' | 'stopTyping' | 'setOnline' | 'setOffline'
-			chatId: string
+			roomId: string
 			data: string
 	  }
-	| { action: 'sendMessage' | 'editMessage'; chatId: string; data: Message }
-	| { action: 'usersJoinRoom'; chatId: string; data: string[] }
+	| { action: 'sendMessage' | 'editMessage'; roomId: string; data: Message }
+	| { action: 'joinRoom'; roomId: string }
 
 type ReceivePayload =
 	| { action: 'none' }
@@ -21,22 +21,20 @@ type ReceivePayload =
 const wsPayloadStore = writable<ReceivePayload>({ action: 'none' })
 export const latestWSPayload = derived(wsPayloadStore, ($wsPayloadStore) => $wsPayloadStore)
 
-const maxAttempts = 3
 class WS {
 	#wsEndpoint =
 		PUBLIC_ENV === 'DEV'
 			? `ws://${PUBLIC_GO_SERVER_HOST}/ws`
 			: `wss://${PUBLIC_GO_SERVER_HOST}/ws`
-	#attempts = 0
 	socket: WebSocket | null = null
+	connected = false
 
-	async Connect(): Promise<void> {
-		if (this.#attempts > maxAttempts) return
-		this.#attempts++
+	async Connect() {
 		const websocketUrl = `${this.#wsEndpoint}?uID=${get(page).data.user?.id}`
 		this.socket = new WebSocket(websocketUrl)
 
 		this.socket.addEventListener('open', () => {
+			this.connected = true
 			console.log('Opened WS')
 		})
 
@@ -48,18 +46,6 @@ class WS {
 		this.socket.addEventListener('message', (ev) => {
 			const payload: ReceivePayload = JSON.parse(ev.data)
 			wsPayloadStore.set(payload)
-		})
-
-		return new Promise((resolve, reject) => {
-			this.socket!.addEventListener('open', () => {
-				resolve()
-			})
-			this.socket!.addEventListener('error', () => {
-				reject("Couldn't connect websocket")
-			})
-			this.socket!.addEventListener('close', () => {
-				reject('Websocket already closed')
-			})
 		})
 	}
 

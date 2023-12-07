@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -123,8 +122,8 @@ func (c *Client) handleNewMessage(raw []byte) {
 		c.handleTypingEvent(msg, ActionEmitRemoveFromTyping)
 	case ActionReceiveSendMessage:
 		c.handleSendMessage(msg)
-	case ActionReceiveUsersJoinRoom:
-		c.handleUsersJoinRoom(msg)
+	case ActionReceiveJoinRoom:
+		c.handleJoinRoom(msg)
 	}
 }
 
@@ -132,37 +131,21 @@ func (c *Client) handleTypingEvent(msg *ReceivedMessage, action Action) {
 	c.hub.PublishToRoom(&EmittedMessage{
 		Action: action,
 		Data:   msg.Data,
-	}, msg.ChatID)
+	}, msg.RoomID)
 }
 
 func (c *Client) handleSendMessage(msg *ReceivedMessage) {
 	c.hub.PublishToRoom(&EmittedMessage{
 		Action: ActionEmitNewMessage,
 		Data:   msg.Data,
-	}, msg.ChatID)
+	}, msg.RoomID)
 }
 
-func (c *Client) handleUsersJoinRoom(msg *ReceivedMessage) {
-	room, err := c.hub.findRoomById(msg.ChatID)
+func (c *Client) handleJoinRoom(msg *ReceivedMessage) {
+	room, err := c.hub.findRoomById(msg.RoomID)
 	if err != nil {
-		room = c.hub.createRoom(msg.ChatID)
+		room = c.hub.createRoom(msg.RoomID)
 	}
-	c.hub.logger.Debug("users join room", "msg", msg)
-	userIds := make([]string, 0)
-	err = json.Unmarshal(msg.Data, &userIds)
-	if err != nil {
-		c.hub.logger.Warn("cannot unmarshal userIds", "err", err)
-		return
-	}
-	for _, userId := range userIds {
-		if userId != c.id {
-			client, err := c.hub.findClientById(userId)
-			if err != nil {
-				continue
-			}
-			room.register <- client
-		} else {
-			room.register <- c
-		}
-	}
+	c.hub.logger.Debug("join room", "msg", msg)
+	room.register <- c
 }

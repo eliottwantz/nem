@@ -53,15 +53,14 @@
 			chatId = res.data.id
 			// Join in ws server the new chat room
 			ws.send({
-				action: 'usersJoinRoom',
-				chatId,
-				data: [$page.data.user.id, recepient.id]
+				action: 'joinRoom',
+				roomId: chatId
 			})
 		}
 
 		ws.send({
 			action: 'stopTyping',
-			chatId,
+			roomId: chatId,
 			data: $page.data.user.firstName
 		})
 		currentlyTyping = false
@@ -85,7 +84,7 @@
 		}
 		ws.send({
 			action: 'sendMessage',
-			chatId,
+			roomId: chatId,
 			data: res.data
 		})
 
@@ -99,14 +98,14 @@
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',
-				chatId: chatId,
+				roomId: chatId,
 				data: $page.data.user.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
-				chatId: chatId,
+				roomId: chatId,
 				data: $page.data.user.firstName
 			})
 			currentlyTyping = false
