@@ -1,12 +1,14 @@
+import { route } from '$lib/ROUTES'
 import type { SortType } from '$lib/stores/teachersFiltersStore'
 import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
 import type { Topic } from '@prisma/client'
+import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session, user, redirect, db }, url }) {
-	if (!session || !user) throw redirect(302, '/signin')
-	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
+export async function load({ locals: { session, user, lang, db }, url }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
+	if (user.role === 'teacher') throw redirect(302, route('/dashboard/teacher/classes', { lang }))
 	if (!url.searchParams.get('language') || !url.searchParams.get('topic')) {
-		throw redirect(302, '/teachers?topic=English&language=French')
+		throw redirect(302, route('/teachers', { lang }))
 	}
 	const language = url.searchParams.get('language') ?? 'French'
 	const topic = url.searchParams.get('topic') ?? 'English'

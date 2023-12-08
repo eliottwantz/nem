@@ -15,6 +15,14 @@ export default defineConfig({
 			override_params: {
 				lang: { type: 'string' }
 			},
+			PAGES: {
+				'/teachers': {
+					explicit_search_params: {
+						topic: { default: '"English"', type: 'string' },
+						language: { default: '"French"', type: 'string' }
+					}
+				}
+			},
 			SERVERS: {
 				'GET /api/messages/[chatId]': {
 					explicit_search_params: {

@@ -1,8 +1,10 @@
+import { route } from '$lib/ROUTES'
 import { safeDBCall } from '$lib/utils/error'
 import type { Class, TimeSlot } from '@prisma/client'
+import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session, user, redirect, db } }) {
-	if (!session || !user) throw redirect(302, '/signin')
+export async function load({ locals: { session, user, lang, db } }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
 	const res = await safeDBCall(
 		db.class.findMany({
 			where: { teacherId: user.id },

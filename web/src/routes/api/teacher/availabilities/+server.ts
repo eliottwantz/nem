@@ -1,14 +1,16 @@
+import { route } from '$lib/ROUTES'
 import { createAvailabilitySchema, type CreateCalendarAvailability } from '$lib/schemas/calendar'
 import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
+import { redirect } from '@sveltejs/kit'
 
 export interface TimesRequest {
 	startAt: string
 	endAt: string
 }
 
-export const POST = async ({ request, locals: { session, redirect, db } }) => {
-	if (!session) throw redirect(302, '/signin')
+export const POST = async ({ request, locals: { session, lang, db } }) => {
+	if (!session) throw redirect(302, route('/signin', { lang }))
 	try {
 		const body = (await request.json()) as CreateCalendarAvailability
 		console.log('POST ' + request.url, body)

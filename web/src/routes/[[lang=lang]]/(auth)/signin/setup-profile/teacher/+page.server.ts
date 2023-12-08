@@ -1,13 +1,14 @@
+import { route } from '$lib/ROUTES'
 import type { ServerMessage } from '$lib/schemas/error'
 import { createTeacherSchema } from '$lib/schemas/profile'
 import { stripe } from '$lib/server/stripe'
 import { safeDBCall } from '$lib/utils/error'
-import { fail } from '@sveltejs/kit'
+import { fail, redirect } from '@sveltejs/kit'
 import { message, superValidate } from 'sveltekit-superforms/server'
 
-export const load = async ({ locals: { session, user, db, redirect } }) => {
+export const load = async ({ locals: { session, user, db, lang } }) => {
 	console.log('setup profile page.server load')
-	if (!session) throw redirect(302, '/')
+	if (!session) throw redirect(302, route('/signin', { lang }))
 	if (user) {
 		console.log('user already created his profile')
 		throw redirect(302, '/dashboard/profile')
@@ -28,8 +29,8 @@ export const load = async ({ locals: { session, user, db, redirect } }) => {
 }
 
 export const actions = {
-	default: async ({ request, locals: { session, db, lang, redirect } }) => {
-		if (!session) throw redirect(302, '/signin')
+	default: async ({ request, locals: { session, db, lang } }) => {
+		if (!session) throw redirect(302, route('/signin', { lang }))
 		const form = await superValidate<typeof createTeacherSchema, ServerMessage>(
 			request,
 			createTeacherSchema

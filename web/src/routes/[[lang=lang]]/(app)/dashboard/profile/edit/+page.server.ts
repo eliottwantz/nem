@@ -1,14 +1,15 @@
+import { route } from '$lib/ROUTES'
 import type { ServerMessage } from '$lib/schemas/error'
 import { deleteAvatar, uploadAvatar } from '$lib/server/backblaze'
-import { fail } from '@sveltejs/kit'
+import { fail, redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session, redirect } }) {
+export async function load({ locals: { session } }) {
 	console.log('profile edit server load')
 	if (!session) throw redirect(302, '/signin')
 }
 
 export const actions = {
-	updateAvatar: async ({ request, locals: { db, user, session, redirect } }) => {
+	updateAvatar: async ({ request, locals: { db, user, session } }) => {
 		if (!user || !session) throw redirect(302, '/signin')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
@@ -68,8 +69,8 @@ export const actions = {
 			} satisfies ServerMessage
 		}
 	},
-	deleteAvatar: async ({ locals: { db, user, session, redirect } }) => {
-		if (!session || !user) throw redirect(302, '/signin')
+	deleteAvatar: async ({ locals: { db, user, session, lang } }) => {
+		if (!session || !user) throw redirect(302, route('/signin', { lang }))
 		if (!user.avatarFilePath) return
 		try {
 			await Promise.all([

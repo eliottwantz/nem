@@ -1,10 +1,11 @@
+import { route } from '$lib/ROUTES'
 import { AppError, dbLoadPromise, safeDBCall } from '$lib/utils/error'
 import type { Chat, Subscription } from '@prisma/client'
-import { error } from '@sveltejs/kit'
+import { error, redirect } from '@sveltejs/kit'
 
-export async function load({ params, locals: { session, user, redirect, db } }) {
-	if (!session || !user) throw redirect(302, '/signin')
-	if (user.role === 'teacher') throw redirect(302, '/dashboard/teacher/classes')
+export async function load({ params, locals: { session, user, lang, db } }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
+	if (user.role === 'teacher') throw redirect(302, route('/dashboard/teacher/classes', { lang }))
 
 	const teacher = await safeDBCall(
 		db.teacher.findUnique({

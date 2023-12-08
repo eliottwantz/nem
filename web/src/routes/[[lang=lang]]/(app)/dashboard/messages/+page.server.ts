@@ -1,13 +1,10 @@
+import { route } from '$lib/ROUTES'
 import { safeDBCall } from '$lib/utils/error'
+import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { user, session, redirect, db } }) {
-	if (!session || !user) throw redirect(302, '/signin')
+export async function load({ locals: { user, session, db, lang } }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
 
-	// const res = await Promise.all([
-	// 	safeFetch(
-	// 		fetchers.messageService(fetch, session).listConversationsOfUser({ userId: user.id })
-	// 	)
-	// ])
 	const res = await safeDBCall(
 		db.chat.findMany({
 			where: {

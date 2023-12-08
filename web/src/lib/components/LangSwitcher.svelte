@@ -32,6 +32,7 @@
 				goto(translatePath($page.url.pathname, lang))
 			])
 		}
+		console.log('changing lang to', translatePath($page.url.pathname, lang))
 	}
 
 	let selectedLang = $page.params.lang ?? sourceLanguageTag

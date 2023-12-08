@@ -1,11 +1,12 @@
+import { route } from '$lib/ROUTES'
 import type { ServerMessage } from '$lib/schemas/error'
 import { teachNewTopicSchema } from '$lib/schemas/teach'
 import { safeDBCall } from '$lib/utils/error'
-import { fail } from '@sveltejs/kit'
+import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
-export async function load({ locals: { session, user, redirect, db } }) {
-	if (!session || !user) throw redirect(302, '/signin')
+export async function load({ locals: { session, user, lang, db } }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
 	const data = await Promise.all([
 		safeDBCall(db.topic.findMany()),
 		safeDBCall(
@@ -28,8 +29,8 @@ export async function load({ locals: { session, user, redirect, db } }) {
 }
 
 export const actions = {
-	newTopic: async ({ request, locals: { session, redirect, db } }) => {
-		if (!session) throw redirect(302, '/signin')
+	newTopic: async ({ request, locals: { session, lang, db } }) => {
+		if (!session) throw redirect(302, route('/signin', { lang }))
 		const form = await superValidate<typeof teachNewTopicSchema, ServerMessage>(
 			request,
 			teachNewTopicSchema

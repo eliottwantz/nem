@@ -13,7 +13,7 @@
 
 	const drawerStore = getDrawerStore()
 
-	let activeUrl = $page.url.pathname
+	$: activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col space-y-4 p-4 lg:border-r">

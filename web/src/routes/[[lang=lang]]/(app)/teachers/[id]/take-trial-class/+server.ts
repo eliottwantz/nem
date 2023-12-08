@@ -1,17 +1,18 @@
 import { STRIPE_PRODUCT_ID_TRIAL, STRIPE_TRIAL_DISCOUNT_COUPON_ID } from '$env/static/private'
+import { route } from '$lib/ROUTES'
 import { stripe, type ClassPaymentMetaData } from '$lib/server/stripe'
 import type { TakeClassStore } from '$lib/stores/takeClassStore'
 import { safeDBCall } from '$lib/utils/error'
-import { json } from '@sveltejs/kit'
+import { json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
 export const POST = async ({
 	request,
-	locals: { session, user, redirect, db, message },
+	locals: { session, user, lang, db, message },
 	url,
 	params
 }) => {
-	if (!session || !user) throw redirect(307, '/signin')
+	if (!session || !user) throw redirect(307, route('/signin', { lang }))
 
 	const res = await safeDBCall(db.teacher.findUnique({ where: { id: params.id } }))
 	if (!res.ok) {

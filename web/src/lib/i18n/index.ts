@@ -19,11 +19,11 @@ export const langParams = () => {
  */
 export function translatePath(path: string, lang: AvailableLanguageTag) {
 	path = withoutLanguageTag(path)
+	console.log('returned path', path, 'lang', lang)
 
 	// Don't prefix the default language
 	if (lang === sourceLanguageTag) {
-		if (path === '/') return '/'
-		return `/${path}`
+		return path
 	}
 
 	// Prefix all other languages
@@ -35,9 +35,9 @@ export function translatePath(path: string, lang: AvailableLanguageTag) {
  */
 export function withoutLanguageTag(path: string) {
 	const [_, maybeLang, ...rest] = path.split('/')
-	if (!maybeLang) return ''
+	console.log(`${path}.split(/)`, path.split('/'))
 	if (availableLanguageTags.includes(maybeLang as AvailableLanguageTag)) {
-		return rest.join('/')
+		return `/${rest.join('/')}`
 	}
 	return path
 }

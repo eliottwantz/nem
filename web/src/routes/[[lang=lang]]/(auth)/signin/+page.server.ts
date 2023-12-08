@@ -1,7 +1,10 @@
-export const load = async ({ locals: { session, redirect }, fetch }) => {
+import { route } from '$lib/ROUTES'
+import { redirect } from '@sveltejs/kit'
+
+export const load = async ({ locals: { session, lang }, fetch }) => {
 	console.log('login ran')
 	if (session) {
-		throw redirect(302, '/')
+		throw redirect(302, route('/', { lang }))
 	}
 
 	const csrfTokenResponse = await fetch(`/auth/csrf`)

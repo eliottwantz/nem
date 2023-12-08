@@ -1,7 +1,9 @@
+import { route } from '$lib/ROUTES'
 import { safeDBCall } from '$lib/utils/error'
+import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session, redirect, db }, params }) {
-	if (!session) throw redirect(302, '/signin')
+export async function load({ locals: { session, lang, db }, params }) {
+	if (!session) throw redirect(302, route('/signin', { lang }))
 	const res = await safeDBCall(
 		db.class.findUnique({
 			where: { id: params.id },

@@ -1,19 +1,20 @@
+import { route } from '$lib/ROUTES'
 import {
 	stripe,
 	type StripeSubscriptionRequest,
 	type SubscriptionMetadata
 } from '$lib/server/stripe'
 import { safeDBCall } from '$lib/utils/error'
-import { error, json } from '@sveltejs/kit'
+import { error, json, redirect } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
 export const POST = async ({
 	request,
-	locals: { db, session, user, redirect, message },
+	locals: { db, session, user, lang, message },
 	url,
 	params
 }) => {
-	if (!session || !user) throw redirect(307, '/signin')
+	if (!session || !user) throw redirect(307, route('/signin', { lang }))
 
 	const res = await safeDBCall(db.teacher.findUnique({ where: { id: params.id } }))
 	if (!res.ok) {

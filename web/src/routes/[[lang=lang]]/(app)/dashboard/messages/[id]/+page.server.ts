@@ -1,7 +1,9 @@
 import type { Profile } from '@prisma/client'
 import { safeDBCall } from '$lib/utils/error'
+import { redirect } from '@sveltejs/kit'
+import { route } from '$lib/ROUTES'
 
-export async function load({ locals: { user, session, redirect, db }, params }) {
+export async function load({ locals: { user, session, db, lang }, params }) {
 	if (!session || !user) throw redirect(302, '/signin')
 
 	const res = await safeDBCall(
@@ -22,7 +24,7 @@ export async function load({ locals: { user, session, redirect, db }, params }) 
 		})
 	)
 
-	if (!res.ok) throw redirect(302, '/dashboard/messages')
+	if (!res.ok) throw redirect(302, route('/dashboard/messages', { lang }))
 
 	return {
 		user,

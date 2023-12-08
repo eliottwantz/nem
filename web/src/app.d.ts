@@ -1,4 +1,3 @@
-import type { AppRedirect } from '$lib/utils/redirect'
 import type { AdapterUser } from '@auth/core/adapters'
 import type { DefaultSession, Session } from '@auth/core/types'
 import type { PrismaClient, Profile, User } from '@prisma/client'
@@ -21,7 +20,6 @@ declare global {
 			user: Profile | null
 			db: PrismaClient
 			lang: AvailableLanguageTag
-			redirect: AppRedirect
 			message: AppJsonMessage
 		}
 		interface PageData {

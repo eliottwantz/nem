@@ -1,17 +1,17 @@
+import { route } from '$lib/ROUTES'
 import {
-	type UpdateCalendarAvailability,
+	deleteAvailabilitySchema,
 	modifyAvailabilitySchema,
 	type DeleteCalendarAvailability,
-	deleteAvailabilitySchema
+	type UpdateCalendarAvailability
 } from '$lib/schemas/calendar'
 import { safeDBCall } from '$lib/utils/error'
 import { issuesToString } from '$lib/utils/zodError'
-import { json } from '@sveltejs/kit'
+import { json, redirect } from '@sveltejs/kit'
 import type { TimesRequest } from '../+server'
-import type { ServerMessage } from '$lib/schemas/error'
 
-export const PUT = async ({ request, locals: { session, redirect, db, message } }) => {
-	if (!session) throw redirect(302, '/signin')
+export const PUT = async ({ request, locals: { session, lang, db, message } }) => {
+	if (!session) throw redirect(302, route('/signin', { lang }))
 	try {
 		const body = (await request.json()) as UpdateCalendarAvailability
 		console.log('PUT ' + request.url, body)
@@ -89,8 +89,8 @@ export const PUT = async ({ request, locals: { session, redirect, db, message } 
 	}
 }
 
-export const DELETE = async ({ request, locals: { session, redirect, db, message } }) => {
-	if (!session) throw redirect(302, '/signin')
+export const DELETE = async ({ request, locals: { session, lang, db, message } }) => {
+	if (!session) throw redirect(302, route('/signin', { lang }))
 	try {
 		const body = (await request.json()) as DeleteCalendarAvailability
 		console.log('PUT ' + request.url, body)

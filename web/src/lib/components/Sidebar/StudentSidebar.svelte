@@ -1,20 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import CalendarIcon from '$lib/icons/CalendarIcon.svelte'
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
-	import CurrentClass from '$lib/icons/CurrentClass.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
 	import { MessagesSquare } from 'lucide-svelte'
 	import Navigation from '../Navigation.svelte'
-	import { route } from '$lib/ROUTES'
-	import { langParams } from '$i18n'
 
 	const drawerStore = getDrawerStore()
 
-	let activeUrl = $page.url.pathname
+	$: activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col p-2 sm:space-y-4 sm:p-4 lg:border-r">
@@ -40,8 +39,9 @@
 				<li>
 					<a
 						href={route('/teachers', langParams())}
-						class="flex {activeUrl ===
-						`/${$page.params.lang ?? ''}${$page.params.lang ? '/' : ''}teachers`
+						class="flex {activeUrl === '/'
+							? ''
+							: route('/teachers', langParams()).startsWith(activeUrl)
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -53,10 +53,7 @@
 				<li>
 					<a
 						href={route('/dashboard/student/classes', langParams())}
-						class="flex {activeUrl ===
-						`/${$page.params.lang ?? ''}${
-							$page.params.lang ? '/' : ''
-						}dashboard/student/classes`
+						class="flex {activeUrl === route('/dashboard/student/classes', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -69,9 +66,7 @@
 					<a
 						href={route('/dashboard/student/calendar', langParams())}
 						class="flex {activeUrl ===
-						`/${$page.params.lang ?? ''}${
-							$page.params.lang ? '/' : ''
-						}dashboard/student/calendar`
+						route('/dashboard/student/calendar', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
@@ -83,10 +78,7 @@
 				<li>
 					<a
 						href={route('/dashboard/messages', langParams())}
-						class="flex {activeUrl ===
-						`/${$page.params.lang ?? ''}${
-							$page.params.lang ? '/' : ''
-						}dashboard/messages`
+						class="flex {activeUrl === route('/dashboard/messages', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}

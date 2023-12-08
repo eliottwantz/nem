@@ -1,7 +1,7 @@
 import { sourceLanguageTag, type AvailableLanguageTag } from '$i18n/paraglide/runtime'
+import { route } from '$lib/ROUTES'
 import { prisma } from '$lib/server/prisma'
 import { appJsonMessage } from '$lib/utils/json'
-import { appRedirect } from '$lib/utils/redirect'
 import { Prisma } from '@prisma/client'
 import { redirect, type Handle } from '@sveltejs/kit'
 
@@ -14,7 +14,6 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 	event.locals.session = session
 	event.locals.db = prisma
 	event.locals.lang = (event.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
-	event.locals.redirect = appRedirect(event.locals.lang)
 	event.locals.message = appJsonMessage
 
 	if (event.url.pathname.startsWith('/verifyRequest')) {
@@ -30,13 +29,13 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 	console.log('isProtectedRoute:', isProtectedRoute, 'Have session:', session !== null)
 
 	if (isProtectedRoute && !session) {
-		throw event.locals.redirect(302, '/signin')
+		throw redirect(302, route('/signin', { lang: event.locals.lang }))
 	}
 
 	const handleNoProfile = () => {
 		console.log('User needs to create his profile')
 		if (!pathname.includes('/signout') && !pathname.includes('/verifyRequest'))
-			throw event.locals.redirect(302, '/signin/setup-profile')
+			throw redirect(302, route('/signin/setup-profile', { lang: event.locals.lang }))
 	}
 
 	if (session) {
