@@ -114,6 +114,7 @@ model Teacher {
     rating               Float                 @default(0)
     classesTaught        Int                   @default(0)
     cashBank             Int                   @default(0)
+    stripeAccountId      String                @default("test")
     profile              Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
     spokenLanguages      SpokenLanguage[]
     topics               Topic[]

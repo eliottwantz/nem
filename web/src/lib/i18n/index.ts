@@ -19,7 +19,6 @@ export const langParams = () => {
  */
 export function translatePath(path: string, lang: AvailableLanguageTag) {
 	path = withoutLanguageTag(path)
-	console.log('returned path', path, 'lang', lang)
 
 	// Don't prefix the default language
 	if (lang === sourceLanguageTag) {
@@ -35,7 +34,6 @@ export function translatePath(path: string, lang: AvailableLanguageTag) {
  */
 export function withoutLanguageTag(path: string) {
 	const [_, maybeLang, ...rest] = path.split('/')
-	console.log(`${path}.split(/)`, path.split('/'))
 	if (availableLanguageTags.includes(maybeLang as AvailableLanguageTag)) {
 		return `/${rest.join('/')}`
 	}

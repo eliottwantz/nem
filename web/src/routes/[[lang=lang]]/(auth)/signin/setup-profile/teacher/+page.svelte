@@ -51,6 +51,14 @@
 			{/if}
 
 			<label class="label">
+				<span>Birthday</span>
+				<input class="input" type="date" name="birthday" bind:value={$superF.birthday} />
+			</label>
+			{#if $errors.birthday}
+				<p class="text-error-500">{$errors.birthday}</p>
+			{/if}
+
+			<label class="label">
 				<span>Biography</span>
 				<textarea class="input" rows="4" name="bio" bind:value={$superF.bio} />
 			</label>

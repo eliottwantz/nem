@@ -41,17 +41,33 @@ export const actions = {
 			return fail(400, { form })
 		}
 
+		const customer = await stripe.customers.create({
+			email: session.user.email,
+			name: form.data.firstName + ' ' + form.data.lastName,
+			preferred_locales: [lang, 'en'],
+			metadata: {
+				userId: session.user.id,
+				role: 'teacher'
+			}
+		})
+		const account = await stripe.accounts.create({
+			type: 'express',
+			email: session.user.email,
+			metadata: {
+				userId: session.user.id
+			}
+		})
+		console.log('account', account)
+		const accountLink = await stripe.accountLinks.create({
+			account: account.id,
+			refresh_url: 'http://localhost:5173/stripe/reauth',
+			return_url: 'http://localhost:5173/stripe/return',
+			type: 'account_onboarding'
+		})
+		console.log('accountLink', accountLink)
+
 		const res = await safeDBCall(
 			db.$transaction(async (tx) => {
-				const customer = await stripe.customers.create({
-					email: session.user.email,
-					name: form.data.firstName + ' ' + form.data.lastName,
-					preferred_locales: [lang, 'en'],
-					metadata: {
-						userId: session.user.id,
-						role: 'teacher'
-					}
-				})
 				await tx.profile.create({
 					data: {
 						id: session.user.id,
@@ -59,11 +75,11 @@ export const actions = {
 						lastName: form.data.lastName,
 						role: 'teacher',
 						preferedLanguage: lang,
-						birdthday: form.data.birthday,
+						birdthday: new Date(form.data.birthday),
 						stripeCustomerId: customer.id
 					}
 				})
-				await tx.teacher.create({
+				return await tx.teacher.create({
 					data: {
 						id: session.user.id,
 						bio: form.data.bio,
@@ -91,6 +107,7 @@ export const actions = {
 		)
 		if (!res.ok) {
 			console.log(res.error)
+			await stripe.customers.del(customer.id)
 			return message(form, {
 				type: 'error',
 				text: 'Something went wrong when creating your profile'

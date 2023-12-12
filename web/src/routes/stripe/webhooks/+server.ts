@@ -26,8 +26,12 @@ export const POST = async ({ request }) => {
 	}
 
 	switch (event.type) {
+		case 'account.updated':
+			const stripeSession = event.data.object as Stripe.Account
+			console.log(stripeSession.details_submitted)
+			break
 		case 'checkout.session.completed':
-			if (event.data.object.mode === 'payment') {
+			if ((event.data.object as Stripe.Checkout.Session).mode === 'payment') {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: ClassPaymentMetaData
 				}
