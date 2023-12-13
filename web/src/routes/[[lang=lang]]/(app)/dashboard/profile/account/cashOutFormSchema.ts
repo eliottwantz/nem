@@ -6,5 +6,5 @@ export const cashOutSchema = z.object({
 			required_error: 'Amount is required',
 			invalid_type_error: 'Amount must be a number'
 		})
-		.min(10, 'Amount must be greater than 10')
+		.min(10, 'Amount must be greater than or equal to 10')
 })

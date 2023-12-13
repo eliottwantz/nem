@@ -107,14 +107,14 @@ model Student {
 }
 
 model Teacher {
-    id                   String                @id()
+    id                   String                @id
     bio                  String
     hourRate             Int
     topAgent             Boolean               @default(false)
     rating               Float                 @default(0)
     classesTaught        Int                   @default(0)
     cashBank             Int                   @default(0)
-    stripeAccountId      String                @default("test")
+    stripeAccount        StripeAccount?
     profile              Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
     spokenLanguages      SpokenLanguage[]
     topics               Topic[]
@@ -127,6 +127,15 @@ model Teacher {
     @@index([topAgent])
     @@index([rating])
     @@index([hourRate])
+}
+
+model StripeAccount {
+    id               String  @id
+    teacherId        String  @unique
+    chargesEnabled   Boolean @default(false)
+    transfersEnabled Boolean @default(false)
+    detailsSubmitted Boolean @default(false)
+    Teacher          Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
 model Language {

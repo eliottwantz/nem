@@ -15,23 +15,10 @@
 		{
 			title: 'Account',
 			href: route('/dashboard/profile/account', langParams())
-		},
-		{
-			title: 'Balance',
-			href: route('/dashboard/profile/balance', langParams())
 		}
 	]
 </script>
 
-<!-- <Layout> -->
-<!-- <h1 slot="title" class="h1">Hi {user.firstName} !</h1>
-	<a href={route('/signout', langParams())} class="variant-filled-primary btn">Sign out</a>
-	<a href={route('/dashboard/profile/edit', langParams())} class="variant-ghost-surface btn">
-		Edit Profile
-	</a>
-	<span>NEM Pass</span>
-	<slot /> -->
-<!-- </Layout> -->
 <div class="space-y-6 p-10 pb-16">
 	<div class="space-y-0.5">
 		<h2 class="text-2xl font-bold tracking-tight">Settings</h2>

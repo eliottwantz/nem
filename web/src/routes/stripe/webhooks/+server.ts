@@ -31,6 +31,7 @@ export const POST = async ({ request }) => {
 			console.log(stripeSession.details_submitted)
 			break
 		case 'checkout.session.completed':
+			// TODO: change to checkout.session.async_payment_succeeded
 			if ((event.data.object as Stripe.Checkout.Session).mode === 'payment') {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: ClassPaymentMetaData
