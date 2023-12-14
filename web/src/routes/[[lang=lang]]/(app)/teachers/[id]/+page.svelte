@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import { langParams } from '$i18n'
 	import { route } from '$lib/ROUTES'
@@ -131,6 +132,8 @@
 					message: 'Subscription ended',
 					background: 'bg-success-500'
 				})
+				invalidateAll()
+				await goto($page.url.pathname)
 			}
 		})
 	}

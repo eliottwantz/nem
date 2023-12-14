@@ -49,13 +49,11 @@ export const POST = async ({
 	}
 
 	try {
-		await stripe.subscriptions.cancel(sub.value.stripeSubscriptionId, {
-			prorate: true
-		})
+		await stripe.subscriptions.cancel(sub.value.stripeSubscriptionId)
 	} catch (e) {
 		console.log(e)
 		return message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
 	}
 
-	return new Response()
+	return json({}, { status: 200 })
 }
