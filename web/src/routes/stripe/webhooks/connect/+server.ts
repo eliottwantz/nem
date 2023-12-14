@@ -3,7 +3,6 @@ import { STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_DEV } from '$env/static/pr
 import { prisma } from '$lib/server/prisma'
 import { stripe, type ClassPaymentMetaData, type SubscriptionMetadata } from '$lib/server/stripe'
 import { AppError, safeDBCall } from '$lib/utils/error'
-import { json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
 export const POST = async ({ request }) => {
@@ -27,8 +26,21 @@ export const POST = async ({ request }) => {
 
 	switch (event.type) {
 		case 'account.updated':
-			const stripeSession = event.data.object as Stripe.Account
-			console.log(stripeSession.details_submitted)
+			{
+				const res = await safeDBCall(
+					prisma.stripeAccount.update({
+						where: { id: event.account },
+						data: {
+							chargesEnabled: event.data.object.charges_enabled,
+							transfersEnabled: event.data.object.payouts_enabled,
+							detailsSubmitted: event.data.object.details_submitted
+						}
+					})
+				)
+				if (!res.ok) {
+					return new Response('Failed to update account details', { status: 500 })
+				}
+			}
 			break
 		case 'checkout.session.completed':
 			// TODO: change to checkout.session.async_payment_succeeded
