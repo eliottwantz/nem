@@ -88,7 +88,6 @@ model Profile {
     birdthday        DateTime  @db.Date
     role             Role
     preferedLanguage Locale    @default(en)
-    stripeCustomerId String
     avatarFilePath   String?
     avatarUrl        String?
     student          Student?
@@ -98,12 +97,13 @@ model Profile {
 }
 
 model Student {
-    id            String                @id()
-    profile       Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
-    classes       Class[]
-    reviews       Review[]
-    hoursBank     HoursBank[]
-    subscriptions StudentSubscription[]
+    id               String                @id()
+    profile          Profile               @relation(fields: [id], references: [id], onDelete: Cascade)
+    stripeCustomerId String
+    classes          Class[]
+    reviews          Review[]
+    hoursBank        HoursBank[]
+    subscriptions    StudentSubscription[]
 }
 
 model Teacher {

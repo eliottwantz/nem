@@ -24,11 +24,27 @@
 	<div class="mb-4 space-y-4">
 		<label class="label">
 			<span>First Name</span>
-			<input class="input" type="text" name="firstName" value={user.firstName} disabled />
+			<input
+				class="input"
+				type="text"
+				name="firstName"
+				title="First Name (readonly)"
+				placeholder={user.firstName}
+				readonly
+				tabindex="-1"
+			/>
 		</label>
 		<label>
 			<span>Last Name</span>
-			<input class="input" type="text" name="lastName" value={user.lastName} disabled />
+			<input
+				class="input"
+				type="text"
+				name="lastName"
+				title="Last Name (readonly)"
+				placeholder={user.lastName}
+				readonly
+				tabindex="-1"
+			/>
 		</label>
 	</div>
 	<form

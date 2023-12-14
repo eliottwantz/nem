@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import Layout from '$lib/components/Layout.svelte'
 	import { signOut } from '@auth/sveltekit/client'
 
-	let callbackUrl = `${$page.params.lang ? `/${$page.params.lang}` : ''}/signin/setup-profile`
 	async function signout() {
-		await signOut({ callbackUrl })
+		await signOut({ callbackUrl: route('/', langParams()) })
 	}
 </script>
 

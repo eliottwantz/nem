@@ -41,73 +41,43 @@ export const actions = {
 			return fail(400, { form })
 		}
 
-		const customer = await stripe.customers.create({
-			email: session.user.email,
-			name: form.data.firstName + ' ' + form.data.lastName,
-			preferred_locales: [lang, 'en'],
-			metadata: {
-				userId: session.user.id,
-				role: 'teacher'
-			}
-		})
-		const account = await stripe.accounts.create({
-			type: 'express',
-			email: session.user.email,
-			metadata: {
-				userId: session.user.id
-			}
-		})
-		console.log('account', account)
-		const accountLink = await stripe.accountLinks.create({
-			account: account.id,
-			refresh_url: 'http://localhost:5173/stripe/reauth',
-			return_url: 'http://localhost:5173/stripe/return',
-			type: 'account_onboarding'
-		})
-		console.log('accountLink', accountLink)
-
 		const res = await safeDBCall(
-			db.$transaction(async (tx) => {
-				await tx.profile.create({
-					data: {
-						id: session.user.id,
-						firstName: form.data.firstName,
-						lastName: form.data.lastName,
-						role: 'teacher',
-						preferedLanguage: lang,
-						birdthday: new Date(form.data.birthday),
-						stripeCustomerId: customer.id
-					}
-				})
-				return await tx.teacher.create({
-					data: {
-						id: session.user.id,
-						bio: form.data.bio,
-						hourRate: form.data.hourRate,
-						topics: {
-							connect: form.data.topicsTaught.map((t) => ({ topic: t }))
-						},
-						spokenLanguages: {
-							connectOrCreate: form.data.spokenLanguages.map((l) => ({
-								create: {
-									languageId: l.language,
-									proficiency: l.proficiency
-								},
-								where: {
-									languageId_proficiency: {
+			db.profile.create({
+				data: {
+					id: session.user.id,
+					firstName: form.data.firstName,
+					lastName: form.data.lastName,
+					role: 'teacher',
+					preferedLanguage: lang,
+					birdthday: new Date(form.data.birthday),
+					teacher: {
+						create: {
+							bio: form.data.bio,
+							hourRate: form.data.hourRate,
+							topics: {
+								connect: form.data.topicsTaught.map((t) => ({ topic: t }))
+							},
+							spokenLanguages: {
+								connectOrCreate: form.data.spokenLanguages.map((l) => ({
+									create: {
 										languageId: l.language,
 										proficiency: l.proficiency
+									},
+									where: {
+										languageId_proficiency: {
+											languageId: l.language,
+											proficiency: l.proficiency
+										}
 									}
-								}
-							}))
+								}))
+							}
 						}
 					}
-				})
+				}
 			})
 		)
 		if (!res.ok) {
 			console.log(res.error)
-			await stripe.customers.del(customer.id)
 			return message(form, {
 				type: 'error',
 				text: 'Something went wrong when creating your profile'

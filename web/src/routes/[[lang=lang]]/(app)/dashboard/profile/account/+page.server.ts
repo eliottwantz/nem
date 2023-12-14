@@ -9,7 +9,9 @@ import { cashOutSchema } from './cashOutFormSchema'
 export const load = async ({ cookies, locals: { session, user, lang, db } }) => {
 	cookies.delete('account-id', { path: '/' })
 	if (!session || !user) throw redirect(302, route('/signin', { lang }))
-	if (user.role !== 'teacher') throw redirect(302, route('/dashboard/profile', { lang }))
+	const form = await superValidate<typeof cashOutSchema>(cashOutSchema)
+	if (user.role === 'student') return { form }
+
 	const res = await safeDBCall(
 		db.teacher.findUnique({
 			where: { id: user.id },
@@ -22,7 +24,6 @@ export const load = async ({ cookies, locals: { session, user, lang, db } }) => 
 	if (!res.ok) throw redirect(302, route('/dashboard/profile', { lang }))
 
 	const { stripeAccount } = res.value
-	const form = await superValidate<typeof cashOutSchema>(cashOutSchema)
 	return {
 		form,
 		teacher: res.value,

@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import ProfileDropdown from '$components/ProfileDropdown.svelte'
 	import { langParams, m } from '$i18n'
 	import { route } from '$lib/ROUTES'
-	import Avatar from '$lib/components/Avatar.svelte'
 	import { drawerStoreIds } from '$lib/components/Drawer'
 	import Navigation from '$lib/components/Navigation.svelte'
 	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
 	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
 	import Logo from '$lib/icons/Logo.svelte'
-	import { getInitials } from '$lib/utils/initials'
 	import { AppBar, AppShell, getDrawerStore } from '@skeletonlabs/skeleton'
 	import { Hourglass } from 'lucide-svelte'
 
@@ -86,13 +85,14 @@
 						{m.signout()}
 					</a>
 				{:else}
-					<a href={route('/dashboard/profile', langParams())}>
+					<ProfileDropdown email={data.session.user.email} user={data.user} />
+					<!-- <a href={route('/dashboard/profile', langParams())}>
 						<Avatar
 							class="cursor-pointer hover:border-primary-500"
 							src={data.user.avatarUrl ?? ''}
 							initials={getInitials(data.user)}
 						/>
-					</a>
+					</a> -->
 				{/if}
 			</svelte:fragment>
 		</AppBar>

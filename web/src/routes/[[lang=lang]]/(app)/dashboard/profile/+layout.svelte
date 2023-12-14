@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { langParams } from '$i18n'
 	import { route } from '$lib/ROUTES'
-	import Layout from '$lib/components/Layout.svelte'
 	import ProfileSidebar from './profile-sidebar.svelte'
-
-	export let data
-	let { user } = data
 
 	const sidebarNavItems = [
 		{

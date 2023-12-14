@@ -41,19 +41,20 @@ export const actions = {
 			}
 		})
 		const res = await safeDBCall(
-			db.$transaction(async (tx) => {
-				await tx.profile.create({
-					data: {
-						id: session.user.id,
-						firstName: form.data.firstName,
-						lastName: form.data.lastName,
-						role: 'student',
-						preferedLanguage: lang,
-						birdthday: new Date(form.data.birthday),
-						stripeCustomerId: customer.id
+			db.profile.create({
+				data: {
+					id: session.user.id,
+					firstName: form.data.firstName,
+					lastName: form.data.lastName,
+					role: 'student',
+					preferedLanguage: lang,
+					birdthday: new Date(form.data.birthday),
+					student: {
+						create: {
+							stripeCustomerId: customer.id
+						}
 					}
-				})
-				return await tx.student.create({ data: { id: session.user.id } })
+				}
 			})
 		)
 		if (!res.ok) {

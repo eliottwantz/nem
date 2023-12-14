@@ -74,7 +74,6 @@ async function main() {
 						avatarUrl: avatar,
 						avatarFilePath: avatar,
 						birdthday: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
-						stripeCustomerId: faker.string.nanoid(),
 						teacher: {
 							create: {
 								bio: faker.lorem.paragraph(),
@@ -128,8 +127,11 @@ async function main() {
 						avatarUrl: avatar2,
 						avatarFilePath: avatar2,
 						birdthday: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
-						stripeCustomerId: faker.string.nanoid(),
-						student: { create: {} }
+						student: {
+							create: {
+								stripeCustomerId: faker.string.nanoid()
+							}
+						}
 					}
 				}
 			}
