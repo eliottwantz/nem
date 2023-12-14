@@ -3,6 +3,8 @@
 	import { route } from '$lib/ROUTES'
 	import ProfileSidebar from './profile-sidebar.svelte'
 
+	export let data
+
 	const sidebarNavItems = [
 		{
 			title: 'Profile',
@@ -13,6 +15,14 @@
 			href: route('/dashboard/profile/account', langParams())
 		}
 	]
+	const teacherNavItems = sidebarNavItems.concat({
+		title: 'Students',
+		href: route('/dashboard/profile/students', langParams())
+	})
+	const studentNavItems = sidebarNavItems.concat({
+		title: 'Subscriptions',
+		href: route('/dashboard/profile/subscriptions', langParams())
+	})
 </script>
 
 <div class="space-y-6 p-10 pb-16">
@@ -25,7 +35,11 @@
 	<hr class="separator my-6" />
 	<div class="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
 		<aside class="-mx-4 lg:w-1/5">
-			<ProfileSidebar items={sidebarNavItems} />
+			{#if data.user.role === 'teacher'}
+				<ProfileSidebar items={teacherNavItems} />
+			{:else}
+				<ProfileSidebar items={studentNavItems} />
+			{/if}
 		</aside>
 		<div class="flex-1 lg:max-w-2xl">
 			<slot />

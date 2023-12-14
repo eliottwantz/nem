@@ -32,6 +32,12 @@ const PAGES = {
   "/dashboard/profile/account": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/profile/account`
   },
+  "/dashboard/profile/students": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/profile/students`
+  },
+  "/dashboard/profile/subscriptions": (params?: { lang?: (string) }) => {
+    return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/profile/subscriptions`
+  },
   "/dashboard/student/calendar": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/student/calendar`
   },
@@ -251,7 +257,7 @@ export function route<T extends keyof AllTypes>(key: T, ...params: any[]): strin
 * ```
 */
 export type KIT_ROUTES = { 
-  PAGES: { '/': 'lang', '/about': 'lang', '/contact': 'lang', '/dashboard/class/[id]': 'id' | 'lang', '/dashboard/messages': 'lang', '/dashboard/messages/[id]': 'id' | 'lang', '/dashboard/profile': 'lang', '/dashboard/profile/account': 'lang', '/dashboard/student/calendar': 'lang', '/dashboard/student/classes': 'lang', '/dashboard/student/classes/[id]': 'id' | 'lang', '/dashboard/teacher/calendar': 'lang', '/dashboard/teacher/classes': 'lang', '/dashboard/teacher/classes/[id]': 'id' | 'lang', '/dashboard/teacher/teach': 'lang', '/teachers': 'lang', '/teachers/[id]': 'id' | 'lang', '/teachers/[id]/subscribe': 'id' | 'lang', '/top-agent': 'lang', '/users/[id]': 'id' | 'lang', '/error': 'lang', '/signin': 'lang', '/signin/setup-profile': 'lang', '/signin/setup-profile/student': 'lang', '/signin/setup-profile/teacher': 'lang', '/signout': 'lang', '/verifyRequest': 'lang' }
+  PAGES: { '/': 'lang', '/about': 'lang', '/contact': 'lang', '/dashboard/class/[id]': 'id' | 'lang', '/dashboard/messages': 'lang', '/dashboard/messages/[id]': 'id' | 'lang', '/dashboard/profile': 'lang', '/dashboard/profile/account': 'lang', '/dashboard/profile/students': 'lang', '/dashboard/profile/subscriptions': 'lang', '/dashboard/student/calendar': 'lang', '/dashboard/student/classes': 'lang', '/dashboard/student/classes/[id]': 'id' | 'lang', '/dashboard/teacher/calendar': 'lang', '/dashboard/teacher/classes': 'lang', '/dashboard/teacher/classes/[id]': 'id' | 'lang', '/dashboard/teacher/teach': 'lang', '/teachers': 'lang', '/teachers/[id]': 'id' | 'lang', '/teachers/[id]/subscribe': 'id' | 'lang', '/top-agent': 'lang', '/users/[id]': 'id' | 'lang', '/error': 'lang', '/signin': 'lang', '/signin/setup-profile': 'lang', '/signin/setup-profile/student': 'lang', '/signin/setup-profile/teacher': 'lang', '/signout': 'lang', '/verifyRequest': 'lang' }
   SERVERS: { 'GET /dashboard/profile/account/reauth': 'lang', 'POST /teachers/[id]/subscribe': 'id' | 'lang', 'POST /teachers/[id]/take-trial-class': 'id' | 'lang', 'POST /teachers/[id]/unsubscribe': 'id' | 'lang', 'PUT /api/change-lang': never, 'POST /api/chats': never, 'POST /api/chats/send/[chatId]': 'chatId', 'POST /api/classes/[id]/cancel': 'id', 'POST /api/classes/join': never, 'GET /api/messages/[chatId]': 'chatId', 'POST /api/teacher/availabilities': never, 'PUT /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/availabilities/[id]': 'id', 'DELETE /api/teacher/classes/[id]/cancel': 'id', 'PATCH /api/teacher/topics': never, 'GET /api/wise/profiles': never, 'POST /stripe/webhooks': never, 'POST /stripe/webhooks/connect': never }
   ACTIONS: { 'updateAvatar /dashboard/profile': 'lang', 'deleteAvatar /dashboard/profile': 'lang', 'createAccount /dashboard/profile/account': 'lang', 'finishSetup /dashboard/profile/account': 'lang', 'dashboardPayouts /dashboard/profile/account': 'lang', 'newTopic /dashboard/teacher/teach': 'lang', 'default /signin/setup-profile/student': 'lang', 'default /signin/setup-profile/teacher': 'lang' }
   LINKS: Record<string, never>
