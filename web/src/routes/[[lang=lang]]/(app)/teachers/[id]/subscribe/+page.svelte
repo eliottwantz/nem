@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
+	import { langParams } from '$i18n'
 	import { route } from '$lib/ROUTES'
+	import { safeFetch } from '$lib/api'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import type { StripeSubscriptionRequest } from '$lib/server/stripe'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
+	import { LucideExternalLink } from 'lucide-svelte'
 	import { onMount } from 'svelte'
 
 	export let data
@@ -40,30 +43,31 @@
 			})
 		}
 		pricePerMonth = sub.hours * data.teacher.hourRate
-		priceWithFees = (pricePerMonth * 2.5) / 100 // 2.5% transaction fee
+		priceWithFees = (pricePerMonth * 5) / 100 + 1 // 5% transaction fee + 1 USD
 		total = priceWithFees + pricePerMonth
 	})
 
 	async function takeSubscription() {
 		try {
-			const res = await fetch(route('/teachers/[id]/subscribe', { id: $page.params.id }), {
-				method: 'POST',
-				body: JSON.stringify({
-					teacherId: data.teacher.id,
-					subscription: sub!,
-					price: total,
-					hours: sub!.hours
-				} satisfies StripeSubscriptionRequest)
-			})
-			const resData = await res.json()
+			const res = await safeFetch<{ url: string }>(
+				fetch(route('/teachers/[id]/subscribe', { id: $page.params.id }), {
+					method: 'POST',
+					body: JSON.stringify({
+						teacherId: data.teacher.id,
+						subscription: sub!,
+						price: total,
+						hours: sub!.hours
+					} satisfies StripeSubscriptionRequest)
+				})
+			)
 			if (!res.ok) {
 				toastStore.trigger({
-					message: resData.message,
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
 				return
 			}
-			window.location.replace(resData.url)
+			window.location.replace(res.data.url)
 		} catch (e) {
 			console.log(e)
 			toastStore.trigger({
@@ -93,9 +97,18 @@
 					<p class="text-base lg:text-xl">
 						{sub.hours} hours x {data.teacher.hourRate} USD / h
 					</p>
-					<p class="text-base lg:text-xl">
-						Transaction fee <span class="text-xs lg:text-sm">(2.5%)</span>
+					<p class="flex items-center gap-x-1 text-xs lg:text-sm">
+						Transaction fee
+						<a
+							class="anchor flex gap-x-1 underline decoration-dotted underline-offset-4"
+							target="_blank"
+							href={route('/about', langParams())}
+						>
+							<span>(5%)</span>
+							<LucideExternalLink size="14" />
+						</a>
 					</p>
+
 					<div class="flex flex-col pt-4">
 						<p class="text-xl lg:text-2xl">Total</p>
 						<p class="text-sm">Billed every month</p>
@@ -103,7 +116,7 @@
 				</div>
 				<div class="flex flex-col gap-y-2">
 					<p class="text-right text-base lg:text-xl">{pricePerMonth} USD</p>
-					<p class="text-right text-base lg:text-xl">
+					<p class="text-right text-xs lg:text-sm">
 						{priceWithFees} USD
 					</p>
 					<p class="pt-4 text-right text-base lg:text-2xl">{total} USD</p>

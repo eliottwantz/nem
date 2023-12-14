@@ -16,17 +16,66 @@ export const POST = async ({
 }) => {
 	if (!session || !user) throw redirect(307, route('/signin', { lang }))
 
-	const res = await safeDBCall(db.teacher.findUnique({ where: { id: params.id } }))
+	const res = await safeDBCall(
+		db.$transaction(async (tx) => {
+			const teacher = await tx.teacher.findUnique({
+				where: {
+					id: params.id
+				},
+				select: {
+					hourRate: true,
+					stripeAccount: true
+				}
+			})
+			const student = await tx.student.findUnique({
+				where: { id: user.id }
+			})
+			return {
+				teacher,
+				student
+			}
+		})
+	)
 	if (!res.ok) {
 		console.log(res.error)
+		return message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
+	}
+	const { teacher, student } = res.value
+	if (!teacher) {
 		return message({ type: 'error', text: 'Teacher not Found' }, { status: 404 })
 	}
+	if (!student) {
+		return message(
+			{ type: 'error', text: 'Could not find your student profile' },
+			{ status: 404 }
+		)
+	}
+	if (
+		!teacher.stripeAccount ||
+		!teacher.stripeAccount.transfersEnabled ||
+		!teacher.stripeAccount.chargesEnabled ||
+		!teacher.stripeAccount.detailsSubmitted
+	) {
+		return message(
+			{
+				type: 'error',
+				text: 'This teacher has not yet setup his payments, therefore you cannot book a class with that teacher'
+			},
+			{ status: 400 }
+		)
+	}
+
 	try {
 		const req = (await request.json()) as StripeSubscriptionRequest
-		const customer = await stripe.customers.retrieve(user.stripeCustomerId)
+		const customer = await stripe.customers.retrieve(student.stripeCustomerId)
 		const stripeSession = await stripe.checkout.sessions.create({
 			customer: customer.id,
+			mode: 'subscription',
 			subscription_data: {
+				transfer_data: {
+					destination: teacher.stripeAccount.id,
+					amount_percent: 95
+				},
 				metadata: {
 					studentId: user.id,
 					teacherId: params.id,
@@ -34,8 +83,6 @@ export const POST = async ({
 					hours: `${req.hours}`
 				} satisfies SubscriptionMetadata
 			},
-			mode: 'subscription',
-			payment_method_types: ['card'],
 			metadata: {
 				studentId: user.id,
 				teacherId: params.id,
@@ -46,7 +93,9 @@ export const POST = async ({
 				{
 					price_data: {
 						currency: 'USD',
-						unit_amount: req.price * 100,
+						unit_amount: Math.ceil(
+							teacher.hourRate * req.subscription.hours * 100 * 1.05 + 100
+						),
 						product: req.subscription.id,
 						recurring: {
 							interval: 'month',

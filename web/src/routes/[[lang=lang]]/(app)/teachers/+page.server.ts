@@ -6,7 +6,7 @@ import { redirect } from '@sveltejs/kit'
 
 export async function load({ locals: { session, user, lang, db }, url }) {
 	if (!session || !user) throw redirect(302, route('/signin', { lang }))
-	if (user.role === 'teacher') throw redirect(302, route('/dashboard/teacher/classes', { lang }))
+	if (user.role === 'teacher') throw redirect(302, route('/dashboard/profile', { lang }))
 	if (!url.searchParams.get('language') || !url.searchParams.get('topic')) {
 		throw redirect(302, route('/teachers', { lang }))
 	}

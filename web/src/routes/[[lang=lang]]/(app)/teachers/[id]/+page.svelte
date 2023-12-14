@@ -2,6 +2,7 @@
 	import { page } from '$app/stores'
 	import { langParams } from '$i18n'
 	import { route } from '$lib/ROUTES'
+	import { safeFetch } from '$lib/api'
 	import { drawerStoreIds, type DrawerMetaChat } from '$lib/components/Drawer'
 	import Layout from '$lib/components/Layout.svelte'
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
@@ -17,7 +18,7 @@
 	import { onMount } from 'svelte'
 
 	export let data
-	console.log('data from teacher/id', data.streamed.availabilities)
+	console.log('data from teacher/id', data)
 
 	const modalStore = getModalStore()
 	const drawerStore = getDrawerStore()
@@ -102,6 +103,38 @@
 		})
 	}
 
+	async function endSub() {
+		modalStore.trigger({
+			type: 'confirm',
+			title: 'End Subscription',
+			body: 'Are you sure you want to end your subscription?',
+			response: async (r: boolean) => {
+				const res = await safeFetch(
+					fetch(
+						route('POST /teachers/[id]/unsubscribe', {
+							lang: langParams().lang,
+							id: $page.params.id
+						}),
+						{
+							method: 'POST'
+						}
+					)
+				)
+				if (!res.ok) {
+					toastStore.trigger({
+						message: res.error.message,
+						background: 'bg-error-500'
+					})
+					return
+				}
+				toastStore.trigger({
+					message: 'Subscription ended',
+					background: 'bg-success-500'
+				})
+			}
+		})
+	}
+
 	async function openChat() {
 		const chat = await data.streamed.chat
 		if (chat instanceof Error) {
@@ -145,27 +178,33 @@
 						<span>/hour</span>
 					</p>
 				</div>
-				<div class="flex flex-col gap-2">
-					{#if data.isFirstClass}
-						<button class="variant-filled-primary btn" on:click={scheduleClass}>
-							Schedule a trial class
+				{#if data.user.id !== data.teacher.id}
+					<div class="flex flex-col gap-2">
+						{#if data.isFirstClass}
+							<button class="variant-filled-primary btn" on:click={scheduleClass}>
+								Schedule a trial class
+							</button>
+						{:else if data.subscription}
+							<button
+								disabled={data.hoursBank === 0}
+								class="variant-filled-primary btn"
+								on:click={scheduleClass}
+							>
+								Schedule a class
+							</button>
+							<button class="variant-ghost-primary btn" on:click={endSub}>
+								End subscription
+							</button>
+						{:else}
+							<button class="variant-filled-primary btn" on:click={subscribe}>
+								Subscribe
+							</button>
+						{/if}
+						<button class="variant-ghost-surface btn" on:click={openChat}>
+							Send a message
 						</button>
-					{:else}
-						<button class="variant-filled-primary btn" on:click={subscribe}>
-							Subscribe
-						</button>
-						<button
-							disabled={data.hoursBank === 0}
-							class="variant-ghost-primary btn"
-							on:click={scheduleClass}
-						>
-							Schedule a class
-						</button>
-					{/if}
-					<button class="variant-ghost-surface btn" on:click={openChat}>
-						Send a message
-					</button>
-				</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 

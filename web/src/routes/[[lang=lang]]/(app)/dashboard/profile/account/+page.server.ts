@@ -148,40 +148,33 @@ export const actions = {
 		throw redirect(301, accountLink.url)
 	},
 
-	cashOut: async ({ request, locals: { session, user, lang, db } }) => {
+	dashboardPayouts: async ({ request, locals: { session, user, lang, db } }) => {
 		if (!session || !user) throw redirect(302, route('/signin', { lang }))
-		const form = await superValidate(request, cashOutSchema)
-		console.log('POST', form)
 
-		if (!form.valid) {
-			return fail(400, { form })
+		const teacher = await safeDBCall(
+			db.stripeAccount.findUnique({
+				where: { teacherId: user.id },
+				select: { id: true }
+			})
+		)
+		if (!teacher.ok) {
+			return fail(500, { text: 'Error processing cash out', type: 'error' })
 		}
 
 		let expressDashboardUrl = ''
 		try {
-			const teacher = await safeDBCall(
-				db.stripeAccount.findUnique({
-					where: { teacherId: user.id },
-					select: { id: true }
-				})
-			)
-			if (!teacher.ok) {
-				return fail(500, { text: 'Error processing cash out', type: 'error', form })
-			}
-
 			const loginLink = await stripe.accounts.createLoginLink(teacher.value.id)
 			expressDashboardUrl = loginLink.url
 		} catch (e) {
 			console.log(e)
 			return fail(500, {
 				text: 'Error processing cash out',
-				type: 'error',
-				form
+				type: 'error'
 			})
 		}
 
 		if (!expressDashboardUrl) {
-			return fail(500, { text: 'Error processing cash out', type: 'error', form })
+			return fail(500, { text: 'Error processing cash out', type: 'error' })
 		}
 
 		throw redirect(302, expressDashboardUrl)

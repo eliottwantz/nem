@@ -1,5 +1,3 @@
-import type { Prisma } from '@prisma/client'
-
 export class AppError extends Error {
 	status: number
 	metadata?: Record<string, string>

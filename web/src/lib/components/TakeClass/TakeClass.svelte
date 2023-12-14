@@ -73,27 +73,20 @@
 		if (takeClassStore.isInValid()) return
 
 		if (isTrial) {
-			try {
-				const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
+			const res = await safeFetch<{ url: string }>(
+				fetch(`${$page.url.pathname}/take-trial-class`, {
 					method: 'POST',
 					body: JSON.stringify($takeClassStore)
 				})
-				const data = await res.json()
-				if (!res.ok) {
-					toastStore.trigger({
-						message: data.message,
-						background: 'bg-error-500'
-					})
-					return
-				}
-				window.location.replace(data.url)
-			} catch (e) {
-				console.log(e)
+			)
+			if (!res.ok) {
 				toastStore.trigger({
-					message: e instanceof Error ? e.message : 'Failed to schedule class',
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
+				return
 			}
+			window.location.replace(res.data.url)
 		} else {
 			const res = await safeFetch(
 				fetch(route('POST /api/classes/join'), {

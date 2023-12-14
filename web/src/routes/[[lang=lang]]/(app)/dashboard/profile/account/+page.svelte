@@ -6,13 +6,12 @@
 	import { langParams } from '$i18n'
 	import PoweredByStripe from '$lib/icons/PoweredByStripe.svelte'
 	import { LucideShieldCheck, LucideShieldX } from 'lucide-svelte'
+	import { enhance } from '$app/forms'
 
 	const toastStore = getToastStore()
 
 	export let data
 	export let form
-
-	const { form: superF, enhance, errors } = superForm<typeof cashOutSchema>(data.form)
 
 	$: if (form && form.text) {
 		toastStore.trigger({
@@ -20,16 +19,11 @@
 			background: 'bg-error-500'
 		})
 	}
-
-	function setMaxCashOut() {
-		if (!data.teacher) return
-		$superF.amount = data.teacher.cashBank
-	}
 </script>
 
 <div class="space-y-6">
 	<div>
-		<h3 class="text-lg font-medium">Account</h3>
+		<h3 class="text-xl font-medium">Account</h3>
 		<p class="text-muted-foreground text-sm">This are settings related to your account.</p>
 	</div>
 	<hr class="separator my-6" />
@@ -66,11 +60,30 @@
 					<li>Connect directly to your bank account</li>
 					<li>Payouts within 5 business days</li>
 				</ul>
-				<div class="1 flex items-center gap-x-1">
+				<div class="flex flex-col gap-2 sm:flex-row">
 					{#if data.stripeSetupDone}
-						<LucideShieldCheck size="32" class="fill-success-200 text-success-600" />
-						<p>Account connected</p>
-						<button class="variant-glass-surface btn ml-4">Modify</button>
+						<div class="flex items-center gap-x-1">
+							<LucideShieldCheck
+								size="32"
+								class="fill-success-200 text-success-600"
+							/>
+							<p>Account connected</p>
+						</div>
+						<div class="flex gap-x-2">
+							<form
+								action={route(
+									'dashboardPayouts /dashboard/profile/account',
+									langParams()
+								)}
+								method="post"
+								use:enhance
+							>
+								<button class="variant-filled-primary btn btn-sm" type="submit">
+									Open payout dashboard
+								</button>
+							</form>
+							<!-- <button class="variant-glass-surface btn btn-sm">Modify</button> -->
+						</div>
 					{:else}
 						<LucideShieldX size="32" class="fill-error-200 text-error-600" />
 						{#if data.teacher.stripeAccount}
@@ -102,32 +115,6 @@
 						{/if}
 					{/if}
 				</div>
-				{#if data.stripeSetupDone}
-					<form
-						action={route('cashOut /dashboard/profile/account', langParams())}
-						method="post"
-						use:enhance
-					>
-						<p>Available balance: {data.teacher.cashBank} $</p>
-						<div class="input-group input-group-divider grid-cols-[auto_1fr_auto_auto]">
-							<div>$ USD</div>
-							<input
-								type="number"
-								min="10"
-								max={data.teacher.cashBank}
-								name="amount"
-								bind:value={$superF.amount}
-							/>
-							<button type="button" on:click={setMaxCashOut} class="variant-ghost"
-								>Max</button
-							>
-							<button class="variant-filled-primary" type="submit">Cash out</button>
-						</div>
-						{#if $errors.amount}
-							<p class="text-error-500">{$errors.amount}</p>
-						{/if}
-					</form>
-				{/if}
 			</div>
 		{/if}
 	</div>

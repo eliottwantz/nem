@@ -59,7 +59,7 @@
 				<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
 			</a>
 			<svelte:fragment slot="trail">
-				{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
+				{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's' && $page.data.user.id !== $page.params.id}
 					<div id="hoursBank" class="flex flex-wrap items-center justify-center">
 						<span class="text-xl">{$page.data.hoursBank}h</span>
 						<Hourglass />

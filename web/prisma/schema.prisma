@@ -178,12 +178,13 @@ model Subscription {
 }
 
 model StudentSubscription {
-    studentId      String
-    teacherId      String
-    subscriptionId String
-    student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-    teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-    subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+    studentId            String
+    teacherId            String
+    subscriptionId       String
+    stripeSubscriptionId String       @unique
+    student              Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    teacher              Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+    subscription         Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
     @@id([studentId, teacherId])
 }

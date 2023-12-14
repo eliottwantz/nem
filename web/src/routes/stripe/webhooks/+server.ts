@@ -26,10 +26,6 @@ export const POST = async ({ request }) => {
 	}
 
 	switch (event.type) {
-		case 'account.updated':
-			const stripeSession = event.data.object as Stripe.Account
-			console.log(stripeSession.details_submitted)
-			break
 		case 'checkout.session.completed':
 			// TODO: change to checkout.session.async_payment_succeeded
 			if ((event.data.object as Stripe.Checkout.Session).mode === 'payment') {
@@ -98,7 +94,8 @@ export const POST = async ({ request }) => {
 						data: {
 							studentId: stripeSession.metadata.studentId,
 							teacherId: stripeSession.metadata.teacherId,
-							subscriptionId: stripeSession.metadata.subId
+							subscriptionId: stripeSession.metadata.subId,
+							stripeSubscriptionId: stripeSession.subscription!.toString()
 						}
 					})
 				)
@@ -114,33 +111,64 @@ export const POST = async ({ request }) => {
 			}
 			break
 		case 'customer.subscription.updated':
-			debugger
 			// Add hours to hoursBank of student when subscription renews
-			const stripeSub = event.data.object as Stripe.Subscription & {
-				metadata: SubscriptionMetadata
-			}
-			const res = await safeDBCall(
-				prisma.hoursBank.update({
-					where: {
-						studenId_teacherId: {
+			{
+				const stripeSub = event.data.object as Stripe.Subscription & {
+					metadata: SubscriptionMetadata
+				}
+				const res = await safeDBCall(
+					prisma.hoursBank.upsert({
+						where: {
+							studenId_teacherId: {
+								studenId: stripeSub.metadata.studentId,
+								teacherId: stripeSub.metadata.teacherId
+							}
+						},
+						create: {
+							hours: +stripeSub.metadata.hours,
 							studenId: stripeSub.metadata.studentId,
 							teacherId: stripeSub.metadata.teacherId
+						},
+						update: {
+							hours: {
+								increment: +stripeSub.metadata.hours
+							}
 						}
-					},
-					data: {
-						hours: {
-							increment: Number(stripeSub.metadata.hours)
-						}
-					}
-				})
-			)
-			if (!res.ok) {
-				console.log(res.error)
-				return res.error instanceof AppError
-					? new Response(res.error.message, { status: res.error.status })
-					: new Response(`Failed to add hours for user ${stripeSub.metadata.studentId}`, {
+					})
+				)
+				if (!res.ok) {
+					console.log(res.error)
+					return new Response(
+						`Failed to add hours for user ${stripeSub.metadata.studentId}`,
+						{
 							status: 500
-					  })
+						}
+					)
+				}
+			}
+			break
+		case 'customer.subscription.deleted':
+			{
+				const stripeSub = event.data.object as Stripe.Subscription & {
+					metadata: SubscriptionMetadata
+				}
+				const res = await safeDBCall(
+					prisma.studentSubscription.delete({
+						where: {
+							studentId_teacherId: {
+								studentId: stripeSub.metadata.studentId,
+								teacherId: stripeSub.metadata.teacherId
+							}
+						}
+					})
+				)
+				if (!res.ok) {
+					console.log(res.error)
+					return new Response(
+						`Failed to delete subscription for user ${stripeSub.metadata.studentId} with teacher ${stripeSub.metadata.teacherId}`,
+						{ status: 500 }
+					)
+				}
 			}
 			break
 		default:

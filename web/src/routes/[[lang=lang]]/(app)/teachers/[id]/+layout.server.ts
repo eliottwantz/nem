@@ -1,11 +1,13 @@
 import { route } from '$lib/ROUTES'
 import { AppError, dbLoadPromise, safeDBCall } from '$lib/utils/error'
-import type { Chat, Subscription } from '@prisma/client'
+import type { Chat, StudentSubscription, Subscription } from '@prisma/client'
 import { error, redirect } from '@sveltejs/kit'
 
 export async function load({ params, locals: { session, user, lang, db } }) {
 	if (!session || !user) throw redirect(302, route('/signin', { lang }))
-	if (user.role === 'teacher') throw redirect(302, route('/dashboard/teacher/classes', { lang }))
+	if (user.role === 'teacher' && params.id !== user.id) {
+		throw redirect(302, route('/dashboard/teacher/classes', { lang }))
+	}
 
 	const teacher = await safeDBCall(
 		db.teacher.findUnique({
@@ -17,20 +19,59 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 		console.log(teacher.error)
 		throw error(404, 'Teacher not found')
 	}
-	const isFirstClass = await dbLoadPromise(
-		safeDBCall(
-			db.studentSubscription
-				.count({
-					where: { studentId: user.id, teacherId: params.id }
-				})
-				.then((count) => count === 0)
-		),
-		true
+	const res = await safeDBCall(
+		db.student.findMany({
+			where: {
+				id: user.id,
+				classes: {
+					every: { teacherId: params.id }
+				}
+			},
+			select: { classes: true }
+		})
 	)
+	let isFirstClass = true
+	if (!res.ok) {
+		const traceId = crypto.randomUUID()
+		console.log('[trace id]', traceId, res.error)
+		if (res.error instanceof AppError) {
+			isFirstClass = true
+		} else {
+			throw error(500, '[trace id = ' + traceId + '] Something went wrong')
+		}
+	} else {
+		if (res.value.length > 0) {
+			isFirstClass = false
+		}
+	}
+	let subscription: StudentSubscription | null = null
+	const sub = await safeDBCall(
+		db.studentSubscription.findUnique({
+			where: {
+				studentId_teacherId: {
+					studentId: user.id,
+					teacherId: params.id
+				}
+			}
+		})
+	)
+	console.log('#SUB#', sub)
+	if (!sub.ok) {
+		const traceId = crypto.randomUUID()
+		console.log(sub.error, '[trace id]', traceId)
+		if (sub.error instanceof AppError) {
+		} else {
+			throw error(500, '[trace id = ' + traceId + '] Something went wrong')
+		}
+	} else {
+		isFirstClass = false
+		subscription = sub.value
+	}
 	return {
 		user,
 		teacher: teacher.value,
 		isFirstClass,
+		subscription,
 		hoursBank: dbLoadPromise(
 			safeDBCall(
 				db.hoursBank
