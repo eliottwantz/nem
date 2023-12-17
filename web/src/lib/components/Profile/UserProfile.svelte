@@ -18,7 +18,7 @@
 		initials={getInitials(profile)}
 	/>
 	<div>
-		<p class="flex-auto text-lg {textClass}">
+		<p class="sm:text-lg {textClass}">
 			{getPublicName(profile)}
 		</p>
 	</div>

@@ -55,6 +55,7 @@
 												avatarHeight="h-10"
 												avatarWidth="w-10"
 												profile={row.teacher.profile}
+												textClass="text-[1rem]"
 											/>
 										</td>
 										<td class="!align-middle"

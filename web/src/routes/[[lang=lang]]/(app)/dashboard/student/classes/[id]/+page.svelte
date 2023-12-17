@@ -145,7 +145,7 @@
 					id: data.class.teacher.id,
 					lang: langParams().lang
 				})}
-				class="relative flex gap-2"
+				class="relative flex items-center gap-2 p-2"
 			>
 				{#if data.class.teacher.topAgent}
 					<span class="badge-icon absolute -left-2 -top-1 z-10 h-6 w-6">
