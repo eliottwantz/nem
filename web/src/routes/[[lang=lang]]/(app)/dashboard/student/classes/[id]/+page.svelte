@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goto, invalidateAll } from '$app/navigation'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
 	import { langParams } from '$i18n'
 	import { languageTag } from '$i18n/paraglide/runtime'
 	import { route } from '$lib/ROUTES'
@@ -11,6 +12,7 @@
 	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
+	import { derived } from 'svelte/store'
 
 	export let data
 	const start = new Date(data.class.timeSlot.startAt)
@@ -20,7 +22,7 @@
 	const toastStore = getToastStore()
 
 	let currentTime = new Date()
-	let showTimer = false
+	let canCancelClassWithRefund = false
 
 	onMount(() => {
 		const updateTime = setInterval(() => {
@@ -35,13 +37,17 @@
 	$: lang = languageTag()
 	$: {
 		if (currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)) {
-			showTimer = true
+			canCancelClassWithRefund = true
 		} else {
-			showTimer = false
+			canCancelClassWithRefund = false
 		}
 	}
-	$: canSignalNotPresentTeacher = currentTime >= new Date(start.getTime() + 10 * 60 * 1000) // Only available if it's 10 minutes after the start time
-	$: canCancelClassWithRefund = currentTime < new Date(start.getTime() - 2 * 60 * 60 * 1000)
+
+	// Only available if it's 10 minutes after the start time
+	$: canSignalNotPresentTeacher = currentTime >= new Date(start.getTime() + 10 * 60 * 1000)
+
+	$: console.log('canCancelClassWithRefund', canCancelClassWithRefund)
+	$: console.log(new Date(start.getTime() - 2 * 60 * 60 * 1000).toLocaleString())
 
 	async function joinClass() {
 		modalStore.trigger({
@@ -78,57 +84,58 @@
 					return
 				}
 				toastStore.trigger({
-					message: 'Class cancelled with refund',
+					message: 'Class cancelled',
 					background: 'bg-success-500'
 				})
-				window.location.replace('/dashboard/student/classes')
+				invalidateAll()
+				goto(route('/dashboard/student/classes', langParams()))
 			}
 		})
 	}
 </script>
 
 <Layout>
-	<h1 slot="title">Class: {data.class.name}</h1>
-	<p>
-		<span class="text-xl">{start.toLocaleDateString(lang)}</span>
-		<span class="text-xl">
-			{start.toLocaleTimeString(lang)} - {end.toLocaleTimeString(lang)}
-		</span>
-	</p>
+	<h1 slot="title">Topic: {data.class.topic} - Language: {data.class.language}</h1>
+	<div class="flex flex-col gap-y-1">
+		<p class="text-base sm:text-xl">Date: {start.toLocaleDateString(lang)}</p>
+		<p class="text-base sm:text-xl">
+			Time: {start.toLocaleTimeString(lang)} - {end.toLocaleTimeString(lang)}
+		</p>
+	</div>
 
 	<br />
 
 	{#if new Date() < new Date(end)}
 		<div class="flex flex-col items-center gap-2 sm:flex-row">
-			<button
-				class="variant-filled-primary btn"
-				title={data.class.hasStarted
-					? 'Join Class'
-					: 'Wait for the teacher to start the class'}
-				on:click={joinClass}>Join class</button
-			>
+			<button class="variant-filled-primary btn" title="Join Class" on:click={joinClass}>
+				Join class
+			</button>
 			{#if canSignalNotPresentTeacher}
 				<button class="variant-filled-primary btn" title="Teacher is not there">
 					Teacher is not there
 				</button>
 			{/if}
 			{#if !data.class.isTrial}
-				<button on:click={cancelClass} title="Cancel class" class="variant-ghost-error btn">
+				<button
+					on:click={cancelClass}
+					title="Cancel class"
+					class="variant-outline-error btn"
+				>
 					<DeleteIcon class="h-6 w-6" />
 					{#if canCancelClassWithRefund}
-						<span>Cancel class with refund</span>
+						<span>Cancel class with hour refunded</span>
 					{:else}
 						<span>Cancel class</span>
 					{/if}
-					{#if showTimer}
-						<Countdown
-							timeountSec={(end.getTime() -
-								2 * 60 * 60 * 1000 -
-								currentTime.getTime()) /
-								1000}
-						/>
-					{/if}
 				</button>
+				{#if canCancelClassWithRefund}
+					<Countdown
+						timeountSec={(start.getTime() -
+							2 * 60 * 60 * 1000 -
+							currentTime.getTime()) /
+							1000}
+					/>
+				{/if}
 			{/if}
 		</div>
 	{:else}

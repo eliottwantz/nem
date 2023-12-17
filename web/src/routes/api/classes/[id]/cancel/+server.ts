@@ -2,11 +2,14 @@ import type { ServerMessage } from '$lib/schemas/error'
 import { AppError, safeDBCall } from '$lib/utils/error'
 import { json } from '@sveltejs/kit'
 
-export const POST = async ({ locals: { session, user, db }, params }) => {
+export const POST = async ({ locals: { session, user, db, message }, params }) => {
 	if (!session || !user)
-		return json({ type: 'error', text: 'Unauthorized' } satisfies ServerMessage, {
-			status: 401
-		})
+		return message(
+			{ type: 'error', text: 'Unauthorized' },
+			{
+				status: 401
+			}
+		)
 	const res = await safeDBCall(
 		db.$transaction(async (tx) => {
 			const dbClass = await tx.class.findUnique({
@@ -54,16 +57,17 @@ export const POST = async ({ locals: { session, user, db }, params }) => {
 			if (dbClass.students.length === 1) {
 				await tx.class.delete({ where: { id: dbClass.id } })
 			}
+			return true
 		})
 	)
 
 	if (!res.ok) {
 		return res.error instanceof AppError
-			? json({ type: 'error', text: res.error.message } satisfies ServerMessage, {
+			? message({ type: 'error', text: res.error.message } satisfies ServerMessage, {
 					status: res.error.status
 			  })
-			: json({ type: 'error', text: 'Something went wrong' } satisfies ServerMessage, {
+			: message({ type: 'error', text: 'Something went wrong' } satisfies ServerMessage, {
 					status: 500
 			  })
-	} else return json({ type: 'success', text: 'Class cancelled' } satisfies ServerMessage)
+	} else return message({ type: 'success', text: 'Class cancelled' }, { status: 200 })
 }
