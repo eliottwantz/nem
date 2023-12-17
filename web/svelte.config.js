@@ -18,7 +18,8 @@ const config = {
 			$i18n: './src/lib/i18n/*',
 			$components: './src/lib/components/*',
 			$routes: './src/routes/*'
-		}
+		},
+		csrf: process.env.PUBLIC_ENV === 'DEV' ? false : true
 	}
 }
 
