@@ -30,7 +30,7 @@
 
 <div class="card w-72 shadow-xl" data-popup="popupFeatured">
 	<div class="px-4 py-1">
-		<p>{getPublicName(user)}</p>
+		<p>{user.firstName} {user.lastName}</p>
 		<small>{email}</small>
 	</div>
 	<ul class="list-nav flex flex-col gap-y-2">

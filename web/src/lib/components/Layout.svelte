@@ -2,15 +2,11 @@
 	<div class="text-3xl font-bold tracking-tight">
 		<slot name="title" />
 	</div>
-	<div class="text-muted-foreground">
+	<div class="text-muted">
 		<slot name="subtitle" />
 	</div>
+	<hr class="divider" />
 </div>
-<div class="flex flex-col items-center">
-	<div
-		id="main"
-		class="container mx-auto flex h-full w-full flex-col place-content-center items-center p-2 md:p-10"
-	>
-		<slot />
-	</div>
+<div id="main" class="container mx-auto flex h-full w-full flex-col p-2 md:p-10">
+	<slot />
 </div>

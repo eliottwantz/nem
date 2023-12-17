@@ -45,6 +45,7 @@
 				readonly
 				tabindex="-1"
 			/>
+			<small class="text-gray-700">Not publicaly visible</small>
 		</label>
 	</div>
 	<form
@@ -80,7 +81,6 @@
 				accept="image/*"
 			>
 				{#if previewSrc}
-					<!-- Preview -->
 					<Avatar src={previewSrc} initials={getInitials(user)} width="w-20" />
 				{:else}
 					<Avatar
