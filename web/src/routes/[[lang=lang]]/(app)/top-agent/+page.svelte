@@ -3,7 +3,7 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">TopAgent</h1>
+	<h1 slot="title">TopAgent</h1>
 
 	<p>
 		A NEM <span class="font-bold text-primary-600">TopAgent</span> is a teacher that is extrodinarily

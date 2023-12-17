@@ -88,7 +88,7 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">Class: {data.class.name}</h1>
+	<h1 slot="title">Class: {data.class.name}</h1>
 	<p>
 		<span class="text-xl">{start.toLocaleDateString(lang)}</span>
 		<span class="text-xl">

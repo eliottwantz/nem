@@ -3,7 +3,7 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">Authentication Error</h1>
+	<h1 slot="title">Authentication Error</h1>
 
 	<p class="text-xl">You might have used an expired or incorrect link</p>
 

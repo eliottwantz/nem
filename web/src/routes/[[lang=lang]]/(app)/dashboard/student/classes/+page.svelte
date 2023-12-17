@@ -19,7 +19,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Classes</h1>
+	<h1 slot="title">Classes</h1>
 
 	{#if classes.length > 0}
 		<TabGroup class="w-full">

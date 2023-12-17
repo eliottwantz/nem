@@ -25,12 +25,10 @@
 	})
 </script>
 
-<div class="space-y-6 p-10 pb-16">
+<div class="space-y-6 p-2 md:p-10 md:pb-16">
 	<div class="space-y-0.5">
-		<h2 class="text-2xl font-bold tracking-tight">Settings</h2>
-		<p class="text-muted-foreground">
-			Manage your account settings and set e-mail preferences.
-		</p>
+		<h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+		<p class="text-muted-foreground">Manage your profile and related settings</p>
 	</div>
 	<hr class="separator my-6" />
 	<div class="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">

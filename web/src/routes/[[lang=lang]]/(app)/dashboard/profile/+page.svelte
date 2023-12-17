@@ -31,7 +31,7 @@
 		<div class="mt-4 flex items-center gap-x-2">
 			<p>Profile URL:</p>
 			<a
-				class="anchor flex gap-x-1 underline decoration-dotted underline-offset-4"
+				class="anchor flex flex-wrap gap-x-1 break-all text-sm underline decoration-dotted underline-offset-4 sm:text-base"
 				target="_blank"
 				href={route('/teachers/[id]', { lang: langParams().lang, id: data.user.id })}
 			>

@@ -31,7 +31,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1 pb-4 text-center">Create your profile</h1>
+	<h1 slot="title" class="pb-4 text-center">Create your profile</h1>
 
 	<form method="post" use:enhance class="flex w-full max-w-lg flex-col gap-y-4">
 		<div class="space-y-2">

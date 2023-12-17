@@ -10,7 +10,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Signout</h1>
+	<h1 slot="title">Signout</h1>
 
 	<section class="flex flex-col gap-y-4">
 		<p class="text-xl">Are you sure you want to sign out?</p>

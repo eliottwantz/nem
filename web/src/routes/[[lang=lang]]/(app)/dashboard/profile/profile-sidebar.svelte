@@ -3,7 +3,7 @@
 	export let items: { href: string; title: string }[]
 </script>
 
-<nav class="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
+<nav class="flex flex-wrap lg:flex-col lg:space-x-0 lg:space-y-1">
 	{#each items as item}
 		<a
 			href={item.href}

@@ -86,7 +86,7 @@
 </script>
 
 <Layout>
-	<h1 class="h1" slot="title">
+	<h1 slot="title">
 		{data.class.isTrial ? 'Trial' : ''} Class: {data.class.name}
 	</h1>
 	<p class="text-xl">

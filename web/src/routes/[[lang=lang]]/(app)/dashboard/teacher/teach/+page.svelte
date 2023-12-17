@@ -44,7 +44,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Teach</h1>
+	<h1 slot="title">Teach</h1>
 
 	<div class="flex w-full flex-col gap-y-8">
 		{#if data.topicsTaught.length > 0}

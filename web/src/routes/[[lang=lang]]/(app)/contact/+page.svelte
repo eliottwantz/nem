@@ -3,7 +3,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Contact</h1>
+	<h1 slot="title">Contact</h1>
 
 	<div>Contact content</div>
 </Layout>

@@ -22,6 +22,6 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Calendar</h1>
+	<h1 slot="title">Calendar</h1>
 	<Calendar {events} calendarMode="teacher" />
 </Layout>

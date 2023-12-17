@@ -60,7 +60,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Find a Teacher</h1>
+	<h1 slot="title">Find a Teacher</h1>
 
 	<section class="hidden w-full flex-col gap-y-4 py-6 lg:flex">
 		<div class="flex justify-evenly gap-x-4">

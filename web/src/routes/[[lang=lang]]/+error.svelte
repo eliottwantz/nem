@@ -6,7 +6,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">
+	<h1 slot="title">
 		<span class="h1 text-error-500">{$page.status}</span>: {$page.error?.message}
 	</h1>
 	{#if $page.status === 404}

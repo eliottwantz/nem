@@ -79,7 +79,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Subscribe</h1>
+	<h1 slot="title">Subscribe</h1>
 	<div class="space-y-4">
 		<div class="flex w-full flex-col gap-8 border-b pb-8 pt-0">
 			<div class="flex flex-col items-center justify-around gap-4 md:flex-row">

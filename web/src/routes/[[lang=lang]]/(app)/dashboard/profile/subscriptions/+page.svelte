@@ -31,7 +31,7 @@
 				<svelte:fragment slot="summary">
 					<div class="grid w-full grid-cols-3 items-center">
 						<a
-							class="flex items-center gap-x-2 hover:anchor"
+							class="flex flex-col gap-2 hover:anchor sm:items-center"
 							href={route('/teachers/[id]', {
 								lang: langParams().lang,
 								id: teacher.id

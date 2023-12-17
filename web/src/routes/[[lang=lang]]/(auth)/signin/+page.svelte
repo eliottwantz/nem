@@ -9,7 +9,7 @@
 </script>
 
 <Layout>
-	<h1 slot="title" class="h1">Sign In</h1>
+	<h1 slot="title">Sign In</h1>
 
 	<section class="flex flex-col gap-y-4">
 		<OauthLogin />
