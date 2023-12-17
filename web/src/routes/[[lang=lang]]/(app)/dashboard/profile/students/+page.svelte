@@ -4,6 +4,7 @@
 	import { Accordion, AccordionItem } from '@skeletonlabs/skeleton'
 
 	export let data
+	console.log(data)
 </script>
 
 <div class="space-y-6">
@@ -36,15 +37,17 @@
 							/>
 							<p class="font-semibold sm:text-lg">{getPublicName(info.profile)}</p>
 						</div>
-						<div class="flex gap-x-2">
+						<div class="flex flex-col gap-y-2">
 							<p class="font-semibold">{sub?.name ?? 'Trial Class'}</p>
 							<p>{sub?.hours} hours / month</p>
 						</div>
 						<div>
 							<p>
-								{new Date(info.classes[0].timeSlot.startAt).toLocaleString(
-									data.user.preferedLanguage
-								)}
+								{#if info.classes.length > 0}
+									{new Date(info.classes[0].timeSlot.startAt).toLocaleString(
+										data.user.preferedLanguage
+									)}
+								{:else}None scheduled{/if}
 							</p>
 						</div>
 					</div>

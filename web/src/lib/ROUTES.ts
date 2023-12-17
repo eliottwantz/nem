@@ -17,13 +17,13 @@ const PAGES = {
   "/contact": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/contact`
   },
-  "/dashboard/class/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/dashboard/class/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/class/${params.id}`
   },
   "/dashboard/messages": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/messages`
   },
-  "/dashboard/messages/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/dashboard/messages/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/messages/${params.id}`
   },
   "/dashboard/profile": (params?: { lang?: (string) }) => {
@@ -44,7 +44,7 @@ const PAGES = {
   "/dashboard/student/classes": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/student/classes`
   },
-  "/dashboard/student/classes/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/dashboard/student/classes/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/student/classes/${params.id}`
   },
   "/dashboard/teacher/calendar": (params?: { lang?: (string) }) => {
@@ -53,7 +53,7 @@ const PAGES = {
   "/dashboard/teacher/classes": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/teacher/classes`
   },
-  "/dashboard/teacher/classes/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/dashboard/teacher/classes/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/teacher/classes/${params.id}`
   },
   "/dashboard/teacher/teach": (params?: { lang?: (string) }) => {
@@ -65,16 +65,16 @@ const PAGES = {
     params.language = params.language ?? "French"; 
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers${appendSp({ topic: params?.topic, language: params?.language })}`
   },
-  "/teachers/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/teachers/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers/${params.id}`
   },
-  "/teachers/[id]/subscribe": (params: { id: (string | number), lang?: (string) }) => {
+  "/teachers/[id]/subscribe": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers/${params.id}/subscribe`
   },
   "/top-agent": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/top-agent`
   },
-  "/users/[id]": (params: { id: (string | number), lang?: (string) }) => {
+  "/users/[id]": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/users/${params.id}`
   },
   "/error": (params?: { lang?: (string) }) => {
@@ -107,35 +107,35 @@ const SERVERS = {
   "GET /dashboard/profile/account/reauth": (params?: { lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/dashboard/profile/account/reauth`
   },
-  "POST /teachers/[id]/subscribe": (params: { id: (string | number), lang?: (string) }) => {
+  "POST /teachers/[id]/subscribe": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers/${params.id}/subscribe`
   },
-  "POST /teachers/[id]/take-trial-class": (params: { id: (string | number), lang?: (string) }) => {
+  "POST /teachers/[id]/take-trial-class": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers/${params.id}/take-trial-class`
   },
-  "POST /teachers/[id]/unsubscribe": (params: { id: (string | number), lang?: (string) }) => {
+  "POST /teachers/[id]/unsubscribe": (params: { id: (string), lang?: (string) }) => {
     return `${params?.lang ? `/${params?.lang}`: ''}/teachers/${params.id}/unsubscribe`
   },
   "PUT /api/change-lang": `/api/change-lang`,
   "POST /api/chats": `/api/chats`,
-  "POST /api/chats/send/[chatId]": (params: { chatId: (string | number) }) => {
+  "POST /api/chats/send/[chatId]": (params: { chatId: (string) }) => {
     return `/api/chats/send/${params.chatId}`
   },
-  "POST /api/classes/[id]/cancel": (params: { id: (string | number) }) => {
+  "POST /api/classes/[id]/cancel": (params: { id: (string) }) => {
     return `/api/classes/${params.id}/cancel`
   },
   "POST /api/classes/join": `/api/classes/join`,
-  "GET /api/messages/[chatId]": (params: { chatId: (string | number), cursor?: (number) }) => {
+  "GET /api/messages/[chatId]": (params: { chatId: (string), cursor?: (number) }) => {
     return `/api/messages/${params.chatId}${appendSp({ cursor: params?.cursor })}`
   },
   "POST /api/teacher/availabilities": `/api/teacher/availabilities`,
-  "PUT /api/teacher/availabilities/[id]": (params: { id: (string | number) }) => {
+  "PUT /api/teacher/availabilities/[id]": (params: { id: (string) }) => {
     return `/api/teacher/availabilities/${params.id}`
   },
-  "DELETE /api/teacher/availabilities/[id]": (params: { id: (string | number) }) => {
+  "DELETE /api/teacher/availabilities/[id]": (params: { id: (string) }) => {
     return `/api/teacher/availabilities/${params.id}`
   },
-  "DELETE /api/teacher/classes/[id]/cancel": (params: { id: (string | number) }) => {
+  "DELETE /api/teacher/classes/[id]/cancel": (params: { id: (string) }) => {
     return `/api/teacher/classes/${params.id}/cancel`
   },
   "PATCH /api/teacher/topics": `/api/teacher/topics`,

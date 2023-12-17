@@ -15,6 +15,7 @@ export default defineConfig({
 			override_params: {
 				lang: { type: 'string' }
 			},
+			default_type: 'string',
 			PAGES: {
 				'/teachers': {
 					explicit_search_params: {

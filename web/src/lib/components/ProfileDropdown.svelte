@@ -5,6 +5,7 @@
 	import { getInitials, getPublicName } from '$lib/utils/initials'
 	import { route } from '$lib/ROUTES'
 	import { langParams } from '$i18n'
+	import { page } from '$app/stores'
 
 	export let email: string
 	export let user: Profile
@@ -40,6 +41,12 @@
 		<li>
 			<a href={route('/dashboard/profile/account', langParams())}>Account</a>
 		</li>
+		{#if $page.data.user.role === 'student'}
+			<a href={route('/dashboard/profile/subscriptions', langParams())}>Subscriptions</a>
+		{/if}
+		{#if $page.data.user.role === 'teacher'}
+			<a href={route('/dashboard/profile/students', langParams())}>Students</a>
+		{/if}
 		<hr class="divider" />
 		<li>
 			<a href={route('/signout', langParams())}>Signout</a>

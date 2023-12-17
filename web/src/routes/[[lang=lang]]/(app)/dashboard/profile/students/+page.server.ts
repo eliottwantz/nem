@@ -7,17 +7,6 @@ export const load = async ({ locals: { session, user, db, lang } }) => {
 	if (user.role !== 'teacher') throw redirect(302, route('/dashboard/profile', { lang }))
 
 	const res = await safeDBCall(
-		// db.class.findMany({
-		// 	where: { teacherId: user.id },
-		// 	select: {
-		// 		students: {
-		// 			select: {
-		// 				subscriptions: true,
-		// 				profile: true
-		// 			}
-		// 		}
-		// 	}
-		// })
 		db.student.findMany({
 			where: {
 				classes: {
