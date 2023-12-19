@@ -6,10 +6,10 @@ import type { KIT_ROUTES } from '$lib/ROUTES'
 
 export default defineConfig({
 	plugins: [
-		// paraglide({
-		// 	project: './project.inglang.json',
-		// 	outdir: './src/lib/i18n/paraglide'
-		// }),
+		paraglide({
+			project: './project.inlang',
+			outdir: './src/lib/i18n/paraglide'
+		}),
 		sveltekit(),
 		kitRoutes<KIT_ROUTES>({
 			override_params: {
