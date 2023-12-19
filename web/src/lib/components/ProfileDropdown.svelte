@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { ListBox, popup, type PopupSettings } from '@skeletonlabs/skeleton'
-	import Avatar from '$lib/components/Avatar.svelte'
-	import type { Profile } from '@prisma/client'
-	import { getInitials, getPublicName } from '$lib/utils/initials'
-	import { route } from '$lib/ROUTES'
-	import { langParams } from '$i18n'
 	import { page } from '$app/stores'
+	import { langParams } from '$i18n'
+	import Avatar from '$lib/components/Avatar.svelte'
+	import { route } from '$lib/ROUTES'
+	import { getInitials } from '$lib/utils/initials'
+	import type { Profile } from '@prisma/client'
+	import { popup, type PopupSettings } from '@skeletonlabs/skeleton'
 
 	export let email: string
 	export let user: Profile

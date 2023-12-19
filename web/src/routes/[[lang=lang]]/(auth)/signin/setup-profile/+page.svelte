@@ -10,8 +10,7 @@
 <Layout>
 	<h1 slot="title" class="pb-4 text-center">Create your profile</h1>
 
-	<h3 class="h3">Choose a role</h3>
-
+	<h3 class="h3 mb-4">Choose a role</h3>
 	<div
 		class="grid max-w-2xl grid-rows-2 space-y-4 md:grid-cols-2 md:grid-rows-1 md:space-x-4 md:space-y-0"
 	>

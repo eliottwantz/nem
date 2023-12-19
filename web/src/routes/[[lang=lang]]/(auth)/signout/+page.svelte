@@ -12,10 +12,8 @@
 <Layout>
 	<h1 slot="title">Signout</h1>
 
-	<section class="flex flex-col gap-y-4">
+	<section class="flex flex-col items-center gap-y-4">
 		<p class="text-xl">Are you sure you want to sign out?</p>
-		<button class="variant-filled-primary btn w-full text-lg" on:click={signout}>
-			Sign out
-		</button>
+		<button class="variant-filled-primary btn text-lg" on:click={signout}> Sign out </button>
 	</section>
 </Layout>
