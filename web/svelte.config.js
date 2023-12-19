@@ -17,7 +17,8 @@ const config = {
 		alias: {
 			$i18n: './src/lib/i18n/*',
 			$components: './src/lib/components/*',
-			$routes: './src/routes/*'
+			$routes: './src/routes/*',
+			$static: './static/*'
 		}
 		// csrf: {
 		// 	checkOrigin: process.env.PUBLIC_ENV === 'DEV' ? false : true
