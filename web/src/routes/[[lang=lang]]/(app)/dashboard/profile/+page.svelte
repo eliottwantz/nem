@@ -9,10 +9,13 @@
 	export let data
 	export let form
 
-	$: profileUrl = `${$page.url.origin}${route('/teachers/[id]', {
-		lang: langParams().lang,
-		id: data.user.id
-	})}`
+	$: profileUrl = `${$page.url.origin}${route(
+		data.user.role === 'teacher' ? '/teachers/[id]' : '/users/[id]',
+		{
+			lang: langParams().lang,
+			id: data.user.id
+		}
+	)}`
 
 	const toastStore = getToastStore()
 	$: if (form) {
@@ -33,7 +36,10 @@
 			<a
 				class="anchor flex flex-wrap gap-x-1 break-all text-sm underline decoration-dotted underline-offset-4 sm:text-base"
 				target="_blank"
-				href={route('/teachers/[id]', { lang: langParams().lang, id: data.user.id })}
+				href={route(data.user.role === 'teacher' ? '/teachers/[id]' : '/users/[id]', {
+					lang: langParams().lang,
+					id: data.user.id
+				})}
 			>
 				{profileUrl}
 				<LucideExternalLink size="14" />
