@@ -86,10 +86,12 @@
 			<img
 				src="/good-faces-OnxkPklQ4YY-unsplash.jpg"
 				alt="student at his desk"
+				loading="lazy"
 				class="aspect-square h-80 w-80 rounded-[3rem] object-cover"
 			/>
 			<img
 				src="/luca-nicoletti-dzbSQkqZzUw-unsplash.jpg"
+				loading="lazy"
 				alt="teacher smiling at camera"
 				class="aspect-square h-80 w-80 rounded-[3rem] object-cover"
 			/>
