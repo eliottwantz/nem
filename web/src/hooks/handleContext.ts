@@ -8,6 +8,7 @@ import { redirect, type Handle } from '@sveltejs/kit'
 export const handleContext: Handle = async ({ event, resolve }) => {
 	console.log('\n', 'REQ. Method:', event.request.method, event.url.toString())
 	if (event.url.pathname.includes('stripe')) return await resolve(event)
+	if (event.url.pathname.includes('.well-known')) return await resolve(event)
 
 	const session = await event.locals.getSession()
 
