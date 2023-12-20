@@ -86,6 +86,10 @@ func New(
 }
 
 func (api *Api) routes() {
+	api.r.Get("/api/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 	api.r.Group(func(r chi.Router) {
 		r.Get("/ws", api.wsHub.ServeWS)
 	})
