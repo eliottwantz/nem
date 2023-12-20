@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import CalendarIcon from '$lib/icons/CalendarIcon.svelte'
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
-	import CurrentClass from '$lib/icons/CurrentClass.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
-	import { currentClassDetailsStore } from '$lib/stores/currentClass'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
-	import Locale from '../Locale.svelte'
-	import Navigation from '../Navigation.svelte'
 	import { MessagesSquare } from 'lucide-svelte'
+	import Navigation from '../Navigation.svelte'
 
 	const drawerStore = getDrawerStore()
+
+	$: activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col space-y-4 p-4 lg:border-r">
 	<div class="flex items-center pl-2 pt-1 lg:hidden">
 		<CloseIcon on:click={() => drawerStore.close()} />
 		<div class="flex-grow"></div>
-		<Locale />
+		<LangSwitcher />
 	</div>
 	<hr class="border-surface-token divider border-t-2 lg:hidden" />
 
@@ -29,77 +30,64 @@
 			<ul>
 				<li>
 					<a
-						href="/dashboard/teacher/teach"
-						class="flex {$page.url.pathname === '/dashboard/teacher/teach'
+						href={route('/dashboard/teacher/teach', langParams())}
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/teach`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<TeachIcon />
-						<span>
-							{$t('nav.teach')}
-						</span>
+						<span> Teach </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/teacher/classes"
-						class="flex {$page.url.pathname === '/dashboard/teacher/classes'
+						href={route('/dashboard/teacher/classes', langParams())}
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/classes`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<ClassesIcon />
-						<span>
-							{$t('nav.classes')}
-						</span>
+						<span> Classes </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/teacher/calendar"
-						class="flex {$page.url.pathname === '/dashboard/teacher/calendar'
+						href={route('/dashboard/teacher/calendar', langParams())}
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/teacher/calendar`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<CalendarIcon />
-						<span>
-							{$t('nav.calendar')}
-						</span>
+						<span> Calendar </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/messages"
-						class="flex {$page.url.pathname === '/dashboard/messages'
+						href={route('/dashboard/messages', langParams())}
+						class="flex {activeUrl ===
+						`/${$page.params.lang ?? ''}${
+							$page.params.lang ? '/' : ''
+						}dashboard/messages`
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<MessagesSquare size="32" />
-						<span>
-							{$t('nav.messages')}
-						</span>
+						<span> Messages </span>
 					</a>
 				</li>
-				{#if $currentClassDetailsStore}
-					<li>
-						<a
-							href="/class/{$currentClassDetailsStore?.class.id}"
-							class="flex {$page.url.pathname ===
-							`/class/${$currentClassDetailsStore?.class.id}`
-								? 'bg-primary-active-token'
-								: ''}"
-							on:click={() => drawerStore.close()}
-						>
-							<CurrentClass />
-							<span>
-								{$t('nav.currentClass')}
-							</span>
-						</a>
-					</li>
-				{/if}
 			</ul>
 		</nav>
 	</div>

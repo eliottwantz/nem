@@ -6,12 +6,6 @@ dotenv:
   - ".env"
 
 tasks:
-  default:
-    cmds:
-      - task --list-all
-    desc: "Lists all tasks"
-    silent: true
-
   dev:
     cmd: watchexec -rc -e go,mod,env --project-origin . -- go run .
     desc: Watch go and run
@@ -24,12 +18,6 @@ tasks:
     cmd: ./bin/app
     desc: Run the go app
 
-  br:
-    cmds:
-      - task: build
-      - task: run
-    desc: Build and run the go app
-
   clean:
     cmds:
       - rm -rf bin
@@ -38,92 +26,40 @@ tasks:
     cmd: golangci-lint run
     desc: Lint the go app
 
-  gen:
-    cmds:
-      - webrpc-gen -schema="main.ridl" -target=golang -pkg=rpc -server -out="./api/rpc/rpc.gen.go"
-      - webrpc-gen -schema="main.ridl" -target=typescript -client -out="./web/src/lib/api/api.gen.ts"
-    desc: Generate webrpc files
-
-  sqlc:
-    cmds:
-      - platforms: [windows]
-        cmd: docker run --rm -v ${pwd}:/src -w /src sqlc/sqlc:latest generate
-      - platforms: [linux]
-        cmd: sqlc generate
-    desc: Generate sqlc
-
   fmt:
     cmd: gofumpt -l -w .
     desc: Format the go app
 
-  web:
-    dir: "./web"
-    cmds:
-      - pnpm dev
-
   stripe:
     cmds:
-      - stripe listen --forward-to localhost:5173/stripe/webhooks
+      - stripe listen --forward-to localhost:5173/stripe/webhooks --forward-connect-to localhost:5173/stripe/webhooks/connect
 
   desktop:
     dir: "./web"
     cmds:
       - pnpm tauri dev -r cargo-zigbuild # Use cargo-zigbuild for Zig linker
 
-  devWeb:
-    cmd: task -p dev web # parallel tasks
-
-  buildWeb:
-    cmd: go generate ./web
-
-  devDesktop:
-    cmd: task -p go desktop # parallel tasks
-
   up:
     cmds:
-      - docker compose up -d
+      - docker compose -f web/compose.yaml up -d
     desc: Start containers
 
   down:
     cmds:
-      - docker compose down
+      - docker compose -f web/compose.yaml down
     desc: Stop containers
-
-  migu:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations up
-    desc: Migrate up
-    silent: true
-
-  migd:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations down
-    desc: Migrate down
-    silent: true
-
-  migr:
-    cmds:
-      - migrate -database $DATABASE_URL -path db/migrations drop
-      - migrate -database $DATABASE_URL -path db/migrations up
-      - task: seed
-    desc: Migrate down then up
-    silent: true
-
-  mignew:
-    cmds:
-      - migrate create -ext sql -dir db/migrations/ -seq {{.name}}
-    desc: Create a migration
-
-  seed:
-    cmd: go run cmd/seed/seed.go
 
   resetdb:
     cmds:
-      # - supabse stop
-      - supabase db reset
-      # - docker compose down -v
-      # - task: up
-    desc: Reset db
+      - docker compose -f web/compose.yaml down -v
+      - task: up
+      - platforms: [windows]
+        cmd: timeout 1
+      - platforms: [linux]
+        cmd: sleep 1
+      - cd web && pnpm db:push
+      - cd web && pnpm db:seed
+    desc: Reset db with seed
 
   certs:
     cmd: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/localhost.key -out certs/localhost.crt

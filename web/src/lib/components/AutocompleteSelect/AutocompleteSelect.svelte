@@ -12,13 +12,11 @@
 
 	let val = ''
 	let oldVal = ''
-	export let selectedVal: string
+	export let selectedVal: string | undefined
 	let input: HTMLInputElement
 	let showDropdown = false
 
-	$: console.log('selectedVal', selectedVal)
-
-	$: val = selectedVal
+	$: val = selectedVal ?? ''
 
 	function onSelect(event: CustomEvent<AutocompleteOption<string>>): void {
 		oldVal = val
@@ -54,31 +52,26 @@
 	}
 </script>
 
-<div id="topic" class="relative w-full">
+<div class="relative w-full">
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class="input-group grid-cols-[1fr_auto]">
 		<input
-			class="input lg:p-4"
+			class="input text-lg lg:p-4"
 			type="search"
 			name="topic"
+			autocomplete="off"
 			on:pointerdown={onClick}
 			bind:this={input}
 			bind:value={val}
 			{placeholder}
 		/>
-		{#if val}
-			<div on:click={() => (selectedVal = '')}>
-				<X />
-			</div>
-		{:else}
-			<div on:click={onClick}>
-				<ArrowDown />
-			</div>
-		{/if}
+		<div on:click={onClick}>
+			<ArrowDown />
+		</div>
 	</div>
 	<div
-		class="card left-0 z-50 max-h-48 w-full max-w-sm overflow-y-auto bg-white p-4"
+		class="card z-50 max-h-48 w-full overflow-y-auto bg-white p-4"
 		class:hidden={!showDropdown}
 		class:absolute={showDropdown}
 		tabindex="-1"

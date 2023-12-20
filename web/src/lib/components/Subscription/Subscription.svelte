@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import type { Subscription, Teacher } from '$lib/api/api.gen'
+	import type { Subscription, Teacher } from '@prisma/client'
 
 	export let teacher: Teacher
 	export let subscriptions: Subscription[]
@@ -66,18 +66,23 @@
 				{#if i === 2}
 					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
-						class="variant-filled-primary btn">Subscribe</a
+						class="variant-filled-primary btn"
 					>
+						Subscribe
+					</a>
 				{:else if i === 4}
 					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
-						class="variant-outline-primary btn ring-2">Subscribe</a
-					>
+						class="variant-outline-primary btn ring-2"
+						>Subscribe
+					</a>
 				{:else}
 					<a
 						href="{$page.url.pathname}/subscribe?plan-id={sub.id}"
-						class="variant-outline-primary btn ring-2">Subscribe</a
+						class="variant-outline-primary btn ring-2"
 					>
+						Subscribe
+					</a>
 				{/if}
 			</div>
 		{/each}

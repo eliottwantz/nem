@@ -1,27 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import LangSwitcher from '$components/LangSwitcher.svelte'
+	import { langParams } from '$i18n'
+	import { route } from '$lib/ROUTES'
 	import CalendarIcon from '$lib/icons/CalendarIcon.svelte'
 	import ClassesIcon from '$lib/icons/ClassesIcon.svelte'
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
-	import CurrentClass from '$lib/icons/CurrentClass.svelte'
-	import LearnIcon from '$lib/icons/LearnIcon.svelte'
-	import { currentClassDetailsStore } from '$lib/stores/currentClass'
-	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
-	import Locale from '../Locale.svelte'
-	import Navigation from '../Navigation.svelte'
 	import TeachIcon from '$lib/icons/TeachIcon.svelte'
-	import { MessageCircle, MessagesSquare } from 'lucide-svelte'
-	import { getPublicName } from '$lib/utils/initials'
+	import { getDrawerStore } from '@skeletonlabs/skeleton'
+	import { MessagesSquare } from 'lucide-svelte'
+	import Navigation from '../Navigation.svelte'
 
 	const drawerStore = getDrawerStore()
+
+	$: activeUrl = $page.url.pathname
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col p-2 sm:space-y-4 sm:p-4 lg:border-r">
 	<div class="flex items-center py-1 pl-2 lg:hidden">
 		<CloseIcon on:click={() => drawerStore.close()} />
 		<div class="flex-grow"></div>
-		<Locale />
+		<LangSwitcher />
 	</div>
 
 	<hr class="border-surface-token divider border-t-2 lg:hidden" />
@@ -39,80 +38,56 @@
 			<ul>
 				<li>
 					<a
-						href="/teachers"
-						class="flex {$page.url.pathname === '/teachers'
+						href={route('/teachers', langParams())}
+						class="flex {activeUrl === '/'
+							? ''
+							: route('/teachers', langParams()).startsWith(activeUrl)
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<TeachIcon />
-						<span>
-							{$t('nav.teachers')}
-						</span>
+						<span> Teachers </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/student/classes"
-						class="flex {$page.url.pathname === '/dashboard/student/classes'
+						href={route('/dashboard/student/classes', langParams())}
+						class="flex {activeUrl === route('/dashboard/student/classes', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<ClassesIcon />
-						<span>
-							{$t('nav.classes')}
-						</span>
+						<span> Classes </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/student/calendar"
-						class="flex {$page.url.pathname === '/dashboard/student/calendar'
+						href={route('/dashboard/student/calendar', langParams())}
+						class="flex {activeUrl ===
+						route('/dashboard/student/calendar', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<CalendarIcon />
-						<span>
-							{$t('nav.calendar')}
-						</span>
+						<span> Calendar </span>
 					</a>
 				</li>
 				<li>
 					<a
-						href="/dashboard/messages"
-						class="flex {$page.url.pathname.startsWith('/dashboard/messages')
+						href={route('/dashboard/messages', langParams())}
+						class="flex {activeUrl === route('/dashboard/messages', langParams())
 							? 'bg-primary-active-token'
 							: ''}"
 						on:click={() => drawerStore.close()}
 					>
 						<MessagesSquare size="32" />
-						<span>
-							{$t('nav.messages')}
-						</span>
+						<span> Messages </span>
 					</a>
 				</li>
-				{#if $currentClassDetailsStore}
-					<li>
-						<a
-							href="/class/{$currentClassDetailsStore?.class.id}"
-							class="flex {$page.url.pathname ===
-							`/class/${$currentClassDetailsStore?.class.id}`
-								? 'bg-primary-active-token'
-								: ''}"
-							on:click={() => drawerStore.close()}
-						>
-							<CurrentClass />
-							<span>
-								{$t('nav.currentClass')}
-							</span>
-						</a>
-					</li>
-				{/if}
 			</ul>
 		</nav>
 	</div>
-
-	<!-- <hr class="border-surface-token divider border-t" /> -->
 </div>

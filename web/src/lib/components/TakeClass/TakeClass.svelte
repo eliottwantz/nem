@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import type { Class, Teacher, TimeSlot } from '$lib/api/api.gen'
+	import { safeFetch } from '$lib/api'
 	import { takeClassStore } from '$lib/stores/takeClassStore'
-	import { userStore } from '$lib/stores/user'
+	import type { Class, SpokenLanguage, Teacher, TimeSlot, Topic } from '@prisma/client'
 	import {
 		ListBox,
 		ListBoxItem,
@@ -11,20 +11,20 @@
 		getModalStore,
 		getToastStore
 	} from '@skeletonlabs/skeleton'
-	import { t } from 'svelte-i18n'
+	import type { JoinClassRequest } from '../../../routes/api/classes/join/+server'
 	import {
 		availabilityToCalendarEntryOneHourBlock,
 		type CalendarEvent,
 		type CalendarInteractEvent
 	} from '../Calendar'
 	import Calendar from '../Calendar/Calendar.svelte'
-	import { fetchers, safeFetch } from '$lib/api'
-	import { goto, invalidate, invalidateAll } from '$app/navigation'
+	import { route } from '$lib/ROUTES'
 
-	export let teacher: Teacher
-	export let classes: Class[]
+	export let teacher: Teacher & { topics: Topic[]; spokenLanguages: SpokenLanguage[] }
+	$: console.log('THE TEACHER SHIT', teacher)
+	export let classes: (Class & { timeSlot: TimeSlot })[]
 	export let availabilities: TimeSlot[]
-	export let isTrial: boolean | undefined = undefined
+	export let isTrial: boolean = false
 	$: if (isTrial) $takeClassStore.selectedIsPrivate = isTrial
 
 	const toastStore = getToastStore()
@@ -37,11 +37,11 @@
 	$: console.log('selectedTopic', $takeClassStore.selectedTopic)
 	$: console.log('selectedIsPrivate', $takeClassStore.selectedIsPrivate)
 	$: console.log('selectedTimeSlot', $takeClassStore.selectedEvent)
-	$: topics = teacher.topicsTaught
-	$: console.log('topics', topics)
 	$: events = availabilities
 		.filter((a) => {
-			const matchClass = classes.find((c) => c.startAt === a.startAt && c.endAt === a.endAt)
+			const matchClass = classes.find(
+				(c) => c.timeSlot.startAt === a.startAt && c.timeSlot.endAt === a.endAt
+			)
 			if (!matchClass) return true
 			return (
 				matchClass.language === $takeClassStore.selectedLanguage &&
@@ -73,31 +73,25 @@
 		if (takeClassStore.isInValid()) return
 
 		if (isTrial) {
-			try {
-				const res = await fetch(`${$page.url.pathname}/take-trial-class`, {
+			const res = await safeFetch<{ url: string }>(
+				fetch(`${$page.url.pathname}/take-trial-class`, {
 					method: 'POST',
 					body: JSON.stringify($takeClassStore)
 				})
-				const data = await res.json()
-				if (!res.ok) {
-					toastStore.trigger({
-						message: data.message,
-						background: 'bg-error-500'
-					})
-					return
-				}
-				window.location.replace(data.url)
-			} catch (e) {
-				console.log(e)
+			)
+			if (!res.ok) {
 				toastStore.trigger({
-					message: e instanceof Error ? e.message : 'Failed to schedule class',
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
+				return
 			}
+			window.location.replace(res.data.url)
 		} else {
 			const res = await safeFetch(
-				fetchers.publicService(fetch).createOrJoinClass({
-					req: {
+				fetch(route('POST /api/classes/join'), {
+					method: 'POST',
+					body: JSON.stringify({
 						isPrivate: $takeClassStore.selectedIsPrivate,
 						isTrial: false,
 						language: $takeClassStore.selectedLanguage!,
@@ -105,12 +99,12 @@
 						timeSlotId: $takeClassStore.selectedEvent!.event.id,
 						topic: $takeClassStore.selectedTopic!,
 						userId: $page.data.user.id
-					}
+					} satisfies JoinClassRequest)
 				})
 			)
 			if (!res.ok) {
 				toastStore.trigger({
-					message: res.cause,
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
 			} else {
@@ -128,16 +122,16 @@
 <div class="card text-token mt-2 w-full max-w-3xl p-4">
 	<Stepper
 		on:step={console.log}
-		stepTerm={$t('learn.stepper.stepTerm')}
-		buttonBackLabel={$t('learn.stepper.buttonBack')}
-		buttonNextLabel={$t('learn.stepper.buttonNext')}
-		buttonCompleteLabel={$t('learn.checkout')}
+		stepTerm="->"
+		buttonBackLabel="Previous"
+		buttonNextLabel="Next"
+		buttonCompleteLabel="Checkout"
 		on:complete={scheduleClass}
 	>
 		<Step locked={lockedLanguage}>
-			<svelte:fragment slot="header">{$t('learn.language-teach')}</svelte:fragment>
+			<svelte:fragment slot="header">Teaching Language</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each new Set(teacher.spokenLanguages.map((l) => l.language)) as language}
+				{#each new Set(teacher.spokenLanguages.map((l) => l.languageId)) as language}
 					<ListBoxItem
 						bind:group={$takeClassStore.selectedLanguage}
 						name={language}
@@ -149,11 +143,11 @@
 			</ListBox>
 		</Step>
 		<Step locked={lockedTopic}>
-			<svelte:fragment slot="header">
-				{$t('learn.topic')}
-			</svelte:fragment>
+			<svelte:fragment slot="header">Topic</svelte:fragment>
 			<ListBox active="variant-filled-primary" hover="hover:variant-ghost-primary">
-				{#each topics.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
+				{#each teacher.topics
+					.map((t) => t.topic)
+					.filter((t) => t !== $takeClassStore.selectedLanguage) as topic}
 					<ListBoxItem
 						bind:group={$takeClassStore.selectedTopic}
 						name={topic}
@@ -200,9 +194,9 @@
 				<p>
 					Selected time slot: {new Date(
 						$takeClassStore.selectedEvent.event.start
-					).toLocaleString($userStore?.preferedLanguage)} - {new Date(
+					).toLocaleString($page.data.user.preferedLanguage)} - {new Date(
 						$takeClassStore.selectedEvent.event.end
-					).toLocaleString($userStore?.preferedLanguage)}
+					).toLocaleString($page.data.user.preferedLanguage)}
 				</p>
 			{/if}
 		</Step>

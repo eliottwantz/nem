@@ -1,17 +1,17 @@
 <script lang="ts">
 	import CloseIcon from '$lib/icons/CloseIcon.svelte'
 	import { getDrawerStore } from '@skeletonlabs/skeleton'
-	import Locale from '../Locale.svelte'
 	import Navigation from '../Navigation.svelte'
-	
-    const drawerStore = getDrawerStore()
+	import LangSwitcher from '$components/LangSwitcher.svelte'
+
+	const drawerStore = getDrawerStore()
 </script>
 
 <div class="bg-surface-100-800-token flex h-full flex-col space-y-4 p-4 lg:border-r">
 	<div class="flex items-center pl-2 pt-1 lg:hidden">
 		<CloseIcon on:click={() => drawerStore.close()} />
 		<div class="flex-grow"></div>
-		<Locale />
+		<LangSwitcher />
 	</div>
 
 	<hr class="border-surface-token divider border-t" />

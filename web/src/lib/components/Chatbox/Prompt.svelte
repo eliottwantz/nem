@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
-	import type { User } from '$lib/api/api.gen'
-	import { ws } from '$lib/api/ws'
-	import AttachmentIcon from '$lib/icons/AttachmentIcon.svelte'
+	import { safeFetch } from '$lib/api'
 	import SendIcon from '$lib/icons/SendIcon.svelte'
-	import { userStore } from '$lib/stores/user'
+	import { ws } from '$lib/ws'
+	import type { Message, Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { Plus, X } from 'lucide-svelte'
+	import type { CreateChatRequest, CreateChatResponse } from '$routes/api/chats/+server'
 	import EmojiPicker from '../EmojiPicker/EmojiPicker.svelte'
+	import type { SendMessageRequest } from '$routes/api/chats/send/[chatId]/+server'
+	import { route } from '$lib/ROUTES'
 
-	export let conversationId: number | undefined // undefined if no conversation exists yet
-	export let recepient: User | undefined // undefined if group chat
+	export let chatId: string | undefined
+	export let recepient: Profile
+
+	$: console.log('ChatID in Prompt', chatId)
 
 	const toastStore = getToastStore()
 	const maxChars = 1000
@@ -23,7 +25,7 @@
 	// let files: FileList
 	// let attachments: File[] = []
 	// $: console.log('-------------> attachments', attachments)
-	let fileInput: HTMLInputElement
+	// let fileInput: HTMLInputElement
 
 	$: promptToBig = remainingChars < 0
 	$: remainingChars = maxChars - prompt.length
@@ -32,55 +34,59 @@
 		if (!prompt || !prompt.trim()) return
 		isSubmiting = true
 
-		if (!conversationId) {
-			const res = await safeFetch(
-				fetchers.messageService(fetch, $page.data.session).createOneToOneConversation({
-					recepientId: recepient!.id
+		if (!chatId) {
+			const res = await safeFetch<CreateChatResponse>(
+				fetch(route('POST /api/chats'), {
+					method: 'POST',
+					body: JSON.stringify({
+						withUserIds: [recepient.id]
+					} satisfies CreateChatRequest)
 				})
 			)
 			if (!res.ok) {
 				toastStore.trigger({
-					message: res.cause,
+					message: res.error.message,
 					background: 'bg-error-500'
 				})
 				return
 			}
-			conversationId = res.data.conversationId
+			chatId = res.data.id
+			// Join in ws server the new chat room
+			ws.send({
+				action: 'joinRoom',
+				roomId: chatId
+			})
 		}
 
 		ws.send({
 			action: 'stopTyping',
-			roomId: conversationId,
-			data: $userStore?.firstName
+			roomId: chatId,
+			data: $page.data.user.firstName
 		})
 		currentlyTyping = false
 
-		const res = recepient
-			? await safeFetch(
-					fetchers.messageService(fetch, $page.data.session!).sendMessageToUser({
-						message: {
-							conversationId: conversationId,
-							text: prompt.trim()
-						}
-					})
-			  )
-			: await safeFetch(
-					fetchers.messageService(fetch, $page.data.session!).sendMessageToClass({
-						message: {
-							conversationId: conversationId,
-							text: prompt.trim()
-						}
-					})
-			  )
+		const res = await safeFetch<Message>(
+			fetch(route('POST /api/chats/send/[chatId]', { chatId }), {
+				method: 'POST',
+				body: JSON.stringify({
+					text: prompt.trim()
+				} satisfies SendMessageRequest)
+			})
+		)
 
 		isSubmiting = false
 		if (!res.ok) {
 			toastStore.trigger({
-				message: res.cause,
+				message: res.error.message,
 				background: 'variant-filled-error'
 			})
 			return
 		}
+		ws.send({
+			action: 'sendMessage',
+			roomId: chatId,
+			data: res.data
+		})
 
 		console.log('SUCESS:\n', res)
 		prompt = ''
@@ -88,19 +94,19 @@
 	}
 
 	function handleOnInput(): void {
-		if (!conversationId) return
+		if (!chatId) return
 		if (prompt.length === 1 && !currentlyTyping) {
 			ws.send({
 				action: 'startTyping',
-				roomId: conversationId,
-				data: $userStore?.firstName
+				roomId: chatId,
+				data: $page.data.user.firstName
 			})
 			currentlyTyping = true
 		} else if (prompt.length === 0) {
 			ws.send({
 				action: 'stopTyping',
-				roomId: conversationId,
-				data: $userStore?.firstName
+				roomId: chatId,
+				data: $page.data.user.firstName
 			})
 			currentlyTyping = false
 		}
@@ -155,12 +161,12 @@
 	</div>
 
 	<form class="flex w-full items-center space-x-1">
-		<EmojiPicker bind:promptToPasteTo={prompt} />
+		<EmojiPicker bind:promptToPasteTo={prompt} {promptInput} />
 		<input
 			bind:this={promptInput}
 			bind:value={prompt}
 			on:input={handleOnInput}
-			class="input px-3"
+			class="emoji input px-3"
 			placeholder="Message"
 		/>
 		<div class="flex items-center gap-x-1">
@@ -188,9 +194,3 @@
 		</div>
 	</form>
 </section>
-
-<style>
-	input {
-		font-family: 'Noto Color Emoji', sans-serif;
-	}
-</style>

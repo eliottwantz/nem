@@ -1,9 +1,12 @@
-<div class="flex flex-col items-center pt-4">
-	<slot name="title" />
-	<div
-		id="main"
-		class="container mx-auto flex h-full w-full flex-col place-content-center items-center px-4 pb-2 pt-6 sm:mt-4 lg:px-10"
-	>
-		<slot />
+<div class="space-y-0.5 px-2 pt-2 md:px-10 md:pt-10">
+	<div class="text-2xl font-bold tracking-tight sm:text-3xl">
+		<slot name="title" />
 	</div>
+	<div class="text-muted">
+		<slot name="subtitle" />
+	</div>
+	<hr class="divider" />
+</div>
+<div id="main" class="mx-auto h-full w-full p-2 md:p-10">
+	<slot />
 </div>

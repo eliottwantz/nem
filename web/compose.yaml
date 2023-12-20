@@ -1,0 +1,30 @@
+services:
+    postgres:
+        image: postgres
+        ports:
+            - 5432:5432
+        restart: unless-stopped
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        volumes:
+            - postgres:/var/lib/postgresql/data
+
+    mail:
+        image: marlonb/mailcrab:latest
+        restart: always
+        ports:
+            - 1025:1025
+            - 1080:1080
+
+    redis:
+        image: redis
+        restart: unless-stopped
+        ports:
+            - 6379:6379
+        volumes:
+            - redis:/data
+
+volumes:
+    postgres:
+    redis:

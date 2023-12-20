@@ -1,13 +1,15 @@
 import { SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER } from '$env/static/private'
 import { getFeedbackObjects } from '$lib/utils/feedback.ts'
-import { SMTPClient } from 'emailjs'
+import { createTransport } from 'nodemailer'
 
-const client = new SMTPClient({
+const transporter = createTransport({
 	host: SMTP_HOST,
 	port: Number(SMTP_PORT),
-	ssl: false,
-	user: SMTP_USER,
-	password: SMTP_PASSWORD
+	secure: false,
+	auth: {
+		user: SMTP_USER,
+		pass: SMTP_PASSWORD
+	}
 })
 
 export const sendEmail = async (options: {
@@ -17,12 +19,11 @@ export const sendEmail = async (options: {
 	html: string
 }) => {
 	try {
-		await client.sendAsync({
-			text: options.subject,
+		transporter.sendMail({
 			from: options.from,
 			to: options.to,
 			subject: options.subject,
-			attachment: [{ data: options.html, alternative: true }]
+			html: options.subject
 		})
 
 		console.log('Test email sent successfully')
@@ -30,8 +31,8 @@ export const sendEmail = async (options: {
 		return getFeedbackObjects([
 			{
 				type: 'success',
-				title: 'Test email sent successfully',
-				message: 'Check your inbox for the test email.'
+				title: 'Email sent successfully',
+				message: 'Check your inbox for the email.'
 			}
 		])
 	} catch (e) {
@@ -40,9 +41,9 @@ export const sendEmail = async (options: {
 		return getFeedbackObjects([
 			{
 				type: 'error',
-				title: 'Error sending test email',
+				title: 'Error sending email',
 				message:
-					'An unknown error occurred while sending the test email. Please try again later.'
+					'An unknown error occurred while sending the email. Please try again later.'
 			}
 		])
 	}

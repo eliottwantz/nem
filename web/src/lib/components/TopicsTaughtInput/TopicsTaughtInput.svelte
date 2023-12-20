@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { TrashIcon } from 'lucide-svelte'
-	import { t } from 'svelte-i18n'
 
 	export let availableTopics: string[]
 	export let topicsTaught: string[]
@@ -8,9 +7,6 @@
 		a.localeCompare(b)
 	)
 	$: selectableTopics = topics.filter((l) => !topicsTaught.includes(l))
-	$: console.log('topics', topics)
-	$: console.log('topicsTaught', topicsTaught)
-	$: console.log('selectableTopics', selectableTopics)
 
 	function add() {
 		if (selectableTopics.length === 0) return
@@ -18,14 +14,13 @@
 	}
 
 	function remove(index: number, topic: string) {
-		console.log(index, topic)
 		topicsTaught.splice(index, 1)
 		topicsTaught = topicsTaught
 	}
 </script>
 
 <div>
-	<p>{$t('register.topicsTaught')}</p>
+	<p class="mb-2 underline underline-offset-2">Topics you want to teach</p>
 
 	{#each topicsTaught as topicTaught, i}
 		<div>
@@ -48,6 +43,8 @@
 		</div>
 	{/each}
 	{#if selectableTopics.length > 0}
-		<button class="mt-4 font-semibold" type="button" on:click={add}> Add a topic </button>
+		<button class="variant-outline btn mt-4 font-semibold" type="button" on:click={add}>
+			Add a topic
+		</button>
 	{/if}
 </div>

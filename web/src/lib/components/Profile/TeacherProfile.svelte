@@ -1,16 +1,30 @@
 <script lang="ts">
-	import type { Teacher } from '$lib/api/api.gen'
 	import { getInitials, getPublicName } from '$lib/utils/initials'
+	import type {
+		Proficiency,
+		Profile,
+		Review,
+		SpokenLanguage,
+		Teacher,
+		Topic
+	} from '@prisma/client'
 	import Avatar from '../Avatar.svelte'
+	import { route } from '$lib/ROUTES'
+	import { langParams } from '$i18n'
 
-	export let teacher: Teacher
+	export let teacher: Teacher & {
+		profile: Profile
+		spokenLanguages: SpokenLanguage[]
+		topics: Topic[]
+		reviews: Review[]
+	}
 	export let shortForm = false
 
-	function badgeColor(proficiency: string): string {
+	function badgeColor(proficiency: Proficiency): string {
 		switch (proficiency) {
-			case 'Native':
+			case 'native':
 				return 'variant-filled-primary'
-			case 'C2' || 'C1':
+			case 'c2' || 'c1':
 				return 'variant-filled-success'
 			default:
 				return 'variant-filled-surface'
@@ -22,7 +36,10 @@
 	<!-- Show only mobile -->
 	<div class="card flex flex-col gap-y-4 p-2 shadow-md sm:p-4 md:hidden md:flex-row">
 		<div class="flex items-center gap-3">
-			<a href="/teachers/{teacher.id}" class="relative inline-block">
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="relative inline-block"
+			>
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-1 z-10 h-6 w-6">
 						<img class="h-4 w-6" src="/topagent.png" alt="TopAgent" />
@@ -31,13 +48,13 @@
 				<Avatar
 					width="w-16 sm:w-28"
 					height="h-16 sm:h-28"
-					src={teacher.avatarUrl}
-					initials={getInitials(teacher.firstName, teacher.lastName)}
+					src={teacher.profile.avatarUrl ?? undefined}
+					initials={getInitials(teacher.profile)}
 				/>
 			</a>
-			<a href="/teachers/{teacher.id}">
+			<a href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}>
 				<p class="font-semibold sm:text-lg">
-					{getPublicName(teacher.firstName, teacher.lastName)}
+					{getPublicName(teacher.profile)}
 				</p>
 				{#if teacher.topAgent}
 					<span class="font-bold text-primary-600"> TopAgent </span>
@@ -45,11 +62,14 @@
 			</a>
 			<div class="flex items-center justify-around gap-4 sm:text-lg">
 				<div>
-					<span>Reviews</span>
 					{#if teacher.rating === 0}
-						<span>N/A</span>
+						<span>No reviews</span>
 					{:else}
-						<span>{teacher.rating}</span>
+						<div class="flex gap-x-1">
+							<img class="h-5 w-5" src="/star.svg" alt="star" />
+							<span>{teacher.rating}</span>
+						</div>
+						<span>{teacher.reviews.length} reviews</span>
 					{/if}
 				</div>
 				<p>
@@ -63,7 +83,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each teacher.spokenLanguages as spokenL}
 					<div>
-						<span>{spokenL.language}</span>
+						<span>{spokenL.languageId}</span>
 						<span class="{badgeColor(spokenL.proficiency)} badge"
 							>{spokenL.proficiency}</span
 						>
@@ -74,9 +94,9 @@
 		<div class="flex items-baseline">
 			<span class="pr-2 font-semibold">Teaches</span>
 			<div class="flex flex-wrap gap-2">
-				{#each teacher.topicsTaught as topic}
+				{#each teacher.topics as topic}
 					<div>
-						<span>{topic}</span>
+						<span>{topic.topic}</span>
 					</div>
 				{/each}
 			</div>
@@ -90,7 +110,10 @@
 	<!-- Show for tablet and laptops -->
 	<div class="card hidden flex-row gap-4 p-4 shadow-md md:flex">
 		<div class="flex flex-col items-center">
-			<a href="/teachers/{teacher.id}" class="relative">
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="relative"
+			>
 				{#if teacher.topAgent}
 					<span class="badge-icon absolute -top-0 left-2 z-10 h-8 w-8">
 						<img class="h-6 w-8" src="/topagent.png" alt="TopAgent" />
@@ -99,13 +122,16 @@
 				<Avatar
 					width="w-16 sm:w-28"
 					height="h-16 sm:h-28"
-					src={teacher.avatarUrl}
-					initials={getInitials(teacher.firstName, teacher.lastName)}
+					src={teacher.profile.avatarUrl ?? undefined}
+					initials={getInitials(teacher.profile)}
 				/>
 			</a>
-			<a href="/teachers/{teacher.id}" class="flex flex-col items-center">
+			<a
+				href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+				class="flex flex-col items-center"
+			>
 				<p class="font-semibold sm:text-lg">
-					{getPublicName(teacher.firstName, teacher.lastName)}
+					{getPublicName(teacher.profile)}
 				</p>
 				{#if teacher.topAgent}
 					<span class="font-bold text-primary-600"> TopAgent </span>
@@ -113,11 +139,14 @@
 			</a>
 			<div class="flex flex-col items-center justify-around sm:text-lg">
 				<div>
-					<span>Reviews</span>
 					{#if teacher.rating === 0}
-						<span>N/A</span>
+						<span>No reviews</span>
 					{:else}
-						<span>{teacher.rating}</span>
+						<div class="flex gap-x-1">
+							<img class="h-5 w-5" src="/star.svg" alt="star" />
+							<span>{teacher.rating}</span>
+						</div>
+						<span>{teacher.reviews.length} reviews</span>
 					{/if}
 				</div>
 				<p>
@@ -133,7 +162,7 @@
 					<div class="flex flex-wrap gap-2">
 						{#each teacher.spokenLanguages as spokenL}
 							<div>
-								<span>{spokenL.language}</span>
+								<span>{spokenL.languageId}</span>
 								<span class="{badgeColor(spokenL.proficiency)} badge"
 									>{spokenL.proficiency}</span
 								>
@@ -144,9 +173,9 @@
 				<div>
 					<span class="pr-2 font-semibold">Teaches</span>
 					<div class="flex flex-wrap gap-2">
-						{#each teacher.topicsTaught as topic}
+						{#each teacher.topics as topic}
 							<div>
-								<span>{topic}</span>
+								<span>{topic.topic}</span>
 							</div>
 						{/each}
 					</div>
@@ -157,7 +186,12 @@
 				</div>
 			</div>
 			<div class="self-end">
-				<a href="/teachers/{teacher.id}" class="variant-filled-primary btn">Show more</a>
+				<a
+					href={route('/teachers/[id]', { id: teacher.id, lang: langParams().lang })}
+					class="variant-filled-primary btn"
+				>
+					Show more
+				</a>
 			</div>
 		</div>
 	</div>
@@ -167,13 +201,13 @@
 			<Avatar
 				width="w-28"
 				height="h-28"
-				src={teacher.avatarUrl}
-				initials={getInitials(teacher.firstName, teacher.lastName)}
+				src={teacher.profile.avatarUrl ?? undefined}
+				initials={getInitials(teacher.profile)}
 			/>
 			<div class="flex flex-col">
 				<div class="flex items-center gap-2">
 					<p class="text-2xl font-semibold">
-						{getPublicName(teacher.firstName, teacher.lastName)}
+						{getPublicName(teacher.profile)}
 					</p>
 					{#if teacher.topAgent}
 						<img class="h-5 w-5" src="/topagent.png" alt="TopAgent" />
@@ -182,7 +216,7 @@
 				<div class=" flex flex-wrap gap-2">
 					{#each teacher.spokenLanguages as spokenL}
 						<div>
-							<span>{spokenL.language}</span>
+							<span>{spokenL.languageId}</span>
 							<span class="{badgeColor(spokenL.proficiency)} badge"
 								>{spokenL.proficiency}</span
 							>

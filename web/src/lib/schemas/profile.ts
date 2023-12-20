@@ -1,15 +1,14 @@
+import { Proficiency } from '@prisma/client'
 import { z } from 'zod'
 
-export const proficiencyLevels = ['Native', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
-export type ProficiencyLevel = (typeof proficiencyLevels)[number]
-export const proficienciesMeaning = {
-	A1: 'Beginner',
-	A2: 'Elementary',
-	B1: 'Pre-intermediate',
-	B2: 'Intermediate',
-	C1: 'Upper-intermediate',
-	C2: 'Advanced',
-	Native: 'Native'
+export const proficienciesMeaning: Record<Proficiency, string> = {
+	a1: 'Beginner',
+	a2: 'Elementary',
+	b1: 'Pre-intermediate',
+	b2: 'Intermediate',
+	c1: 'Upper-intermediate',
+	c2: 'Advanced',
+	native: 'Native'
 } as const
 
 const topicsTaught = z
@@ -20,7 +19,7 @@ const topicsTaught = z
 const spokenLanguages = z
 	.object({
 		language: z.string().nonempty({ message: 'Language is required' }),
-		proficiency: z.enum(proficiencyLevels)
+		proficiency: z.nativeEnum(Proficiency)
 	})
 	.array()
 	.min(1, { message: 'At least one language is required' })
@@ -29,8 +28,7 @@ export type SpokenLanguages = z.infer<typeof spokenLanguages>
 export const createTeacherSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	role: z.string().nonempty({ message: 'Role is required' }),
-	preferedLanguage: z.string(),
+	birthday: z.string({ required_error: 'Birthday is required' }),
 	spokenLanguages,
 	topicsTaught,
 	bio: z.string().nonempty({ message: 'Bio is required' }),
@@ -42,6 +40,5 @@ export const createTeacherSchema = z.object({
 export const createStudentSchema = z.object({
 	firstName: z.string().nonempty({ message: 'First name is required' }),
 	lastName: z.string().nonempty({ message: 'Last name is required' }),
-	role: z.string().nonempty({ message: 'Role is required' }),
-	preferedLanguage: z.string()
+	birthday: z.string({ required_error: 'Birthday is required' })
 })

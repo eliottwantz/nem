@@ -1,39 +1,76 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { fetchers, safeFetch } from '$lib/api'
-	import type { User } from '$lib/api/api.gen'
-	import { chatStore } from '$lib/stores/chatStore'
-	import { stringToLocalTime } from '$lib/utils/datetime'
+	import { route } from '$lib/ROUTES'
+	import { safeFetch } from '$lib/api'
+	import { createChatStore } from '$lib/stores/chatStore'
+	import { latestWSPayload, ws } from '$lib/ws'
+	import type { MessagesResponse } from '$routes/api/messages/[chatId]/+server'
+	import type { Profile } from '@prisma/client'
 	import { getToastStore } from '@skeletonlabs/skeleton'
-	import { onMount } from 'svelte'
-	import Profile from '../Profile/UserProfile.svelte'
+	import { onDestroy, onMount } from 'svelte'
+	import UserProfile from '../Profile/UserProfile.svelte'
 	import Prompt from './Prompt.svelte'
+	import type { Unsubscriber } from 'svelte/store'
 
-	export let conversationId: number
-	export let recepient: User
+	export let chatId: string | undefined
+	export let recepient: Profile
+
+	$: console.log('ChatID in ChatBox', chatId)
 
 	const toastStore = getToastStore()
 
 	let elemChat: HTMLElement
 	let isFetching = false
+	let unsubscriber: Unsubscriber | null = null
+	const chatStore = createChatStore()
 
 	onMount(async () => {
-		chatStore.reset()
-		const res = await safeFetch(
-			fetchers.messageService(fetch, $page.data.session).listMessagesOfConversation({
-				conversationId
-			})
-		)
-		if (res.ok) {
-			console.log('got message', res.data.messages)
-			chatStore.addOldMessages(res.data.messages)
+		if (chatId) {
+			if (!ws.connected) {
+				ws.socket?.addEventListener('open', () => {
+					ws.send({
+						action: 'joinRoom',
+						roomId: chatId!
+					})
+				})
+			} else {
+				ws.send({
+					action: 'joinRoom',
+					roomId: chatId!
+				})
+			}
+			console.log('Getting messages from chat', chatId)
+			const res = await safeFetch<MessagesResponse>(
+				fetch(route('GET /api/messages/[chatId]', { chatId }))
+			)
+			if (res.ok) {
+				console.log('got message', res.data)
+				chatStore.addOldMessages(res.data.messages)
+			}
+			scrollChatBottom()
 		}
-		scrollChatBottom()
-		chatStore.resetUnreadMessages()
+		unsubscriber = latestWSPayload.subscribe((payload) => {
+			const user = $page.data.user
+			switch (payload.action) {
+				case 'newMessage':
+					chatStore.addNewMessage(payload.data)
+					scrollChatBottom()
+					break
+				case 'addToTyping':
+					if (payload.data !== user.firstName) chatStore.addTyping(payload.data)
+					break
+				case 'removeFromTyping':
+					if (payload.data !== user.firstName) chatStore.removeTyping(payload.data)
+					break
+			}
+		})
 	})
-	$: console.log($chatStore.messages)
-	$: if ($chatStore.messages.length > 0) scrollChatBottom()
 
+	onDestroy(() => {
+		if (unsubscriber) unsubscriber()
+	})
+
+	$: console.log($chatStore.messages)
 	$: typingString = getTypingString($chatStore.peopleTyping)
 
 	function scrollChatBottom(): void {
@@ -44,6 +81,7 @@
 	$: if (elemChat) console.log('elemChat.scrollHeight', elemChat.scrollHeight)
 
 	async function fetchOlderMessage(e: WheelEvent) {
+		if (!chatId) return
 		if (isFetching) return
 		const isUp = e.deltaY < 0
 		if (!isUp) return
@@ -51,13 +89,10 @@
 		console.log('there is more')
 		if (!chatStore.oldestMessage) return
 		isFetching = true
-		const res = await safeFetch(
-			fetchers
-				.messageService(fetch, $page.data.session)
-				.listMessagesOfConversationWithCursor({
-					conversationId,
-					cursor: chatStore.oldestMessage.sentAt
-				})
+		const res = await safeFetch<MessagesResponse>(
+			fetch(
+				route('GET /api/messages/[chatId]', { chatId, cursor: chatStore.oldestMessage.id })
+			)
 		)
 		if (!res.ok) {
 			toastStore.trigger({
@@ -67,10 +102,11 @@
 			return
 		}
 
-		isFetching = false
-
 		if (res.data.isMore === false) $chatStore.isMore = false
 		chatStore.addOldMessages(res.data.messages)
+		setTimeout(() => {
+			isFetching = false
+		}, 0)
 	}
 
 	function getTypingString(peopleFirstNames: string[]) {
@@ -89,7 +125,7 @@
 
 <div class="flex h-full flex-col">
 	<div class="p-2 sm:p-4">
-		<Profile user={recepient} avatarWidth="w-12" avatarHeight="h-12" />
+		<UserProfile profile={recepient} avatarWidth="w-12" avatarHeight="h-12" />
 	</div>
 	{#if !$chatStore.isMore}
 		<div class="text-center">
@@ -104,15 +140,15 @@
 		</div>
 	{/if}
 	<section class="relative flex-1 p-2">
-		<div
+		<ul
 			bind:this={elemChat}
 			on:wheel={fetchOlderMessage}
 			class="absolute inset-0 flex flex-1 flex-col gap-y-1 overflow-y-scroll p-2 sm:p-4"
 		>
 			{#each $chatStore.messages as msg}
-				{#if msg.sender.id !== $page.data.user.id}
+				{#if msg.senderId !== $page.data.user.id}
 					<!-- Got message from someone else -->
-					<div id="message">
+					<li id="message">
 						<div id="inner" class="flex flex-1 items-center pl-2">
 							<div
 								id="bubble"
@@ -120,17 +156,17 @@
 							>
 								<header class="flex items-center justify-between gap-x-1">
 									<small class="opacity-50">
-										{stringToLocalTime(msg.sentAt)}
+										{msg.createdAt.toLocaleString()}
 									</small>
 								</header>
-								<p>{msg.text}</p>
+								<p class="emoji">{msg.text}</p>
 							</div>
 							<div id="spacer" class="flex-grow" />
 						</div>
-					</div>
+					</li>
 				{:else}
 					<!-- Current User sent message -->
-					<div id="message">
+					<li id="message">
 						<div id="outer" class="flex">
 							<div id="inner" class="flex flex-1 flex-row-reverse items-center">
 								<div
@@ -139,31 +175,26 @@
 								>
 									<header class="flex items-center justify-between">
 										<small class="opacity-50"
-											>{stringToLocalTime(msg.sentAt)}</small
+											>{msg.createdAt.toLocaleString()}</small
 										>
 									</header>
-									<p class="text-right">{msg.text}</p>
+									<p class="emoji text-right">{msg.text}</p>
 								</div>
 								<div id="spacer" class="flex-grow"></div>
 							</div>
 						</div>
-					</div>
+					</li>
 				{/if}
 			{/each}
-		</div>
+		</ul>
 	</section>
+
 	<div>
 		{#if $chatStore.peopleTyping.length > 0}
 			<p class="semi-bold pl-2">{typingString}</p>
 		{/if}
 		<div>
-			<Prompt {conversationId} {recepient} />
+			<Prompt bind:chatId {recepient} />
 		</div>
 	</div>
 </div>
-
-<style>
-	#bubble p {
-		font-family: 'Noto Color Emoji', sans-serif;
-	}
-</style>

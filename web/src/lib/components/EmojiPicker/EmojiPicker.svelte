@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte'
 
 	export let promptToPasteTo: string
+	export let promptInput: HTMLInputElement
 	let emojiPicker: Picker
 	let btn: HTMLButtonElement
 	let show = false
@@ -13,6 +14,7 @@
 	onMount(() => {
 		const emojiPickedEvent = async (event: EmojiClickEvent) => {
 			promptToPasteTo += event.detail.unicode
+			promptInput.focus()
 		}
 		emojiPicker.addEventListener('emoji-click', emojiPickedEvent)
 
@@ -67,6 +69,6 @@
 		}
 	}
 	emoji-picker {
-		--emoji-font-family: 'Noto Color Emoji', sans-serif;
+		--emoji-font-family: emoji, sans-serif;
 	}
 </style>

@@ -1,20 +1,41 @@
 import { page } from '$app/stores'
-import { getLocaleFromNavigator, init, isLoading, locale, register } from 'svelte-i18n'
-import { derived, get } from 'svelte/store'
+import * as m from '$i18n/paraglide/messages'
+import {
+	availableLanguageTags,
+	sourceLanguageTag,
+	type AvailableLanguageTag
+} from '$i18n/paraglide/runtime'
+import { get } from 'svelte/store'
+export { m }
 
-// Flags from : https://en.wiktionary.org/wiki/Wiktionary:Language_flags_list
+export const currLang = () => (get(page).params.lang as AvailableLanguageTag) ?? sourceLanguageTag
+export const langParams = () => {
+	const currLang = (get(page).params.lang as AvailableLanguageTag) ?? sourceLanguageTag
+	return { lang: currLang !== sourceLanguageTag ? currLang : undefined }
+}
 
-export const defaultLocale = 'en'
+/**
+ * Returns the path in the given language, regardless of which language the path is in.
+ */
+export function translatePath(path: string, lang: AvailableLanguageTag) {
+	path = withoutLanguageTag(path)
 
-register('en', () => import('./dicts/en.json'))
-register('fr', () => import('./dicts/fr.json'))
-register('ar', () => import('./dicts/ar.json'))
+	// Don't prefix the default language
+	if (lang === sourceLanguageTag) {
+		return path
+	}
 
-init({
-	fallbackLocale: defaultLocale,
-	initialLocale: getLocaleFromNavigator() || defaultLocale
-})
+	// Prefix all other languages
+	return `/${lang}${path}`
+}
 
-const dir = derived(locale, ($locale) => ($locale === 'ar' ? 'rtl' : 'ltr'))
-
-export { dir, isLoading }
+/**
+ * Returns the path without the language tag
+ */
+export function withoutLanguageTag(path: string) {
+	const [_, maybeLang, ...rest] = path.split('/')
+	if (availableLanguageTags.includes(maybeLang as AvailableLanguageTag)) {
+		return `/${rest.join('/')}`
+	}
+	return path
+}

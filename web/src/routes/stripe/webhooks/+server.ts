@@ -1,11 +1,12 @@
 import { dev } from '$app/environment'
 import { STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_DEV } from '$env/static/private'
-import { fetchers, safeFetch } from '$lib/api'
-import type { Subscription } from '$lib/api/api.gen'
+import { prisma } from '$lib/server/prisma'
 import { stripe, type ClassPaymentMetaData, type SubscriptionMetadata } from '$lib/server/stripe'
+import { AppError, safeDBCall } from '$lib/utils/error'
+import { json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
-export async function POST({ request }) {
+export const POST = async ({ request }) => {
 	const body = await request.text()
 	const sig = request.headers.get('stripe-signature') ?? ''
 
@@ -26,64 +27,127 @@ export async function POST({ request }) {
 
 	switch (event.type) {
 		case 'checkout.session.completed':
-			if (event.data.object.mode === 'payment') {
+			// TODO: change to checkout.session.async_payment_succeeded
+			if ((event.data.object as Stripe.Checkout.Session).mode === 'payment') {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: ClassPaymentMetaData
 				}
-				const res = await safeFetch(
-					fetchers.publicService(fetch).createOrJoinClass({
-						req: {
-							userId: stripeSession.metadata.userId,
-							isPrivate: Boolean(stripeSession.metadata.isPrivate),
-							isTrial: Boolean(stripeSession.metadata.isTrial),
-							language: stripeSession.metadata.language,
-							topic: stripeSession.metadata.topic,
-							name: stripeSession.metadata.name,
-							timeSlotId: stripeSession.metadata.timeSlotId
+				const res = await safeDBCall(
+					prisma.$transaction(async (tx) => {
+						const exists = await tx.class.findFirst({
+							where: { timeSlotId: stripeSession.metadata.timeSlotId },
+							include: {
+								students: true
+							}
+						})
+						if (exists) {
+							// Add student to this class
+							return await tx.class.update({
+								where: { id: exists.id },
+								data: {
+									students: { connect: { id: stripeSession.metadata.userId } }
+								}
+							})
+						} else {
+							const timeSlot = await tx.timeSlot.findUnique({
+								where: { id: stripeSession.metadata.timeSlotId }
+							})
+							if (!timeSlot)
+								throw new AppError(
+									'Time slot not found: ' + stripeSession.metadata.timeSlotId,
+									404
+								)
+							// Create class
+							return await tx.class.create({
+								data: {
+									timeSlotId: timeSlot.id,
+									teacherId: timeSlot.teacherId,
+									name: stripeSession.metadata.name,
+									isPrivate: Boolean(stripeSession.metadata.isPrivate),
+									isTrial: Boolean(stripeSession.metadata.isTrial),
+									language: stripeSession.metadata.language,
+									topic: stripeSession.metadata.topic,
+									students: {
+										connect: { id: stripeSession.metadata.userId }
+									}
+								}
+							})
 						}
 					})
 				)
 				if (!res.ok) {
 					console.log(res.error)
-					return new Response(res.cause, { status: res.error.status })
+					return res.error instanceof AppError
+						? new Response(res.error.message, { status: res.error.status })
+						: new Response(
+								'Failed to process payment for trial class for user ' +
+									stripeSession.metadata.userId,
+								{ status: 500 }
+						  )
 				}
 			} else if (event.data.object.mode === 'subscription') {
 				const stripeSession = event.data.object as Stripe.Checkout.Session & {
 					metadata: SubscriptionMetadata
 				}
-				const res = await safeFetch(
-					fetchers.subscriptionService(fetch).addSubscriptionForStudent({
-						studentId: stripeSession.metadata.studentId,
-						subscriptionId: stripeSession.metadata.subId,
-						teacherId: stripeSession.metadata.teacherId
+				const res = await safeDBCall(
+					prisma.studentSubscription.create({
+						data: {
+							studentId: stripeSession.metadata.studentId,
+							teacherId: stripeSession.metadata.teacherId,
+							subscriptionId: stripeSession.metadata.subId,
+							stripeSubscriptionId: stripeSession.subscription!.toString()
+						}
 					})
 				)
 				if (!res.ok) {
 					console.log(res.error)
-					return new Response(res.cause, { status: res.error.status })
+					return res.error instanceof AppError
+						? new Response(res.error.message, { status: res.error.status })
+						: new Response(
+								`Failed to create subscription for user ${stripeSession.metadata.studentId} with teacher ${stripeSession.metadata.teacherId}`,
+								{ status: 500 }
+						  )
 				}
 			}
 			break
 		case 'customer.subscription.updated':
-			debugger
 			// Add hours to hoursBank of student when subscription renews
-			const stripeSub = event.data.object as Stripe.Subscription & {
+			const updateStripeSub = event.data.object as Stripe.Subscription & {
 				metadata: SubscriptionMetadata
 			}
-			const res = await safeFetch(
-				fetchers.publicService(fetch).addHoursToHoursBank({
-					hours: Number(stripeSub.metadata.hours),
-					studentId: stripeSub.metadata.studentId,
-					teacherId: stripeSub.metadata.teacherId
+			const updateRes = await safeDBCall(
+				prisma.hoursBank.upsert({
+					where: {
+						studenId_teacherId: {
+							studenId: updateStripeSub.metadata.studentId,
+							teacherId: updateStripeSub.metadata.teacherId
+						}
+					},
+					create: {
+						hours: +updateStripeSub.metadata.hours,
+						studenId: updateStripeSub.metadata.studentId,
+						teacherId: updateStripeSub.metadata.teacherId
+					},
+					update: {
+						hours: {
+							increment: +updateStripeSub.metadata.hours
+						}
+					}
 				})
 			)
-			if (!res.ok) {
-				console.log(res.error)
-				return new Response(res.cause, { status: res.error.status })
+			if (!updateRes.ok) {
+				console.log(updateRes.error)
+				return new Response(
+					`Failed to add hours for user ${updateStripeSub.metadata.studentId}`,
+					{
+						status: 500
+					}
+				)
 			}
 			break
 		default:
 			console.log(`Unhandled event type ${event.type}`)
+			return new Response(null, { status: 400 })
 	}
 	return new Response(null, { status: 200 })
 }

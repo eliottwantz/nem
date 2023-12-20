@@ -4,41 +4,56 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime"
+
+	"nem/utils"
+
+	"github.com/charmbracelet/log"
+	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
-type pgdb struct {
-	db *sql.DB
-	*Queries
-}
+var (
+	Pg    *sql.DB
+	Redis *redis.Client
+)
 
-func NewPG(db *sql.DB) *pgdb {
-	return &pgdb{
-		db:      db,
-		Queries: New(db),
-	}
-}
-
-type TX struct {
-	tx *sql.Tx
-	*Queries
-}
-
-func (pg *pgdb) NewTx(ctx context.Context) (*TX, error) {
-	tx, err := pg.db.BeginTx(ctx, nil)
+// InitDataSources establishes connections to fields in DataSources
+func InitDataSources(ctx context.Context) error {
+	log.Info("Connecting to Postgres")
+	sqldb, err := sql.Open("postgres", utils.Cfg.DatabaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("error starting transaction: %w", err)
+		return fmt.Errorf("error connecting to the database: %w", err)
+	}
+	err = sqldb.Ping()
+	if err != nil {
+		return fmt.Errorf("error connecting to postgres: %w", err)
 	}
 
-	return &TX{
-		tx:      tx,
-		Queries: Pg.WithTx(tx),
-	}, nil
+	maxOpenConns := 4 * runtime.GOMAXPROCS(0)
+	sqldb.SetMaxOpenConns(maxOpenConns)
+	sqldb.SetMaxIdleConns(maxOpenConns)
+
+	Pg = sqldb
+
+	Redis, err = NewRedis(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (tx *TX) Rollback() error {
-	return tx.tx.Rollback()
-}
+// CloseDataSources to be used in graceful server shutdown
+func CloseDataSources() error {
+	log.Info("Closing Redis connection")
+	if err := Redis.Close(); err != nil {
+		return fmt.Errorf("error closing Redis Client: %w", err)
+	}
+	log.Info("Closing Postgres connection")
+	if err := Pg.Close(); err != nil {
+		return fmt.Errorf("error closing Postgres Client: %w", err)
+	}
 
-func (tx *TX) Commit() error {
-	return tx.tx.Commit()
+	return nil
 }

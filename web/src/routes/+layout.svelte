@@ -1,40 +1,35 @@
 <script lang="ts">
 	import '@event-calendar/core/index.css'
 	import '@fontsource-variable/inter'
+	import '@fontsource/gravitas-one'
 	import '../app.postcss'
 
 	import { browser } from '$app/environment'
-	import { invalidate, onNavigate } from '$app/navigation'
-	import { ws } from '$lib/api/ws'
-	import Avatar from '$lib/components/Avatar.svelte'
-	import { drawerStoreIds } from '$lib/components/Drawer'
-	import Drawer from '$lib/components/Drawer/Drawer.svelte'
-	import Locale from '$lib/components/Locale.svelte'
-	import { modalComponentRegistry } from '$lib/components/Modal'
-	import Navigation from '$lib/components/Navigation.svelte'
-	import StudentSidebar from '$lib/components/Sidebar/StudentSidebar.svelte'
-	import TeacherSidebar from '$lib/components/Sidebar/TeacherSidebar.svelte'
-	import { dir } from '$lib/i18n'
-	import Logo from '$lib/icons/Logo.svelte'
-	import { userStore } from '$lib/stores/user'
-	import { getInitials } from '$lib/utils/initials'
-	import { signIn } from '@auth/sveltekit/client'
+	import { onNavigate } from '$app/navigation'
+	import { page } from '$app/stores'
+	import { translatePath } from '$i18n'
 	import {
-		AppBar,
-		AppShell,
+		availableLanguageTags,
+		setLanguageTag,
+		sourceLanguageTag,
+		type AvailableLanguageTag
+	} from '$i18n/paraglide/runtime'
+	import Drawer from '$lib/components/Drawer/Drawer.svelte'
+	import { modalComponentRegistry } from '$lib/components/Modal'
+	import { ws } from '$lib/ws'
+	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom'
+	import {
 		Modal,
 		Toast,
 		getDrawerStore,
-		initializeStores
+		initializeStores,
+		storePopup
 	} from '@skeletonlabs/skeleton'
 	import { onMount } from 'svelte'
-	import { t } from 'svelte-i18n'
-	import { page } from '$app/stores'
-	import { Hourglass } from 'lucide-svelte'
 
 	export let data
 	initializeStores()
-	const drawerStore = getDrawerStore()
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow })
 
 	onMount(() => {
 		import('emoji-picker-element')
@@ -53,107 +48,33 @@
 		})
 	})
 
-	$: if (browser && data.user) userStore.set(data.user)
-	$: console.log('LAYOUT userStore', $userStore)
-	$: if (browser) document.dir = $dir
-	$: if (browser && data.session && !ws.socket) ws.Connect()
+	$: console.log('LAYOUT user', $page.data.user)
+	$: if (browser && data.user && !ws.socket) ws.Connect()
+
+	$: lang = ($page.params.lang as AvailableLanguageTag) ?? sourceLanguageTag
+	$: setLanguageTag(lang)
+	$: if (browser) document.documentElement.lang = lang
+	$: if (browser) document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
 </script>
 
-<Drawer />
+<svelte:head>
+	{#each availableLanguageTags as lang}
+		<link rel="alternate" hreflang={lang} href={translatePath($page.url.pathname, lang)} />
+	{/each}
+</svelte:head>
 
-<Toast />
+{#key lang}
+	<Drawer />
 
-<Modal zIndex="z-[9999]" components={modalComponentRegistry} />
+	<Toast />
 
-<div id="nem-rectangle-middle"></div>
-<AppShell slotSidebarLeft="lg:block hidden">
-	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		<AppBar shadow="shadow-lg">
-			<svelte:fragment slot="lead">
-				<div class="flex items-center space-x-4">
-					<!-- Leftslider Menu Icon -->
-					<button
-						class="btn-icon btn-icon-sm lg:!hidden"
-						on:click={() =>
-							drawerStore.open({
-								id: drawerStoreIds.sidebar
-							})}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="32"
-							height="32"
-							viewBox="0 0 24 24"
-						>
-							<path
-								fill="currentColor"
-								d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"
-							/>
-						</svg>
-					</button>
-					<a href="/">
-						<div class="flex items-center space-x-4">
-							<Logo />
-							<h1 id="nem" class="h3 hidden items-center lg:flex">NEM</h1>
-						</div>
-					</a>
-				</div>
-			</svelte:fragment>
+	<Modal zIndex="z-[9999]" components={modalComponentRegistry} />
 
-			<!-- Main part -->
-			<div class="hidden lg:block">
-				<Navigation horizontal />
-			</div>
-			<a href="/">
-				<h1 id="nem" class="text-center text-2xl lg:hidden">NEM</h1>
-			</a>
-			<svelte:fragment slot="trail">
-				{#if $page.url.pathname.startsWith('/teachers/') && $page.url.pathname.at(-1) !== 's'}
-					<div id="hoursBank" class="flex flex-wrap items-center justify-center">
-						<span class="text-xl">{$page.data.hoursBank}h</span>
-						<Hourglass />
-					</div>
-				{/if}
-				<div class="hidden lg:block">
-					<Locale />
-				</div>
-				{#if !$userStore}
-					<a href="/signin" role="button" class="variant-filled-primary btn">
-						{$t('nav.login')}
-					</a>
-				{:else}
-					<a href="/dashboard/profile">
-						<Avatar
-							class="cursor-pointer hover:border-primary-500"
-							src={$userStore.image ?? ''}
-							initials={getInitials($userStore.name, $userStore.name)}
-						/>
-					</a>
-				{/if}
-			</svelte:fragment>
-		</AppBar>
-	</svelte:fragment>
-
-	<svelte:fragment slot="sidebarLeft">
-		{#if $userStore}
-			{#if $userStore?.role === 'teacher'}
-				<TeacherSidebar />
-			{:else}
-				<StudentSidebar />
-			{/if}
-		{/if}
-	</svelte:fragment>
-
-	<!-- Router Slot -->
+	<div id="nem-rectangle-middle"></div>
 	<slot />
-</AppShell>
+{/key}
 
 <style type="postcss">
-	#nem {
-		font-family: 'Gravitas One', cursive;
-	}
-
 	#nem-rectangle-middle {
 		position: fixed;
 		top: 0;

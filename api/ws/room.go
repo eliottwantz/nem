@@ -2,34 +2,32 @@ package ws
 
 import (
 	"context"
-	"fmt"
+
+	"nem/db"
 
 	"github.com/charmbracelet/log"
-	"github.com/redis/go-redis/v9"
 )
 
 // Room represents a websocket room
 type Room struct {
-	id         int64
+	id         string
 	clients    map[*Client]struct{}
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *EmittedMessage
-	redis      *redis.Client
 	logger     *log.Logger
 }
 
 var ctx = context.Background()
 
 // NewRoom creates a new Room
-func NewRoom(id int64, rds *redis.Client) *Room {
+func NewRoom(id string) *Room {
 	return &Room{
 		id:         id,
 		clients:    make(map[*Client]struct{}),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan *EmittedMessage),
-		redis:      rds,
 		logger:     log.With("ws room", id),
 	}
 }
@@ -55,14 +53,14 @@ func (r *Room) Run() {
 }
 
 func (r *Room) publishRoomMessage(message []byte) {
-	err := r.redis.Publish(ctx, fmt.Sprintf("%d", r.id), message).Err()
+	err := db.Redis.Publish(ctx, r.id, message).Err()
 	if err != nil {
 		r.logger.Warn("publish error", "err", err)
 	}
 }
 
 func (r *Room) subscribeToRoomMessages() {
-	ch := r.redis.Subscribe(ctx, fmt.Sprintf("%d", r.id)).Channel()
+	ch := db.Redis.Subscribe(ctx, r.id).Channel()
 
 	for msg := range ch {
 		for client := range r.clients {

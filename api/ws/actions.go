@@ -8,6 +8,8 @@ const (
 	ActionReceiveStopTyping  Action = "stopTyping"
 	ActionReceiveSetOnline   Action = "setOnline"
 	ActionReceiveSetOffline  Action = "setOffline"
+	ActionReceiveSendMessage Action = "sendMessage"
+	ActionReceiveJoinRoom    Action = "joinRoom"
 
 	// Emited actions to clients
 	ActionEmitJoinRoom      Action = "joinRoom"

@@ -14,9 +14,9 @@ type EmittedMessage struct {
 
 // ReceivedMessage represents a received websocket message
 type ReceivedMessage struct {
-	Action Action `json:"action"`
-	RoomID int64  `json:"roomId"`
-	Data   any    `json:"data"`
+	Action Action          `json:"action"`
+	RoomID string          `json:"roomId"`
+	Data   json.RawMessage `json:"data"`
 }
 
 // encode encodes the given EmittedMessage into a byte slice.

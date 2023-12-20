@@ -5,14 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"nem/api/httpmw"
-	"nem/db"
-	"nem/services/user"
-
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -34,29 +28,16 @@ type Hub struct {
 	register   chan *Client
 	unregister chan *Client
 	rooms      map[*Room]struct{}
-
-	userService *user.Service
-	redisClient *redis.Client
-
-	logger *log.Logger
+	logger     *log.Logger
 }
 
-type Config struct {
-	UserService *user.Service
-	RedisClient *redis.Client
-}
-
-func NewHub(c *Config) *Hub {
+func NewHub() *Hub {
 	h := &Hub{
 		clients:    make(map[*Client]struct{}),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		rooms:      make(map[*Room]struct{}),
-
-		userService: c.UserService,
-		redisClient: c.RedisClient,
-
-		logger: log.WithPrefix("WS Hub"),
+		logger:     log.WithPrefix("WS Hub"),
 	}
 
 	return h
@@ -69,12 +50,20 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := newClient(httpmw.ContextUID(r.Context()), conn, h)
+	uID := r.URL.Query().Get(userIDKey)
+	c := newClient(uID, conn, h)
 
 	go c.writePump()
 	go c.readPump()
 
 	h.register <- c
+}
+
+type QueryChatRes struct {
+	ID        string    `json:"id" db:"id"`
+	CreatedAt time.Time `json:"createdAt" db:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updatedAt"`
+	LastSent  time.Time `json:"lastSent" db:"lastSent"`
 }
 
 func (h *Hub) Run() {
@@ -83,19 +72,6 @@ func (h *Hub) Run() {
 
 		case c := <-h.register:
 			h.clients[c] = struct{}{}
-			// Add user to all rooms he is involved in
-			convos, err := db.Pg.ListConversationsOfUser(ctx, c.id)
-			if err != nil {
-				h.logger.Warn("failed to list conversations of user", "error", err)
-			} else {
-				for _, convo := range convos {
-					room, err := h.findRoomById(convo.ID)
-					if err != nil {
-						room = h.createRoom(convo.ID)
-					}
-					room.register <- c
-				}
-			}
 			h.logger.Info("ws client connected", userIDKey, c.id)
 
 		case c := <-h.unregister:
@@ -116,18 +92,13 @@ func (h *Hub) Run() {
 // where the message should be published. If the room does not exist, it creates
 // a new room and adds all users in the conversation to the room. It then
 // broadcasts the message to all clients in the room.
-func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId int64) {
+func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId string) {
 	room, err := h.findRoomById(roomId)
 	if err != nil {
 		// Create room and add all users in conversation to room
 		room = h.createRoom(roomId)
-		userIDs, err := db.Pg.ListUserIDsInConversation(ctx, roomId)
-		if err != nil {
-			h.logger.Warn("failed to list user ids in conversation when creating room to publish message", "error", err)
-			return
-		}
-		for _, userID := range userIDs {
-			c, err := h.findClientById(userID)
+		for cl := range room.clients {
+			c, err := h.findClientById(cl.id)
 			if err != nil {
 				continue
 			}
@@ -137,7 +108,7 @@ func (h *Hub) PublishToRoom(msg *EmittedMessage, roomId int64) {
 	room.broadcast <- msg
 }
 
-func (h *Hub) findRoomById(id int64) (*Room, error) {
+func (h *Hub) findRoomById(id string) (*Room, error) {
 	for room := range h.rooms {
 		if room.id == id {
 			return room, nil
@@ -147,7 +118,7 @@ func (h *Hub) findRoomById(id int64) (*Room, error) {
 	return nil, errors.New("ws room not found")
 }
 
-func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
+func (h *Hub) findClientById(id string) (*Client, error) {
 	for c := range h.clients {
 		if c.id == id {
 			return c, nil
@@ -157,8 +128,8 @@ func (h *Hub) findClientById(id uuid.UUID) (*Client, error) {
 	return nil, errors.New("ws client not found")
 }
 
-func (h *Hub) createRoom(id int64) *Room {
-	room := NewRoom(id, h.redisClient)
+func (h *Hub) createRoom(id string) *Room {
+	room := NewRoom(id)
 	go room.Run()
 	h.rooms[room] = struct{}{}
 
