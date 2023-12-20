@@ -162,7 +162,7 @@
 		left: 0;
 		width: 24rem;
 		height: 24rem;
-		z-index: 1000;
+		z-index: 50;
 		pointer-events: none;
 		mix-blend-mode: multiply;
 		/* opacity: 0.3; */
@@ -176,7 +176,7 @@
 		right: 0;
 		width: 24rem;
 		height: 24rem;
-		z-index: 1000;
+		z-index: 50;
 		pointer-events: none;
 		mix-blend-mode: multiply;
 		/* filter: blur(100px); */

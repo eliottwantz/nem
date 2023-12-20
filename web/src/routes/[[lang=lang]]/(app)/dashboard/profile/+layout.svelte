@@ -37,7 +37,7 @@
 				<ProfileSidebar items={studentNavItems} />
 			{/if}
 		</aside>
-		<div class="flex-1 lg:max-w-2xl">
+		<div class="flex-1">
 			<slot />
 		</div>
 	</div>

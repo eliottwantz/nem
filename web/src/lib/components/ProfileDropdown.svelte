@@ -28,7 +28,7 @@
 	/>
 </button>
 
-<div class="card w-72 shadow-xl" data-popup="popupFeatured">
+<div class="card z-[1000] w-72 shadow-xl" data-popup="popupFeatured">
 	<div class="px-4 py-1">
 		<p>{user.firstName} {user.lastName}</p>
 		<small>{email}</small>
