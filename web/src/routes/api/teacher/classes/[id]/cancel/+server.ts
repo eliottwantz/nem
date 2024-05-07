@@ -46,9 +46,26 @@ export const DELETE = async ({ locals: { session, user, db, message }, params })
 			: message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
 	}
 
-	// Send email to all users in class sayiing it got canceled
+	// Send email to all users in class sayiing it got canceled and refund hour
 	for (const user of res.value.students) {
 		await sendClassCanceledEmail(res.value, res.value.teacher.profile, user.profile.user.email)
+
+		// Refund hours
+		await safeDBCall(
+			db.hoursBank.update({
+				where: {
+					studenId_teacherId: {
+						studenId: user.id,
+						teacherId: res.value.teacherId
+					}
+				},
+				data: {
+					hours: {
+						increment: 1
+					}
+				}
+			})
+		)
 	}
 
 	// Delete class

@@ -104,17 +104,19 @@
 				>
 				<span>Start class</span>
 			</button>
-			<button
-				on:click={cancelClass}
-				disabled={!canCancelClass}
-				title={canCancelClass
-					? 'Cancel class'
-					: 'You can only cancel a class 2 hour before start'}
-				class="variant-filled-error btn"
-			>
-				<DeleteIcon class="h-6 w-6" />
-				<span>Cancel class</span>
-			</button>
+			{#if !data.class.isTrial}
+				<button
+					on:click={cancelClass}
+					disabled={!canCancelClass}
+					title={canCancelClass
+						? 'Cancel class'
+						: 'You can only cancel a class 2 hour before start'}
+					class="variant-filled-error btn"
+				>
+					<DeleteIcon class="h-6 w-6" />
+					<span>Cancel class</span>
+				</button>
+			{/if}
 		</div>
 	{:else}
 		<p class="text-xl font-semibold">Class has ended</p>

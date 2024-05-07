@@ -28,7 +28,7 @@
 	<Text>
 		Please note that your class at {classs.timeSlot.startAt} - {classs.timeSlot.endAt} has been canceled
 		by your teacher
-		{teacherName}.
+		{teacherName} and we have refunded you the hour for free.
 	</Text>
 
 	<Text>
