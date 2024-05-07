@@ -10,6 +10,7 @@ const (
 	ActionReceiveSetOffline  Action = "setOffline"
 	ActionReceiveSendMessage Action = "sendMessage"
 	ActionReceiveJoinRoom    Action = "joinRoom"
+	ActionReceiveLeaveRoom   Action = "leaveRoom"
 
 	// Emited actions to clients
 	ActionEmitJoinRoom      Action = "joinRoom"

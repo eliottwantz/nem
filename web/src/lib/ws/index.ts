@@ -11,6 +11,7 @@ type SendPayload =
 	  }
 	| { action: 'sendMessage' | 'editMessage'; roomId: string; data: Message }
 	| { action: 'joinRoom'; roomId: string }
+	| { action: 'leaveRoom' }
 
 type ReceivePayload =
 	| { action: 'none' }

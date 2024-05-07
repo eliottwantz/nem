@@ -36,7 +36,7 @@
 			} else {
 				ws.send({
 					action: 'joinRoom',
-					roomId: chatId!
+					roomId: chatId
 				})
 			}
 			console.log('Getting messages from chat', chatId)
@@ -48,11 +48,25 @@
 				chatStore.addOldMessages(res.data.messages)
 			}
 			scrollChatBottom()
+		} else {
+			if (!ws.connected) {
+				ws.socket?.addEventListener('open', () => {
+					ws.send({
+						action: 'leaveRoom'
+					})
+				})
+			} else {
+				ws.send({
+					action: 'leaveRoom'
+				})
+			}
 		}
 		unsubscriber = latestWSPayload.subscribe((payload) => {
+			if (!chatId) return
 			const user = $page.data.user
 			switch (payload.action) {
 				case 'newMessage':
+					if (payload.data.chatId !== chatId) return // Just in case
 					chatStore.addNewMessage(payload.data)
 					scrollChatBottom()
 					break

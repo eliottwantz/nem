@@ -124,6 +124,8 @@ func (c *Client) handleNewMessage(raw []byte) {
 		c.handleSendMessage(msg)
 	case ActionReceiveJoinRoom:
 		c.handleJoinRoom(msg)
+	case ActionReceiveLeaveRoom:
+		c.handleLeaveRoom()
 	}
 }
 
@@ -142,10 +144,20 @@ func (c *Client) handleSendMessage(msg *ReceivedMessage) {
 }
 
 func (c *Client) handleJoinRoom(msg *ReceivedMessage) {
+	// Quit all previous rooms
+	c.handleLeaveRoom()
+
 	room, err := c.hub.findRoomById(msg.RoomID)
 	if err != nil {
 		room = c.hub.createRoom(msg.RoomID)
 	}
 	c.hub.logger.Debug("join room", "msg", msg)
 	room.register <- c
+}
+
+func (c *Client) handleLeaveRoom() {
+	for r := range c.rooms {
+		c.hub.logger.Debug("leave room", "id", r.id)
+		r.unregister <- c
+	}
 }

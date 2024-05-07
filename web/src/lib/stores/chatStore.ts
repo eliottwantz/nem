@@ -24,6 +24,7 @@ export const createChatStore = () => {
 		subscribe,
 		set,
 		addNewMessage(message: Message) {
+			if (message.id === this.latestMessage?.id) return
 			update((state) => {
 				state.messages = [...state.messages, message]
 				state.unreadMessages = state.unreadMessages + 1
