@@ -32,7 +32,10 @@ tasks:
 
   stripe:
     cmds:
-      - stripe listen --forward-to localhost:5173/stripe/webhooks --forward-connect-to localhost:5173/stripe/webhooks/connect
+      - stripe listen --forward-to localhost:5173/stripe/webhooks
+  stripe:connect:
+    cmds:
+      - stripe listen --forward-connect-to localhost:5173/stripe/webhooks/connect
 
   desktop:
     dir: "./web"

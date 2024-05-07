@@ -1,4 +1,4 @@
-import { STRIPE_WEBHOOK_SECRET } from '$env/static/private'
+import { STRIPE_CONNECT_WEBHOOK_SECRET } from '$env/static/private'
 import { prisma } from '$lib/server/prisma'
 import { stripe } from '$lib/server/stripe'
 import { safeDBCall } from '$lib/utils/error'
@@ -12,7 +12,7 @@ export const POST = async ({ request }) => {
 	let event: Stripe.Event
 
 	try {
-		event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET)
+		event = stripe.webhooks.constructEvent(body, sig, STRIPE_CONNECT_WEBHOOK_SECRET)
 	} catch (err) {
 		return new Response(
 			`Webhook Error: ${err instanceof Error ? err.message : 'Unknown Error'}`,
