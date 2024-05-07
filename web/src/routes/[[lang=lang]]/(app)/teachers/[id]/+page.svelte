@@ -109,7 +109,8 @@
 			type: 'confirm',
 			title: 'End Subscription',
 			body: 'Are you sure you want to end your subscription?',
-			response: async (r: boolean) => {
+			response: async (confirmed: boolean) => {
+				if (!confirmed) return
 				const res = await safeFetch(
 					fetch(
 						route('POST /teachers/[id]/unsubscribe', {
