@@ -9,7 +9,7 @@ export async function load({ locals: { session } }) {
 }
 
 export const actions = {
-	updateAvatar: async ({ request, locals: { db, user, session } }) => {
+	updateAvatar: async ({ request, locals: { db, user, session, lang } }) => {
 		if (!user || !session) throw redirect(302, '/signin')
 		const formData = await request.formData()
 		const avatar = formData.get('avatar')
@@ -63,10 +63,11 @@ export const actions = {
 				} satisfies ServerMessage)
 			}
 
-			return {
-				type: 'success',
-				text: 'Avatar updated'
-			} satisfies ServerMessage
+			throw redirect(302, route('/dashboard/profile', { lang }))
+			// return {
+			// 	type: 'success',
+			// 	text: 'Avatar updated'
+			// } satisfies ServerMessage
 		}
 	},
 	deleteAvatar: async ({ locals: { db, user, session, lang } }) => {

@@ -10,6 +10,7 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname.includes('stripe')) return await resolve(event)
 	if (event.url.pathname.includes('.well-known')) return await resolve(event)
 
+	console.log('#### HOOKS ######')
 	const session = await event.locals.getSession()
 
 	event.locals.session = session
@@ -44,6 +45,7 @@ export const handleContext: Handle = async ({ event, resolve }) => {
 			const profile = await event.locals.db.profile.findUnique({
 				where: { id: session.user.id }
 			})
+			console.log('profile:', profile)
 			if (profile) event.locals.user = profile
 		} catch (e) {
 			if (e instanceof Prisma.PrismaClientKnownRequestError) {

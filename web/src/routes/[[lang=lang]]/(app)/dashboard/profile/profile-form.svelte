@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms'
+	import { goto, invalidateAll } from '$app/navigation'
 	import { page } from '$app/stores'
 	import Avatar from '$components/Avatar.svelte'
 	import { langParams } from '$i18n'
@@ -14,9 +15,17 @@
 	let files: FileList
 	let uploading = false
 	let previewSrc = ''
+	let avatarForm: HTMLFormElement
 	$: if (files && files.length > 0) previewSrc = URL.createObjectURL(files[0])
 	$: if (files && files.length === 0 && previewSrc) {
 		URL.revokeObjectURL(previewSrc)
+	}
+
+	const handleAvatarChange = () => {
+		console.log('files:\n', files)
+		if (!files || files.length === 0) return
+
+		avatarForm.submit()
 	}
 </script>
 
@@ -49,25 +58,11 @@
 		</label>
 	</div>
 	<form
+		bind:this={avatarForm}
 		class="space-y-4"
 		method="post"
 		action={route('updateAvatar /dashboard/profile', langParams())}
 		enctype="multipart/form-data"
-		use:enhance={({ cancel }) => {
-			uploading = true
-			if (!files || files.length === 0) {
-				toastStore.trigger({
-					message: 'No file selected. Please select a file.',
-					background: 'bg-error-500'
-				})
-				cancel()
-			}
-
-			return async ({ update }) => {
-				await update()
-				uploading = false
-			}
-		}}
 	>
 		<!-- svelte-ignore a11y-label-has-associated-control -->
 		<label for="avatar" class="label"> Profile picture </label>
@@ -79,6 +74,7 @@
 				bind:files
 				required
 				accept="image/*"
+				on:change={handleAvatarChange}
 			>
 				{#if previewSrc}
 					<Avatar src={previewSrc} initials={getInitials(user)} width="w-20" />
@@ -91,8 +87,6 @@
 				{/if}
 			</FileButton>
 			<div class="flex flex-col gap-y-2">
-				<button disabled={uploading} class="variant-ghost-primary btn">Upload avatar</button
-				>
 				<form
 					method="post"
 					action={route('deleteAvatar /dashboard/profile', langParams())}
