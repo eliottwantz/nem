@@ -9,6 +9,7 @@
 	import TeacherProfile from '$lib/components/Profile/TeacherProfile.svelte'
 	import Subscription from '$lib/components/Subscription/Subscription.svelte'
 	import TakeClass from '$lib/components/TakeClass/TakeClass.svelte'
+	import type { Chat } from '@prisma/client'
 	import {
 		Tab,
 		TabGroup,
@@ -140,7 +141,13 @@
 	}
 
 	async function openChat() {
-		const chat = await data.streamed.chat
+		const chat = await fetch(route('GET /api/chats/[id]', { id: $page.params.id }))
+			.then((res) => res.json())
+			.then((res: Chat | null) => res)
+			.catch((err) => {
+				console.log(err)
+				return null
+			})
 		if (chat instanceof Error) {
 			toastStore.trigger({
 				message: 'Error occurred while trying to open chat. Please try again later',

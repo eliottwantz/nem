@@ -96,27 +96,6 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 			subscriptions: new Promise<Subscription[]>((resolve) => {
 				safeDBCall(db.subscription.findMany({}).then((res) => resolve(res)))
 			}),
-			chat: new Promise<(Chat | null) | Error>(async (resolve) => {
-				const res = await safeDBCall(
-					db.chat.findFirst({
-						where: {
-							users: {
-								every: {
-									id: {
-										in: [user.id, params.id]
-									}
-								}
-							}
-						}
-					})
-				)
-				if (res.ok) resolve(res.value)
-				else if (res.error instanceof AppError) resolve(null)
-				else {
-					console.log(res.error)
-					resolve(null)
-				}
-			}),
 			availabilities: dbLoadPromise(
 				safeDBCall(
 					db.$transaction(async (tx) => {
