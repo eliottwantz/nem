@@ -1,9 +1,9 @@
 import { route } from '$lib/ROUTES'
-import { safeDBCall } from '$lib/utils/error'
+import { dbLoadPromise, safeDBCall } from '$lib/utils/error'
 import { redirect } from '@sveltejs/kit'
 
-export async function load({ locals: { session, lang, db }, params }) {
-	if (!session) throw redirect(302, route('/signin', { lang }))
+export async function load({ locals: { session, user, lang, db }, params }) {
+	if (!session || !user) throw redirect(302, route('/signin', { lang }))
 	const res = await safeDBCall(
 		db.class.findUnique({
 			where: { id: params.id },
@@ -31,6 +31,22 @@ export async function load({ locals: { session, lang, db }, params }) {
 	}
 	console.log(res.value)
 	return {
-		class: res.value
+		class: res.value,
+		hoursBank: dbLoadPromise(
+			safeDBCall(
+				db.hoursBank
+					.findUnique({
+						select: { hours: true },
+						where: {
+							studenId_teacherId: {
+								studenId: user.id,
+								teacherId: res.value.teacherId
+							}
+						}
+					})
+					.then((res) => res?.hours)
+			),
+			0
+		)
 	}
 }

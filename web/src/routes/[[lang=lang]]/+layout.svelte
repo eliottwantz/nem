@@ -65,6 +65,12 @@
 						<Hourglass />
 					</div>
 				{/if}
+				{#if $page.url.pathname.startsWith('/dashboard/student/classes/') && $page.url.pathname.at(-1) !== 's'}
+					<div id="hoursBank" class="flex flex-wrap items-center justify-center">
+						<span class="text-xl">{$page.data.hoursBank}h</span>
+						<Hourglass />
+					</div>
+				{/if}
 				<div class="hidden lg:block">
 					<LangSwitcher />
 				</div>
