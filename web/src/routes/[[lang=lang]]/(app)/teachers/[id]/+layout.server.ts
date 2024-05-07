@@ -20,7 +20,7 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 		throw error(404, 'Teacher not found')
 	}
 	const res = await safeDBCall(
-		db.student.findMany({
+		db.student.findFirst({
 			where: {
 				id: user.id,
 				classes: {
@@ -30,6 +30,7 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 			select: { classes: true }
 		})
 	)
+	console.log('RES', res)
 	let isFirstClass = true
 	if (!res.ok) {
 		const traceId = crypto.randomUUID()
@@ -40,10 +41,12 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 			throw error(500, '[trace id = ' + traceId + '] Something went wrong')
 		}
 	} else {
-		if (res.value.length > 0) {
+		console.log('isFirstClass', isFirstClass)
+		if (res.value.classes.length > 0) {
 			isFirstClass = false
 		}
 	}
+	console.log('isFirstClass', isFirstClass)
 	let subscription: StudentSubscription | null = null
 	const sub = await safeDBCall(
 		db.studentSubscription.findUnique({
@@ -55,18 +58,19 @@ export async function load({ params, locals: { session, user, lang, db } }) {
 			}
 		})
 	)
-	console.log('#SUB#', sub)
 	if (!sub.ok) {
-		const traceId = crypto.randomUUID()
-		console.log(sub.error, '[trace id]', traceId)
 		if (sub.error instanceof AppError) {
 		} else {
+			const traceId = crypto.randomUUID()
+			console.log(sub.error, '[trace id]', traceId)
 			throw error(500, '[trace id = ' + traceId + '] Something went wrong')
 		}
 	} else {
 		isFirstClass = false
 		subscription = sub.value
 	}
+	console.log('isFirstClass', isFirstClass)
+
 	return {
 		user,
 		teacher: teacher.value,
