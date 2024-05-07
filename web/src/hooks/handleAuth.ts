@@ -1,5 +1,4 @@
 import {
-	EMAIL_FROM,
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
 	SMTP_HOST,
@@ -27,7 +26,7 @@ export const handleAuth: Handle = SvelteKitAuth({
 					pass: SMTP_PASSWORD
 				}
 			},
-			from: EMAIL_FROM
+			from: 'NEM noreply@passnem.com'
 		})
 	],
 	theme: {

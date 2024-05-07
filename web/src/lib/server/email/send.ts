@@ -1,32 +1,27 @@
+import { dev } from '$app/environment'
 import { SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER } from '$env/static/private'
 import { getFeedbackObjects } from '$lib/utils/feedback.ts'
-import { createTransport } from 'nodemailer'
+import { SMTPClient } from 'emailjs'
 
-const transporter = createTransport({
-	host: SMTP_HOST,
+const client = new SMTPClient({
+	user: SMTP_USER,
+	password: SMTP_PASSWORD,
 	port: Number(SMTP_PORT),
-	secure: false,
-	auth: {
-		user: SMTP_USER,
-		pass: SMTP_PASSWORD
-	}
+	host: SMTP_HOST,
+	ssl: dev ? false : true
 })
 
-export const sendEmail = async (options: {
-	from: string
-	to: string
-	subject: string
-	html: string
-}) => {
+export const sendEmail = async (options: { to: string; subject: string; html: string }) => {
 	try {
-		transporter.sendMail({
-			from: options.from,
+		const message = await client.sendAsync({
+			text: options.html,
+			from: 'NEM noreply@passnem.com',
 			to: options.to,
 			subject: options.subject,
-			html: options.subject
+			'content-type': 'text/html'
 		})
 
-		console.log('Test email sent successfully')
+		console.log('Email sent successfully')
 
 		return getFeedbackObjects([
 			{

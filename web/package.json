@@ -74,6 +74,7 @@
 		"@floating-ui/dom": "^1.5.3",
 		"@inlang/paraglide-js": "1.0.0-prerelease.14",
 		"@prisma/client": "^5.13.0",
+		"emailjs": "^4.0.3",
 		"lucide-svelte": "^0.284.0"
 	},
 	"pnpm": {

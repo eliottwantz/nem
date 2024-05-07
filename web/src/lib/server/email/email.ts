@@ -1,10 +1,9 @@
-import { EMAIL_FROM } from '$env/static/private'
 import ClassCanceled from '$lib/emails/ClassCanceled.svelte'
+import { getFeedbackObjects } from '$lib/utils/feedback.ts'
+import { getPublicName } from '$lib/utils/initials'
+import type { Class, Profile, TimeSlot } from '@prisma/client'
 import { render } from 'svelte-email'
 import { sendEmail } from './send'
-import { getFeedbackObjects } from '$lib/utils/feedback.ts'
-import type { Class, Profile, TimeSlot } from '@prisma/client'
-import { getPublicName } from '$lib/utils/initials'
 
 export async function sendClassCanceledEmail(
 	classs: Class & { timeSlot: TimeSlot },
@@ -22,7 +21,6 @@ export async function sendClassCanceledEmail(
 		})
 
 		const res = await sendEmail({
-			from: EMAIL_FROM,
 			to: email,
 			subject: 'Class canceled by ' + teacherName,
 			html

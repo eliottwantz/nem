@@ -51,5 +51,16 @@ export const DELETE = async ({ locals: { session, user, db, message }, params })
 		await sendClassCanceledEmail(res.value, res.value.teacher.profile, user.profile.user.email)
 	}
 
+	// Delete class
+	const deleted = await safeDBCall(
+		db.class.delete({
+			where: { id: params.id }
+		})
+	)
+	if (!deleted.ok) {
+		console.log('Failed to delete class:\n', deleted.error)
+		return message({ type: 'error', text: 'Something went wrong' }, { status: 500 })
+	}
+
 	return message({ type: 'success', text: 'Class canceled' }, { status: 200 })
 }

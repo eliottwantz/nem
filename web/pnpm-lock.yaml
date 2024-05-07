@@ -22,6 +22,9 @@ importers:
       '@prisma/client':
         specifier: ^5.13.0
         version: 5.13.0(prisma@5.6.0)
+      emailjs:
+        specifier: ^4.0.3
+        version: 4.0.3(typescript@5.2.2)
       lucide-svelte:
         specifier: ^0.284.0
         version: 0.284.0(svelte@4.2.1)
@@ -1373,6 +1376,15 @@ packages:
 
   electron-to-chromium@1.4.537:
     resolution: {integrity: sha512-W1+g9qs9hviII0HAwOdehGYkr+zt7KKdmCcJcjH0mYg6oL8+ioT3Skjmt7BLoAQqXhjf40AXd+HlR4oAWMlXjA==}
+
+  emailjs@4.0.3:
+    resolution: {integrity: sha512-1CDXoE3FxkSg7QRTlLsDCYG9elFNu/JQsYWu3Xfrk77ubbg5zYgFGg+JRUKQJ56mceM8o3rHHX0VB4wo9XsyLQ==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      typescript: '>=4.3.5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   emoji-picker-element@1.18.4:
     resolution: {integrity: sha512-Jo+HyHIPSqrHTyLnw+SJn0KWCd1WhA38Iqcz6wKxfqkevK9V8ECJELgFyxXUCRmgQkVmPrTVGLpB1mqIb8/iSQ==}
@@ -4116,6 +4128,10 @@ snapshots:
       semver: 7.5.4
 
   electron-to-chromium@1.4.537: {}
+
+  emailjs@4.0.3(typescript@5.2.2):
+    optionalDependencies:
+      typescript: 5.2.2
 
   emoji-picker-element@1.18.4: {}
 
