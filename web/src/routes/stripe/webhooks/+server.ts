@@ -1,23 +1,18 @@
-import { dev } from '$app/environment'
-import { STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_DEV } from '$env/static/private'
+import { STRIPE_WEBHOOK_SECRET } from '$env/static/private'
 import { prisma } from '$lib/server/prisma'
 import { stripe, type ClassPaymentMetaData, type SubscriptionMetadata } from '$lib/server/stripe'
 import { AppError, safeDBCall } from '$lib/utils/error'
-import { json } from '@sveltejs/kit'
 import type Stripe from 'stripe'
 
 export const POST = async ({ request }) => {
+	console.log('STRIPE WEBHOOK')
 	const body = await request.text()
 	const sig = request.headers.get('stripe-signature') ?? ''
 
 	let event: Stripe.Event
 
 	try {
-		event = stripe.webhooks.constructEvent(
-			body,
-			sig,
-			dev ? STRIPE_WEBHOOK_SECRET_DEV : STRIPE_WEBHOOK_SECRET
-		)
+		event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET)
 	} catch (err) {
 		return new Response(
 			`Webhook Error: ${err instanceof Error ? err.message : 'Unknown Error'}`,
